@@ -1,0 +1,28 @@
+/* Design tokens institucionais — fonte única de cores/tipografia/espaçamento. */
+:root {
+  /* Cores institucionais */
+  --cor-primaria: #14213d;
+  --cor-primaria-escura: #0b1226;
+  --cor-destaque: #fca311;
+  --cor-fundo: #f4f5f7;
+  --cor-superficie: #ffffff;
+  --cor-texto: #1a1a2e;
+  --cor-texto-suave: #5c6270;
+  --cor-borda: #e2e4e9;
+  --cor-erro: #c1121f;
+  --cor-sucesso: #2d6a4f;
+
+  /* Tipografia */
+  --fonte-base: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --texto-sm: 0.875rem;
+  --texto-base: 1rem;
+  --texto-lg: 1.25rem;
+  --texto-xl: 1.75rem;
+  --texto-2xl: 2.25rem;
+
+  /* Layout */
+  --raio: 8px;
+  --raio-lg: 12px;
+  --sombra: 0 2px 12px rgb(0 0 0 / 8%);
+  --largura-conteudo: 1080px;
+}
