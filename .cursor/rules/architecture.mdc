@@ -1,0 +1,26 @@
+---
+description: Arquitetura e convenções gerais do monorepo Sindicato PRF
+globs:
+alwaysApply: true
+---
+
+# Arquitetura — Sindicato PRF
+
+## Stack
+- Monorepo pnpm workspaces: `apps/web`, `apps/api`, `packages/types`, `packages/config`
+- Frontend: React + TypeScript + Vite, TanStack Query (server state), Zustand (client state), Zod (validação)
+- Backend: NestJS + Prisma + PostgreSQL
+- Tipos e schemas Zod compartilhados ficam em `packages/types` e são a fonte única de verdade
+
+## Regras transversais
+- TypeScript estrito: nada de `any`. Use os tipos inferidos do Zod.
+- Toda entrada de dados (API e formulários) é validada com Zod. O mesmo schema é reusado no front e no back.
+- Não duplique tipos entre front e back — importe de `@sindprf/types`.
+- Nomes de domínio em português (Afiliado, Convenio, Eleicao, Chapa), código/infra em inglês.
+- Datas sempre em UTC no banco; conversão para America/Fortaleza só na exibição.
+- Variáveis sensíveis só via `.env` — nunca commitar segredos. Atualize `.env.example` ao adicionar uma var.
+
+## Organização por feature
+- Backend: um módulo Nest por domínio (`auth`, `afiliados`, `noticias`, `convenios`, `eleicao`, `imoveis`).
+- Frontend: estrutura feature-based em `src/features/<feature>/` com `components`, `hooks`, `api`, `schemas`.
+- Sem lógica de negócio em componentes de UI; isole em hooks/services.

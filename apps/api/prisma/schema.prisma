@@ -1,0 +1,378 @@
+// Schema Prisma — Sistema Web Sindicato PRF
+// Postgres · cobre todas as fases (auth, notícias, convênios, eleição, imóveis/aluguel)
+//
+// Convenções:
+// - Datas em UTC (@db.Timestamptz). Conversão p/ America/Fortaleza só na exibição.
+// - Constraints de integridade no banco (unique, FK), não só na aplicação.
+// - IDs em cuid() por padrão.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// =====================================================================
+// FASE 0/1 — USUÁRIOS, AUTENTICAÇÃO E AFILIADOS
+// =====================================================================
+
+enum Role {
+  ADMIN
+  AFILIADO
+}
+
+enum StatusAfiliado {
+  PENDENTE
+  APROVADO
+  INATIVO
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  senhaHash String
+  role      Role     @default(AFILIADO)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  afiliado       Afiliado?
+  refreshTokens  RefreshToken[]
+  resetTokens    PasswordResetToken[]
+  noticias       Noticia[]        @relation("AutorNoticia")
+  mensagens      Mensagem[]       @relation("AutorMensagem")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiraEm  DateTime @db.Timestamptz
+  revogado  Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiraEm  DateTime @db.Timestamptz
+  usado     Boolean  @default(false)
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model Afiliado {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  nome      String
+  cpf       String         @unique
+  matricula String         @unique
+  telefone  String?
+  status    StatusAfiliado @default(PENDENTE)
+  createdAt DateTime       @default(now()) @db.Timestamptz
+  updatedAt DateTime       @updatedAt @db.Timestamptz
+
+  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  elegibilidades   Elegivel[]
+  comparecimentos  Comparecimento[]
+  solicitacoes     SolicitacaoAluguel[]
+
+  @@map("afiliados")
+}
+
+// =====================================================================
+// FASE 2 — NOTÍCIAS (CMS)
+// =====================================================================
+
+enum StatusNoticia {
+  RASCUNHO
+  PUBLICADO
+}
+
+model Noticia {
+  id          String        @id @default(cuid())
+  titulo      String
+  slug        String        @unique
+  capaUrl     String?
+  conteudo    String        @db.Text
+  status      StatusNoticia @default(RASCUNHO)
+  publicadoEm DateTime?     @db.Timestamptz
+  autorId     String
+  createdAt   DateTime      @default(now()) @db.Timestamptz
+  updatedAt   DateTime      @updatedAt @db.Timestamptz
+
+  autor User @relation("AutorNoticia", fields: [autorId], references: [id])
+
+  @@index([status, publicadoEm])
+  @@map("noticias")
+}
+
+// Cache do feed do Instagram (Fase 2.4)
+model InstagramPost {
+  id           String   @id @default(cuid())
+  externalId   String   @unique // id do post na Graph API
+  mediaUrl     String
+  permalink    String
+  caption      String?  @db.Text
+  mediaType    String   // IMAGE, VIDEO, CAROUSEL_ALBUM
+  publicadoEm  DateTime @db.Timestamptz
+  sincronizado DateTime @default(now()) @db.Timestamptz
+
+  @@index([publicadoEm])
+  @@map("instagram_posts")
+}
+
+// =====================================================================
+// FASE 3 — CONVÊNIOS
+// =====================================================================
+
+model Convenio {
+  id             String    @id @default(cuid())
+  nome           String
+  categoria      String
+  descricao      String    @db.Text
+  logoUrl        String?
+  link           String?
+  contato        String?
+  vigenciaInicio DateTime? @db.Timestamptz
+  vigenciaFim    DateTime? @db.Timestamptz
+  ativo          Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @db.Timestamptz
+  updatedAt      DateTime  @updatedAt @db.Timestamptz
+
+  @@index([categoria])
+  @@map("convenios")
+}
+
+// =====================================================================
+// FASE 4 — ELEIÇÃO / VOTAÇÃO
+// -------------------------------------------------------------------
+// SIGILO POR DESIGN: Comparecimento e Voto são tabelas SEPARADAS e
+// NÃO relacionadas entre si. Não existe FK ligando um Voto a um
+// Afiliado. Isso é intencional — não "corrigir" adicionando relação.
+// =====================================================================
+
+enum StatusEleicao {
+  AGENDADA
+  ABERTA
+  ENCERRADA
+  APURADA
+}
+
+model Eleicao {
+  id        String        @id @default(cuid())
+  titulo    String
+  descricao String?       @db.Text
+  inicio    DateTime      @db.Timestamptz
+  fim       DateTime      @db.Timestamptz
+  status    StatusEleicao @default(AGENDADA)
+  createdAt DateTime      @default(now()) @db.Timestamptz
+  updatedAt DateTime      @updatedAt @db.Timestamptz
+
+  chapas          Chapa[]
+  elegiveis       Elegivel[]
+  comparecimentos Comparecimento[]
+  votos           Voto[]
+  resultados      ResultadoApuracao[]
+
+  @@map("eleicoes")
+}
+
+model Chapa {
+  id        String   @id @default(cuid())
+  eleicaoId String
+  numero    Int
+  nome      String
+  slogan    String?
+  createdAt DateTime @default(now()) @db.Timestamptz
+
+  eleicao    Eleicao             @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  candidatos Candidato[]
+  votos      Voto[]
+  resultados ResultadoApuracao[]
+
+  @@unique([eleicaoId, numero])
+  @@index([eleicaoId])
+  @@map("chapas")
+}
+
+model Candidato {
+  id      String  @id @default(cuid())
+  chapaId String
+  nome    String
+  cargo   String
+  fotoUrl String?
+
+  chapa Chapa @relation(fields: [chapaId], references: [id], onDelete: Cascade)
+
+  @@index([chapaId])
+  @@map("candidatos")
+}
+
+// Quem PODE votar em cada eleição
+model Elegivel {
+  id         String @id @default(cuid())
+  eleicaoId  String
+  afiliadoId String
+
+  eleicao  Eleicao  @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  afiliado Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Cascade)
+
+  @@unique([eleicaoId, afiliadoId]) // não duplica elegibilidade
+  @@index([eleicaoId])
+  @@map("elegiveis")
+}
+
+// Registra QUE o afiliado votou (não em quem). Garante voto único.
+model Comparecimento {
+  id         String   @id @default(cuid())
+  eleicaoId  String
+  afiliadoId String
+  votouEm    DateTime @default(now()) @db.Timestamptz
+  protocolo  String   @unique // hash entregue ao eleitor, não revela o voto
+
+  eleicao  Eleicao  @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  afiliado Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Cascade)
+
+  @@unique([eleicaoId, afiliadoId]) // CONSTRAINT que garante 1 voto por afiliado
+  @@index([eleicaoId])
+  @@map("comparecimentos")
+}
+
+// Registra O voto (em qual chapa), SEM referência ao afiliado. Sigilo.
+model Voto {
+  id        String   @id @default(cuid())
+  eleicaoId String
+  chapaId   String
+  criadoEm  DateTime @default(now()) @db.Timestamptz
+
+  eleicao Eleicao @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  chapa   Chapa   @relation(fields: [chapaId], references: [id], onDelete: Cascade)
+
+  // NÃO adicionar afiliadoId aqui. O sigilo depende dessa ausência.
+  @@index([eleicaoId])
+  @@index([chapaId])
+  @@map("votos")
+}
+
+// Resultado consolidado após apuração (reproduzível)
+model ResultadoApuracao {
+  id         String   @id @default(cuid())
+  eleicaoId  String
+  chapaId    String
+  totalVotos Int
+  percentual Float
+  apuradoEm  DateTime @default(now()) @db.Timestamptz
+
+  eleicao Eleicao @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  chapa   Chapa   @relation(fields: [chapaId], references: [id], onDelete: Cascade)
+
+  @@unique([eleicaoId, chapaId])
+  @@index([eleicaoId])
+  @@map("resultados_apuracao")
+}
+
+// =====================================================================
+// FASE 5 — IMÓVEIS / ALUGUEL
+// =====================================================================
+
+enum TipoPeriodo {
+  RESERVADO
+  BLOQUEADO
+}
+
+enum StatusSolicitacao {
+  ABERTA
+  EM_ANDAMENTO
+  FECHADA
+}
+
+model Imovel {
+  id          String   @id @default(cuid())
+  titulo      String
+  descricao   String   @db.Text
+  endereco    String
+  valor       Decimal  @db.Decimal(10, 2)
+  comodidades String[] // array de texto (Postgres)
+  ativo       Boolean  @default(true)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+  updatedAt   DateTime @updatedAt @db.Timestamptz
+
+  fotos        FotoImovel[]
+  periodos     Periodo[]
+  solicitacoes SolicitacaoAluguel[]
+
+  @@map("imoveis")
+}
+
+model FotoImovel {
+  id      String @id @default(cuid())
+  imovelId String
+  url     String
+  ordem   Int    @default(0)
+
+  imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+
+  @@index([imovelId])
+  @@map("fotos_imovel")
+}
+
+model Periodo {
+  id       String      @id @default(cuid())
+  imovelId String
+  inicio   DateTime    @db.Timestamptz
+  fim      DateTime    @db.Timestamptz
+  tipo     TipoPeriodo
+
+  imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+
+  @@index([imovelId, inicio, fim])
+  @@map("periodos")
+}
+
+model SolicitacaoAluguel {
+  id             String            @id @default(cuid())
+  imovelId       String
+  afiliadoId     String
+  inicioDesejado DateTime          @db.Timestamptz
+  fimDesejado    DateTime          @db.Timestamptz
+  status         StatusSolicitacao @default(ABERTA)
+  createdAt      DateTime          @default(now()) @db.Timestamptz
+  updatedAt      DateTime          @updatedAt @db.Timestamptz
+
+  imovel    Imovel     @relation(fields: [imovelId], references: [id])
+  afiliado  Afiliado   @relation(fields: [afiliadoId], references: [id])
+  mensagens Mensagem[]
+
+  @@index([imovelId])
+  @@index([afiliadoId])
+  @@map("solicitacoes_aluguel")
+}
+
+model Mensagem {
+  id             String   @id @default(cuid())
+  solicitacaoId  String
+  autorId        String
+  texto          String   @db.Text
+  criadoEm       DateTime @default(now()) @db.Timestamptz
+
+  solicitacao SolicitacaoAluguel @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)
+  autor       User               @relation("AutorMensagem", fields: [autorId], references: [id])
+
+  @@index([solicitacaoId])
+  @@map("mensagens")
+}

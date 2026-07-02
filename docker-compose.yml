@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: sindprf-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sindprf
+      POSTGRES_PASSWORD: sindprf
+      POSTGRES_DB: sindprf
+    ports:
+      - "5432:5432"
+    volumes:
+      - sindprf_pgdata:/var/lib/postgresql/data
+
+volumes:
+  sindprf_pgdata:

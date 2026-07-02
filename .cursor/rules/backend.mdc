@@ -1,0 +1,30 @@
+---
+description: Convenções do backend NestJS + Prisma
+globs: apps/api/**/*.ts
+alwaysApply: false
+---
+
+# Backend — NestJS + Prisma
+
+## Estrutura de módulo
+- Um módulo por domínio: `<dominio>.module.ts`, `.controller.ts`, `.service.ts`, `.dto.ts`.
+- Controllers finos: só orquestram. Regra de negócio no service.
+- Acesso a dados só via `PrismaService` injetado — nunca instanciar PrismaClient solto.
+
+## Validação e contratos
+- DTOs derivados dos schemas Zod de `@sindprf/types` (use `nestjs-zod` ou um ZodValidationPipe).
+- Nunca confie em input do cliente; valide tudo na borda.
+
+## Auth e autorização
+- JWT access curto + refresh. Guard global de auth; rotas públicas marcadas com `@Public()`.
+- Autorização por role com `@Roles(Role.ADMIN)` + RolesGuard.
+- Endpoints de afiliado exigem status APROVADO, não só autenticação.
+
+## Erros
+- Use exceptions do Nest (`NotFoundException`, `ForbiddenException`, etc.).
+- Nunca vazar detalhes internos (stack, SQL) na resposta.
+
+## Banco
+- Mudanças de schema sempre via `prisma migrate` versionado — nunca alterar o banco manualmente.
+- Constraints de integridade no banco (unique, FK), não só na aplicação.
+- Em operações concorrentes críticas (ex: voto), use transação + constraint única como garantia final.

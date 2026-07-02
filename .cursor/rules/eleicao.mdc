@@ -1,0 +1,35 @@
+---
+description: Regras de segurança e integridade do módulo de eleição/votação. Anexar manualmente ao trabalhar na Fase 4.
+globs:
+alwaysApply: false
+---
+
+# Eleição / Votação — regras invioláveis
+
+Este é o módulo mais sensível do sistema. Trate cada regra como requisito de segurança, não preferência.
+
+## Sigilo do voto
+- O voto **não pode** ser associável ao eleitor. Separe em duas estruturas:
+  - registro de **comparecimento** (qual afiliado já votou) — sem o conteúdo do voto;
+  - registro de **votos** (em qual chapa) — sem identidade do eleitor.
+- Nunca grave eleitor e escolha na mesma linha/transação rastreável.
+
+## Voto único
+- Garantia no banco via constraint única de comparecimento (afiliado + eleição).
+- A gravação do comparecimento e a contagem do voto ocorrem na mesma transação atômica.
+- Tratar concorrência: dois cliques/abas simultâneas não podem gerar dois votos.
+
+## Elegibilidade
+- Só afiliado com status APROVADO e presente na lista de elegíveis da eleição pode votar.
+- Janela de votação respeitada no servidor (não confiar no relógio do cliente).
+
+## Resultados
+- Resultado parcial **não** é exposto a ninguém (nem admin) enquanto a eleição está ABERTA.
+- Apuração só após ENCERRADA; deve ser reproduzível e auditável.
+
+## Comprovante e auditoria
+- Emitir protocolo/hash de votação ao eleitor, sem revelar a escolha.
+- Manter trilha de auditoria de comparecimento (quem/quando), nunca do conteúdo do voto.
+
+## Antes de codar
+- Validar exigências do **estatuto do sindicato** (quórum, sigilo, auditoria externa). Se houver conflito entre conveniência técnica e o estatuto, o estatuto vence.

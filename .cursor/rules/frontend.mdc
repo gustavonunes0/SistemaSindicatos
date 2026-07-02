@@ -1,0 +1,31 @@
+---
+description: Convenções do frontend React + TanStack Query + Zustand
+globs: apps/web/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Frontend — React + TS
+
+## Estado
+- **Server state** (dados da API): sempre TanStack Query. Nada de `useEffect` + `fetch` manual.
+- **Client state** (auth, UI global): Zustand. Stores pequenas e focadas.
+- Estado local de componente: `useState`/`useReducer`.
+- Não duplicar server state dentro do Zustand.
+
+## Dados e validação
+- Toda resposta da API é parseada com o schema Zod de `@sindprf/types` antes de usar.
+- Formulários: React Hook Form + resolver Zod, com os mesmos schemas do back.
+
+## Estrutura feature-based
+- `src/features/<feature>/`: `components/`, `hooks/`, `api/`, `schemas.ts`, `routes.tsx`.
+- Componentes de UI puros e reutilizáveis em `src/components/ui/`.
+- Sem chamada de API direta em componente — encapsule em hooks (`useNoticias`, `useVotar`).
+
+## Rotas e acesso
+- Rotas protegidas por role. Afiliado e admin têm áreas separadas.
+- Redirecionar para login em 401; mostrar 403 quando autenticado mas sem permissão.
+
+## Qualidade de UX
+- Estados de loading/erro/vazio explícitos em toda tela que busca dados.
+- Ações destrutivas ou irreversíveis (ex: confirmar voto) exigem dupla confirmação.
+- Mobile-first; tudo precisa funcionar bem em tela de celular.
