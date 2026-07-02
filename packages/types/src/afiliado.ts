@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { cpfSchema } from './cpf';
 import { statusAfiliadoSchema } from './enums';
 
 export const afiliadoSchema = z.object({
@@ -14,3 +15,23 @@ export const afiliadoSchema = z.object({
 });
 
 export type Afiliado = z.infer<typeof afiliadoSchema>;
+
+export const cadastroAfiliadoSchema = z.object({
+  nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  cpf: cpfSchema,
+  matricula: z.string().min(1, 'Matrícula é obrigatória'),
+  telefone: z.string().min(8, 'Telefone inválido').optional(),
+  email: z.string().email('Email inválido'),
+  senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+});
+export type CadastroAfiliadoInput = z.infer<typeof cadastroAfiliadoSchema>;
+
+export const atualizarStatusAfiliadoSchema = z.object({
+  status: statusAfiliadoSchema,
+});
+export type AtualizarStatusAfiliadoInput = z.infer<typeof atualizarStatusAfiliadoSchema>;
+
+export const filtroAfiliadosSchema = z.object({
+  status: statusAfiliadoSchema.optional(),
+});
+export type FiltroAfiliadosInput = z.infer<typeof filtroAfiliadosSchema>;

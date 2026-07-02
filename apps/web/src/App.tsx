@@ -1,15 +1,17 @@
-import { healthCheckSchema, type HealthCheck } from '@sindprf/types';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
 
-const health: HealthCheck = healthCheckSchema.parse({
-  status: 'ok',
-  timestamp: new Date().toISOString(),
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, refetchOnWindowFocus: false },
+  },
 });
 
 export function App() {
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: '2rem' }}>
-      <h1>Sindicato PRF</h1>
-      <p>Monorepo funcionando. Status do front: {health.status}</p>
-    </main>
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
   );
 }
