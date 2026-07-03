@@ -23,6 +23,8 @@ const linksAdmin: LinkNav[] = [
   { to: '/admin', rotulo: 'Painel', end: true },
   { to: '/admin/noticias', rotulo: 'Notícias' },
   { to: '/admin/convenios', rotulo: 'Convênios' },
+  { to: '/admin/imoveis', rotulo: 'Apartamentos' },
+  { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
   { to: '/', rotulo: 'Site público' },
 ];
 
@@ -35,6 +37,8 @@ export function AreaLayout({ tipo, titulo, acoes, children }: AreaLayoutProps) {
   const linksAfiliado: LinkNav[] = [
     { to: '/afiliado', rotulo: 'Minha área', end: true },
     { to: '/afiliado/convenios', rotulo: 'Convênios', visivel: aprovado },
+    { to: '/afiliado/imoveis', rotulo: 'Apartamentos', visivel: aprovado },
+    { to: '/afiliado/solicitacoes', rotulo: 'Solicitações', visivel: aprovado },
   ];
 
   const links = tipo === 'admin' ? linksAdmin : linksAfiliado.filter((link) => link.visivel !== false);

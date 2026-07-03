@@ -14,6 +14,13 @@ import { NoticiaFormPage } from './features/noticias/components/admin/NoticiaFor
 import { NoticiasAdminPage } from './features/noticias/components/admin/NoticiasAdminPage';
 import { NoticiaDetalhePage } from './features/noticias/components/NoticiaDetalhePage';
 import { NoticiasPage } from './features/noticias/components/NoticiasPage';
+import { ImovelFormPage } from './features/imoveis/components/admin/ImovelFormPage';
+import { ImoveisAdminPage } from './features/imoveis/components/admin/ImoveisAdminPage';
+import { ImovelDetalhePage } from './features/imoveis/components/ImovelDetalhePage';
+import { ImoveisPage } from './features/imoveis/components/ImoveisPage';
+import { MinhasSolicitacoesPage } from './features/solicitacoes/components/MinhasSolicitacoesPage';
+import { SolicitacaoDetalhePage } from './features/solicitacoes/components/SolicitacaoDetalhePage';
+import { SolicitacoesAdminPage } from './features/solicitacoes/components/admin/SolicitacoesAdminPage';
 import { ContatoPage } from './pages/ContatoPage';
 import { HomePage } from './pages/HomePage';
 import { SobrePage } from './pages/SobrePage';
@@ -47,7 +54,22 @@ export const router = createBrowserRouter([
   { path: '/admin/convenios', element: protegidaAdmin(<ConveniosAdminPage />) },
   { path: '/admin/convenios/novo', element: protegidaAdmin(<ConvenioFormPage />) },
   { path: '/admin/convenios/:id/editar', element: protegidaAdmin(<ConvenioFormPage />) },
+  { path: '/admin/imoveis', element: protegidaAdmin(<ImoveisAdminPage />) },
+  { path: '/admin/imoveis/novo', element: protegidaAdmin(<ImovelFormPage />) },
+  { path: '/admin/imoveis/:id/editar', element: protegidaAdmin(<ImovelFormPage />) },
+  { path: '/admin/solicitacoes', element: protegidaAdmin(<SolicitacoesAdminPage />) },
+  {
+    path: '/admin/solicitacoes/:id',
+    element: protegidaAdmin(<SolicitacaoDetalhePage visao="admin" />),
+  },
   { path: '/afiliado', element: protegidaAfiliado(<AfiliadoDashboardPage />) },
   { path: '/afiliado/convenios', element: protegidaAfiliado(<ConveniosPage />) },
   { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
+  { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },
+  { path: '/afiliado/imoveis/:id', element: protegidaAfiliado(<ImovelDetalhePage />) },
+  { path: '/afiliado/solicitacoes', element: protegidaAfiliado(<MinhasSolicitacoesPage />) },
+  {
+    path: '/afiliado/solicitacoes/:id',
+    element: protegidaAfiliado(<SolicitacaoDetalhePage visao="afiliado" />),
+  },
 ]);

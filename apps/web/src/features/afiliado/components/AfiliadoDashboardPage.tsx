@@ -47,6 +47,18 @@ export function AfiliadoDashboardPage() {
                     Descontos e parcerias exclusivas para afiliados.
                   </span>
                 </Link>
+                <Link to="/afiliado/imoveis" className="painel-atalho">
+                  <span className="painel-atalho-titulo">Apartamentos</span>
+                  <span className="painel-atalho-desc">
+                    Imóveis para locação — fotos e calendário de disponibilidade.
+                  </span>
+                </Link>
+                <Link to="/afiliado/solicitacoes" className="painel-atalho">
+                  <span className="painel-atalho-titulo">Solicitações</span>
+                  <span className="painel-atalho-desc">
+                    Acompanhe suas conversas com o sindicato sobre locação.
+                  </span>
+                </Link>
               </nav>
             </section>
           )}

@@ -14,6 +14,16 @@ const atalhos = [
     descricao: 'Cadastrar parceiros e benefícios para afiliados.',
   },
   {
+    to: '/admin/imoveis',
+    titulo: 'Apartamentos',
+    descricao: 'Cadastrar imóveis, fotos e disponibilidade.',
+  },
+  {
+    to: '/admin/solicitacoes',
+    titulo: 'Solicitações',
+    descricao: 'Conversas de locação abertas pelos afiliados.',
+  },
+  {
     to: '/',
     titulo: 'Site público',
     descricao: 'Ver o site como os visitantes.',

@@ -1287,6 +1287,17 @@ textarea {
   border-top: var(--borda-fina);
 }
 
+.form-linha-completa {
+  grid-column: 1 / -1;
+}
+
+.form-acoes.form-linha-completa {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
 .logo-preview,
 .capa-preview {
   max-width: 200px;
@@ -1764,6 +1775,617 @@ textarea {
 
 .convenio-dados dd {
   margin: 0.2rem 0 0;
+}
+
+/* ============ Imóveis (área do afiliado) ============ */
+.imoveis-filtros {
+  margin-top: 1.25rem;
+}
+
+.imoveis-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 560px) {
+  .imoveis-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 880px) {
+  .imoveis-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.imovel-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  overflow: hidden;
+  text-decoration: none;
+  color: var(--cor-texto);
+  transition: border-color var(--transicao), transform var(--transicao);
+}
+
+.imovel-card:hover {
+  border-color: var(--cor-primaria);
+  transform: translateY(-2px);
+}
+
+.imovel-card:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.imovel-card-foto {
+  aspect-ratio: 4 / 3;
+  background: var(--cor-fundo);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.imovel-card-foto img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imovel-card-sem-foto {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-card-corpo {
+  padding: 1rem;
+}
+
+.imovel-card-corpo h3 {
+  margin: 0 0 0.35rem;
+  font-size: var(--texto-base);
+  color: var(--cor-primaria);
+}
+
+.imovel-card-endereco {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-card-valor {
+  margin: 0.5rem 0 0;
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.imovel-card-comodidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imovel-card-comodidades li {
+  font-size: 0.72rem;
+  padding: 0.15rem 0.45rem;
+  background: var(--cor-fundo);
+  border-radius: var(--raio);
+  color: var(--cor-texto-suave);
+}
+
+/* ---- Detalhe ---- */
+.imovel-detalhe {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.imovel-galeria-principal {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--raio-lg);
+  border: var(--borda-fina);
+  background: var(--cor-fundo);
+}
+
+.imovel-galeria-miniaturas {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
+  overflow-x: auto;
+}
+
+.imovel-galeria-miniaturas button {
+  flex-shrink: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--raio);
+  background: none;
+  cursor: pointer;
+  width: 72px;
+  height: 54px;
+  overflow: hidden;
+}
+
+.imovel-galeria-miniaturas button.ativa {
+  border-color: var(--cor-primaria);
+}
+
+.imovel-galeria-miniaturas img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imovel-sem-foto {
+  padding: 3rem 1rem;
+  text-align: center;
+  background: var(--cor-fundo);
+  border: 1px dashed var(--cor-borda);
+  border-radius: var(--raio-lg);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-detalhe-valor {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: var(--texto-lg);
+  font-weight: 700;
+  color: var(--cor-primaria);
+}
+
+.imovel-detalhe-endereco {
+  margin: 0.35rem 0 0;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-detalhe-descricao {
+  margin: 1rem 0 0;
+  line-height: 1.6;
+}
+
+.imovel-secao-titulo {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-comodidades {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imovel-comodidades li {
+  padding: 0.35rem 0.65rem;
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  font-size: var(--texto-sm);
+}
+
+/* ---- Calendário ---- */
+.calendario-disponibilidade {
+  padding: 1.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.calendario-cabecalho {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.calendario-cabecalho h2 {
+  margin: 0;
+  font-size: var(--texto-base);
+  color: var(--cor-primaria);
+}
+
+.calendario-navegacao {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.calendario-navegacao button {
+  padding: 0.25rem 0.55rem;
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  font-size: var(--texto-sm);
+  cursor: pointer;
+}
+
+.calendario-navegacao button:hover {
+  border-color: var(--cor-primaria);
+}
+
+.calendario-mes {
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  text-transform: capitalize;
+  min-width: 9rem;
+  text-align: center;
+}
+
+.calendario-legenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.72rem;
+  color: var(--cor-texto-suave);
+}
+
+.calendario-legenda-item::before {
+  content: '';
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 2px;
+  margin-right: 0.35rem;
+  vertical-align: middle;
+}
+
+.calendario-legenda-item.livre::before {
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
+}
+
+.calendario-legenda-item.reservado::before {
+  background: #fff3cd;
+  border: 1px solid #856404;
+}
+
+.calendario-legenda-item.bloqueado::before {
+  background: #eceef1;
+  border: 1px solid var(--cor-texto-suave);
+}
+
+.calendario-grade {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.calendario-dia-semana {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-align: center;
+  color: var(--cor-texto-suave);
+  padding-bottom: 0.25rem;
+}
+
+.calendario-celula {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-size: var(--texto-sm);
+  border-radius: var(--raio);
+  border: var(--borda-fina);
+  background: var(--cor-fundo);
+}
+
+.calendario-celula.vazia {
+  border: none;
+  background: transparent;
+}
+
+.calendario-celula.livre {
+  background: #fff;
+}
+
+.calendario-celula.reservado {
+  background: #fff3cd;
+  border-color: #856404;
+  color: #856404;
+  font-weight: 600;
+}
+
+.calendario-celula.bloqueado {
+  background: #eceef1;
+  color: var(--cor-texto-suave);
+  text-decoration: line-through;
+}
+
+/* ---- Admin imóveis ---- */
+.imovel-admin-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.imovel-admin-fotos figure {
+  margin: 0;
+  width: 120px;
+}
+
+.imovel-admin-fotos img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--raio);
+  border: var(--borda-fina);
+}
+
+.imovel-admin-fotos figcaption,
+.imovel-admin-fotos button {
+  font-size: var(--texto-sm);
+  margin-top: 0.25rem;
+}
+
+.imovel-fotos-pendentes {
+  margin: 0.35rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-admin-periodos {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.imovel-periodos-lista {
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imovel-periodos-lista li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0;
+  border-bottom: var(--borda-fina);
+  font-size: var(--texto-sm);
+}
+
+.imovel-periodos-lista li:last-child {
+  border-bottom: none;
+}
+
+.botao-perigo-texto {
+  color: var(--cor-erro);
+}
+
+/* ---- Solicitações de aluguel ---- */
+.badge-solicitacao-aberta {
+  background: #e8f0fe;
+  color: #1a4a8a;
+}
+
+.badge-solicitacao-andamento {
+  background: #fff4e0;
+  color: #8a5a00;
+}
+
+.badge-solicitacao-fechada {
+  background: #eceef1;
+  color: var(--cor-texto-suave);
+}
+
+.solicitacoes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.solicitacao-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.solicitacao-linha:hover {
+  border-color: var(--cor-primaria);
+}
+
+.solicitacao-linha-principal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.solicitacao-linha-afiliado {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.solicitacao-linha-datas {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.solicitacao-linha-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+
+.solicitacao-linha-msg {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.solicitar-aluguel {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.solicitar-aluguel-form {
+  margin-top: 1rem;
+}
+
+.solicitacao-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: var(--borda-fina);
+}
+
+.solicitacao-afiliado-nome {
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+}
+
+.solicitacao-periodo {
+  margin: 0 0 0.5rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.solicitacao-status-acoes {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: var(--texto-sm);
+}
+
+.solicitacao-status-acoes select {
+  min-width: 10rem;
+}
+
+.chat-solicitacao {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 20rem;
+}
+
+.chat-mensagens {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: min(28rem, 55vh);
+  overflow-y: auto;
+  padding: 1rem;
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.chat-bolha {
+  max-width: min(85%, 28rem);
+  padding: 0.65rem 0.85rem;
+  border-radius: var(--raio-lg);
+  font-size: var(--texto-sm);
+}
+
+.chat-bolha.minha {
+  align-self: flex-end;
+  background: var(--cor-primaria);
+  color: #fff;
+}
+
+.chat-bolha.outra {
+  align-self: flex-start;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+}
+
+.chat-bolha-autor {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-bottom: 0.2rem;
+}
+
+.chat-bolha-texto {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.chat-bolha-hora {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.7rem;
+  opacity: 0.75;
+}
+
+.chat-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.chat-form textarea {
+  resize: vertical;
+  min-height: 4rem;
+}
+
+.chat-encerrada {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  background: var(--cor-fundo);
+  border-radius: var(--raio);
+}
+
+.filtro-inline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: var(--texto-sm);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 /* ============ Movimento: respeito a prefers-reduced-motion ============ */

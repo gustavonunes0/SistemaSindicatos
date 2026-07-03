@@ -5,5 +5,7 @@ export * from './auth';
 export * from './convenio';
 export * from './cpf';
 export * from './health';
+export * from './imovel';
 export * from './instagram';
 export * from './noticia';
+export * from './solicitacao-aluguel';
