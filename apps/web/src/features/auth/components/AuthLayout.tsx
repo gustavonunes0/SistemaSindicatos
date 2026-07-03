@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Logo } from '../../../components/ui/Logo';
 
 interface AuthLayoutProps {
   titulo: string;
@@ -9,7 +10,7 @@ export function AuthLayout({ titulo, children }: AuthLayoutProps) {
   return (
     <main className="auth-page">
       <section className="auth-card">
-        <h1>Sindicato PRF</h1>
+        <Logo variante="auth" />
         <h2>{titulo}</h2>
         {children}
       </section>

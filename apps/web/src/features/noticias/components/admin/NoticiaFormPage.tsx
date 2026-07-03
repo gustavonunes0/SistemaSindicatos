@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { RichTextEditor } from '../../../../components/ui/RichTextEditor';
 import { urlDaApi } from '../../../../lib/urls';
 import { useAtualizarNoticia, useCriarNoticia, useNoticiaAdmin, useUploadCapa } from '../../hooks';
@@ -66,20 +67,19 @@ export function NoticiaFormPage() {
 
   if (id && isLoading) {
     return (
-      <main className="area-page">
-        <p>Carregando notícia…</p>
-      </main>
+      <AreaLayout tipo="admin" titulo="Editar notícia">
+        <p className="estado-carregando">Carregando notícia…</p>
+      </AreaLayout>
     );
   }
 
   return (
-    <main className="area-page">
-      <header className="area-header">
-        <h1>{id ? 'Editar notícia' : 'Nova notícia'}</h1>
-        <Link to="/admin/noticias">← Voltar</Link>
-      </header>
-
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-noticia">
+    <AreaLayout
+      tipo="admin"
+      titulo={id ? 'Editar notícia' : 'Nova notícia'}
+      acoes={<Link to="/admin/noticias">← Voltar</Link>}
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area">
         <label>
           Título
           <input type="text" {...register('titulo')} />
@@ -135,10 +135,12 @@ export function NoticiaFormPage() {
           <p className="erro">Erro ao salvar a notícia. Tente novamente.</p>
         )}
 
-        <button type="submit" disabled={salvando}>
-          {salvando ? 'Salvando…' : 'Salvar'}
-        </button>
+        <div className="form-acoes">
+          <button type="submit" className="botao-primario" disabled={salvando}>
+            {salvando ? 'Salvando…' : 'Salvar'}
+          </button>
+        </div>
       </form>
-    </main>
+    </AreaLayout>
   );
 }

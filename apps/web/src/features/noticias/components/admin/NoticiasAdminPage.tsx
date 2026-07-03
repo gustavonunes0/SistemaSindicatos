@@ -1,6 +1,7 @@
 import type { Noticia } from '@sindprf/types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { formatarData } from '../../../../lib/datas';
 import { useNoticiasAdmin, useRemoverNoticia } from '../../hooks';
 
@@ -18,58 +19,66 @@ export function NoticiasAdminPage() {
   };
 
   return (
-    <main className="area-page">
-      <header className="area-header">
-        <h1>Notícias</h1>
-        <div className="area-header-acoes">
-          <Link to="/admin">← Painel</Link>
+    <AreaLayout
+      tipo="admin"
+      titulo="Notícias"
+      acoes={
+        <Link to="/admin/noticias/nova" className="botao-primario">
+          Nova notícia
+        </Link>
+      }
+    >
+      {isLoading && <p className="estado-carregando">Carregando…</p>}
+      {isError && <p className="erro">Erro ao carregar as notícias.</p>}
+
+      {noticias && noticias.length === 0 && (
+        <div className="estado-vazio">
+          <p>Nenhuma notícia criada ainda.</p>
           <Link to="/admin/noticias/nova" className="botao-primario">
-            Nova notícia
+            Publicar a primeira
           </Link>
         </div>
-      </header>
-
-      {isLoading && <p>Carregando…</p>}
-      {isError && <p className="erro">Erro ao carregar as notícias.</p>}
-      {noticias && noticias.length === 0 && <p>Nenhuma notícia criada ainda.</p>}
+      )}
 
       {noticias && noticias.length > 0 && (
-        <table className="tabela">
-          <thead>
-            <tr>
-              <th>Título</th>
-              <th>Status</th>
-              <th>Publicada em</th>
-              <th aria-label="Ações" />
-            </tr>
-          </thead>
-          <tbody>
-            {noticias.map((noticia) => (
-              <tr key={noticia.id}>
-                <td>{noticia.titulo}</td>
-                <td>
-                  <span className={`badge badge-${noticia.status.toLowerCase()}`}>
-                    {noticia.status === 'PUBLICADO' ? 'Publicado' : 'Rascunho'}
-                  </span>
-                </td>
-                <td>{noticia.publicadoEm ? formatarData(noticia.publicadoEm) : '—'}</td>
-                <td className="tabela-acoes">
-                  <Link to={`/admin/noticias/${noticia.id}/editar`}>Editar</Link>
-                  <button
-                    type="button"
-                    className="botao-perigo"
-                    disabled={remover.isPending && confirmandoId === noticia.id}
-                    onClick={() => onRemover(noticia)}
-                    onBlur={() => setConfirmandoId(null)}
-                  >
-                    {confirmandoId === noticia.id ? 'Confirmar exclusão?' : 'Excluir'}
-                  </button>
-                </td>
+        <div className="tabela-wrapper">
+          <table className="tabela">
+            <thead>
+              <tr>
+                <th>Título</th>
+                <th>Status</th>
+                <th>Publicada em</th>
+                <th aria-label="Ações" />
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {noticias.map((noticia) => (
+                <tr key={noticia.id}>
+                  <td>{noticia.titulo}</td>
+                  <td>
+                    <span className={`badge badge-${noticia.status.toLowerCase()}`}>
+                      {noticia.status === 'PUBLICADO' ? 'Publicado' : 'Rascunho'}
+                    </span>
+                  </td>
+                  <td>{noticia.publicadoEm ? formatarData(noticia.publicadoEm) : '—'}</td>
+                  <td className="tabela-acoes">
+                    <Link to={`/admin/noticias/${noticia.id}/editar`}>Editar</Link>
+                    <button
+                      type="button"
+                      className="botao-perigo"
+                      disabled={remover.isPending && confirmandoId === noticia.id}
+                      onClick={() => onRemover(noticia)}
+                      onBlur={() => setConfirmandoId(null)}
+                    >
+                      {confirmandoId === noticia.id ? 'Confirmar exclusão?' : 'Excluir'}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
-    </main>
+    </AreaLayout>
   );
 }

@@ -1,14 +1,16 @@
+import { marca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 export function ContatoPage() {
   useSeo({
-    title: 'Contato — Sindicato PRF',
-    description: 'Fale com o Sindicato dos Policiais Rodoviários Federais.',
+    title: `Contato — ${marca.nome}`,
+    description: `Fale com o ${marca.nomeCompleto}.`,
   });
 
   return (
     <main className="secao">
       <div className="secao-inner conteudo-texto">
+        <span className="eyebrow">Fale conosco</span>
         <h1>Contato</h1>
         <p>Fale com a nossa equipe pelos canais abaixo.</p>
 

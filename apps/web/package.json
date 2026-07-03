@@ -10,6 +10,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
+    "@fontsource-variable/archivo": "^5.2.8",
+    "@fontsource/ibm-plex-sans": "^5.2.8",
     "@hookform/resolvers": "^5.4.0",
     "@sindprf/types": "*",
     "@tanstack/react-query": "^5.101.2",

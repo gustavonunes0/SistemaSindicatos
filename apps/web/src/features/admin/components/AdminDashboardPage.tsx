@@ -1,33 +1,57 @@
 import { Link } from 'react-router-dom';
-import { useLogout, useMe } from '../../auth/hooks';
+import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { useMe } from '../../auth/hooks';
+
+const atalhos = [
+  {
+    to: '/admin/noticias',
+    titulo: 'Notícias',
+    descricao: 'Criar, editar e publicar notícias do site.',
+  },
+  {
+    to: '/admin/convenios',
+    titulo: 'Convênios',
+    descricao: 'Cadastrar parceiros e benefícios para afiliados.',
+  },
+  {
+    to: '/',
+    titulo: 'Site público',
+    descricao: 'Ver o site como os visitantes.',
+    externo: false,
+  },
+] as const;
 
 export function AdminDashboardPage() {
   const { data, isLoading, isError } = useMe();
-  const logout = useLogout();
 
   return (
-    <main className="area-page">
-      <header className="area-header">
-        <h1>Área administrativa</h1>
-        <button type="button" onClick={() => logout.mutate()} disabled={logout.isPending}>
-          Sair
-        </button>
-      </header>
-
-      {isLoading && <p>Carregando…</p>}
+    <AreaLayout tipo="admin" titulo="Painel">
+      {isLoading && <p className="estado-carregando">Carregando…</p>}
       {isError && <p className="erro">Erro ao carregar seus dados.</p>}
-      {data && <p>Bem-vindo, {data.user.email}.</p>}
 
-      <nav className="admin-menu">
-        <Link to="/admin/noticias" className="admin-menu-item">
-          <h3>Notícias</h3>
-          <p>Criar, editar e publicar notícias do site.</p>
-        </Link>
-        <Link to="/" className="admin-menu-item">
-          <h3>Site público</h3>
-          <p>Ver o site como os visitantes.</p>
-        </Link>
-      </nav>
-    </main>
+      {data && (
+        <>
+          <section className="painel-boas-vindas">
+            <p className="painel-saudacao">Bem-vindo de volta</p>
+            <p className="painel-identificacao">{data.user.email}</p>
+            <p className="painel-descricao">
+              Gerencie o conteúdo do sindicato e os benefícios disponíveis para os afiliados.
+            </p>
+          </section>
+
+          <section className="painel-secao">
+            <h2 className="painel-secao-titulo">Atalhos</h2>
+            <nav className="painel-atalhos">
+              {atalhos.map((atalho) => (
+                <Link key={atalho.to} to={atalho.to} className="painel-atalho">
+                  <span className="painel-atalho-titulo">{atalho.titulo}</span>
+                  <span className="painel-atalho-desc">{atalho.descricao}</span>
+                </Link>
+              ))}
+            </nav>
+          </section>
+        </>
+      )}
+    </AreaLayout>
   );
 }

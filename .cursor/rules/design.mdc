@@ -1,0 +1,69 @@
+---
+description: Design intencional e UX — evitar aparência genérica de IA. Anexar manualmente ao construir telas/layout (Fase 2 site público e telas com identidade visual).
+globs:
+alwaysApply: false
+---
+
+# Design intencional — Sindicato PRF
+
+O objetivo é uma interface que NÃO pareça gerada por IA. Isso não se consegue pedindo "seja bonito" — se consegue tomando decisões concretas e específicas do assunto (um sindicato de policiais rodoviários federais), e exercendo restrição.
+
+## Aterre no assunto antes de desenhar
+- O público é servidor público (PRF): sério, institucional, confiável. Não é uma startup, não é um app de lifestyle.
+- Cada tela tem UM trabalho principal. Nomeie-o antes de construir e desenhe a partir dele.
+- Puxe identidade do mundo real do assunto: institucional, cívico, rodoviário, formal. As cores, tipografia e formas devem refletir isso — não um tema genérico.
+
+## A assinatura da marca vem do sindicato, não da Stellar nem de defaults
+- Paleta, tipografia e logo saem da identidade do SINDICATO (cliente). Se ele não tiver, defina uma paleta institucional deliberada (4–6 hex nomeados) e registre num arquivo de tokens de tema.
+- A marca STELLAR só aparece como "desenvolvido por" no rodapé — nunca como identidade visual do produto.
+
+## Evite os clichês de "layout de IA" (proibidos como default)
+Estes são as marcas registradas de UI gerada por IA. NÃO use por padrão:
+- Gradiente roxo→azul (ou qualquer gradiente vibrante) como fundo de hero.
+- Tudo centralizado verticalmente numa coluna estreita com muito respiro vazio.
+- Card branco arredondado com `shadow-lg`/`shadow-xl` repetido pra tudo.
+- Emoji em título de seção como elemento decorativo.
+- Fundo creme (~#F4F1EA) com serifada de alto contraste + acento terracota (~#D97757). Isso virou clichê e o terracota é o próprio acento da Anthropic — lê como "feito por IA".
+- Fundo quase-preto com um único acento verde-limão/vermelhão neon.
+- Marcadores numerados (01/02/03) quando o conteúdo NÃO é uma sequência real.
+
+Se for usar um desses, precisa ser uma escolha justificada pelo conteúdo, não o caminho default.
+
+## Tipografia carrega a personalidade
+- Pareie uma fonte de display com caráter (usada com restrição, em títulos) e uma fonte de corpo legível. Não use a mesma família pra tudo.
+- Defina uma escala tipográfica clara com pesos e espaçamentos intencionais. O tratamento do texto deve ser memorável, não um veículo neutro.
+- Para um sindicato: transmita solidez e institucionalidade. Considere uma grotesca/sans robusta no corpo e um display com autoridade.
+
+## Estrutura é informação, não decoração
+- Eyebrows, divisórias, numeração, labels só entram se codificam algo verdadeiro sobre o conteúdo.
+- Numeração só quando há ordem real (ex: passos de um processo, etapas de uma eleição). Caso contrário, não numere.
+
+## Movimento: menos, e com propósito (leia com atenção)
+Animação em excesso é uma das MAIORES causas de "cara de IA". Mais animação ≠ melhor. Regras:
+- Prefira UM momento orquestrado (ex: uma revelação sutil no load do hero) a vários efeitos espalhados.
+- Micro-interações discretas em elementos interativos (hover em botão/card, foco em input) — sutis, rápidas (150–250ms), com easing natural (ease-out).
+- Transições de entrada de conteúdo: fade/slide curtos e leves, nunca "bounce", nunca durações longas (>400ms), nunca elementos voando de longe.
+- NÃO anime tudo que aparece na tela. NÃO use parallax pesado, blobs animados de fundo, ou gradientes em movimento.
+- Respeite SEMPRE `prefers-reduced-motion`: se ativo, desligue animações não essenciais.
+- Num contexto institucional/cívico, sobriedade transmite confiança. Contenção é a escolha certa aqui.
+
+## Gaste a ousadia em um lugar só
+- Escolha UM elemento de assinatura memorável (o hero, um tratamento tipográfico, um detalhe da identidade). Deixe todo o resto quieto e disciplinado.
+- Conselho da Chanel: antes de sair, tire um acessório. Corte a decoração que não serve ao propósito.
+
+## Piso de qualidade (sempre, sem anunciar)
+- Responsivo até o mobile (mobile-first).
+- Foco de teclado visível em todos os controles.
+- Contraste AA no mínimo (importante: público amplo, uso institucional).
+- Estados de loading, erro e vazio desenhados — nunca uma tela em branco.
+
+## Escrita é material de design
+- Escreva do lado do usuário: nomeie coisas pelo que a pessoa controla e reconhece, não pela implementação. "Gerenciar convênios", não "CRUD de convênios".
+- Voz ativa nos controles. O botão diz o que acontece: "Confirmar voto", não "Enviar".
+- Um controle mantém o mesmo nome no fluxo inteiro: botão "Publicar" gera o aviso "Publicado".
+- Erros não pedem desculpa e não são vagos: dizem o que aconteceu e como resolver.
+- Tela vazia é um convite pra agir, não um espaço morto ("Nenhum convênio ainda. Adicione o primeiro.").
+- Sentence case, sem enrolação, tom formal-institucional adequado ao sindicato.
+
+## Antes de escrever o CSS
+- Cuidado com especificidade de seletores que se cancelam (ex: `.section` vs `.cta` disputando padding/margin). Organize a hierarquia.

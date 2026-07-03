@@ -6,6 +6,10 @@ import { EsqueciSenhaPage } from './features/auth/components/EsqueciSenhaPage';
 import { RequireRole } from './features/auth/components/guards';
 import { LoginPage } from './features/auth/components/LoginPage';
 import { RedefinirSenhaPage } from './features/auth/components/RedefinirSenhaPage';
+import { ConvenioDetalhePage } from './features/convenios/components/ConvenioDetalhePage';
+import { ConvenioFormPage } from './features/convenios/components/admin/ConvenioFormPage';
+import { ConveniosAdminPage } from './features/convenios/components/admin/ConveniosAdminPage';
+import { ConveniosPage } from './features/convenios/components/ConveniosPage';
 import { NoticiaFormPage } from './features/noticias/components/admin/NoticiaFormPage';
 import { NoticiasAdminPage } from './features/noticias/components/admin/NoticiasAdminPage';
 import { NoticiaDetalhePage } from './features/noticias/components/NoticiaDetalhePage';
@@ -16,6 +20,10 @@ import { SobrePage } from './pages/SobrePage';
 
 function protegidaAdmin(element: React.ReactNode) {
   return <RequireRole role="ADMIN">{element}</RequireRole>;
+}
+
+function protegidaAfiliado(element: React.ReactNode) {
+  return <RequireRole role="AFILIADO">{element}</RequireRole>;
 }
 
 export const router = createBrowserRouter([
@@ -36,12 +44,10 @@ export const router = createBrowserRouter([
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
   { path: '/admin/noticias/nova', element: protegidaAdmin(<NoticiaFormPage />) },
   { path: '/admin/noticias/:id/editar', element: protegidaAdmin(<NoticiaFormPage />) },
-  {
-    path: '/afiliado',
-    element: (
-      <RequireRole role="AFILIADO">
-        <AfiliadoDashboardPage />
-      </RequireRole>
-    ),
-  },
+  { path: '/admin/convenios', element: protegidaAdmin(<ConveniosAdminPage />) },
+  { path: '/admin/convenios/novo', element: protegidaAdmin(<ConvenioFormPage />) },
+  { path: '/admin/convenios/:id/editar', element: protegidaAdmin(<ConvenioFormPage />) },
+  { path: '/afiliado', element: protegidaAfiliado(<AfiliadoDashboardPage />) },
+  { path: '/afiliado/convenios', element: protegidaAfiliado(<ConveniosPage />) },
+  { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
 ]);

@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { MarcaHeaderLink } from '../ui/MarcaHeader';
+import { LogoLink } from '../ui/Logo';
 import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
+import { marca } from '../../lib/marca';
 
 const links = [
   { to: '/', rotulo: 'Início' },
@@ -18,9 +21,7 @@ export function PublicLayout() {
     <div className="site">
       <header className="site-header">
         <div className="site-header-inner">
-          <Link to="/" className="site-logo" onClick={() => setMenuAberto(false)}>
-            Sindicato <strong>PRF</strong>
-          </Link>
+          <MarcaHeaderLink to="/" onClick={() => setMenuAberto(false)} />
 
           <button
             type="button"
@@ -58,9 +59,10 @@ export function PublicLayout() {
 
       <footer className="site-footer">
         <div className="site-footer-inner">
-          <div>
-            <h3>Sindicato PRF</h3>
-            <p>Sindicato dos Policiais Rodoviários Federais</p>
+          <div className="site-footer-marca">
+            <LogoLink to="/" variante="footer" />
+            <h3>{marca.nome}</h3>
+            <p>{marca.nomeCompleto}</p>
           </div>
           <div>
             <h4>Contato</h4>
@@ -73,9 +75,12 @@ export function PublicLayout() {
             <p>Seg. a sex., 8h às 17h</p>
           </div>
         </div>
-        <p className="site-footer-copy">
-          © {new Date().getFullYear()} Sindicato PRF. Todos os direitos reservados.
-        </p>
+        <div className="site-footer-copy">
+          <span>© {new Date().getFullYear()} {marca.nome}. Todos os direitos reservados.</span>
+          <span>
+            Desenvolvido por <a href="https://stellar.dev">Stellar</a>
+          </span>
+        </div>
       </footer>
     </div>
   );

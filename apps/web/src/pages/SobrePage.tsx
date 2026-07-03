@@ -1,17 +1,19 @@
+import { marca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 export function SobrePage() {
   useSeo({
-    title: 'Sobre — Sindicato PRF',
-    description: 'História, missão e diretoria do Sindicato dos Policiais Rodoviários Federais.',
+    title: `Sobre — ${marca.nome}`,
+    description: `História, missão e diretoria do ${marca.nomeCompleto}.`,
   });
 
   return (
     <main className="secao">
       <div className="secao-inner conteudo-texto">
+        <span className="eyebrow">Quem somos</span>
         <h1>Sobre o sindicato</h1>
         <p>
-          O Sindicato PRF representa os Policiais Rodoviários Federais na defesa de seus direitos,
+          O {marca.nome} representa os Policiais Rodoviários Federais no Ceará na defesa de seus direitos,
           condições de trabalho e valorização profissional.
         </p>
         <h2>Missão</h2>

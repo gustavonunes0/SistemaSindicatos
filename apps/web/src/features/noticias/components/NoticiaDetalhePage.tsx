@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { formatarData } from '../../../lib/datas';
+import { marca } from '../../../lib/marca';
 import { resumoDeHtml, useSeo } from '../../../lib/seo';
 import { urlDaApi } from '../../../lib/urls';
 import { useNoticia } from '../hooks';
@@ -9,7 +10,7 @@ export function NoticiaDetalhePage() {
   const { data: noticia, isLoading, isError } = useNoticia(slug);
 
   useSeo({
-    title: noticia ? `${noticia.titulo} — Sindicato PRF` : 'Notícia — Sindicato PRF',
+    title: noticia ? `${noticia.titulo} — ${marca.nome}` : `Notícia — ${marca.nome}`,
     description: noticia ? resumoDeHtml(noticia.conteudo) : undefined,
     image: noticia?.capaUrl ? urlDaApi(noticia.capaUrl) : undefined,
   });
@@ -40,7 +41,9 @@ export function NoticiaDetalhePage() {
   return (
     <main className="secao">
       <article className="secao-inner noticia-detalhe">
-        <Link to="/noticias">← Todas as notícias</Link>
+        <Link to="/noticias" className="link-voltar">
+          ← Todas as notícias
+        </Link>
         <h1>{noticia.titulo}</h1>
         {noticia.publicadoEm && <time>{formatarData(noticia.publicadoEm)}</time>}
         {noticia.capaUrl && (

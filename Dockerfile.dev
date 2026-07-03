@@ -1,0 +1,24 @@
+FROM node:20-bookworm-slim
+
+WORKDIR /app
+
+# OpenSSL exigido pelo Prisma; build-essential para bcrypt (native addon).
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+# Instala dependências do monorepo (cache de camada).
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/types/package.json packages/types/
+COPY packages/config/package.json packages/config/
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build -w packages/types
+
+COPY scripts/docker-api-dev.sh scripts/docker-web-dev.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-api-dev.sh /usr/local/bin/docker-web-dev.sh

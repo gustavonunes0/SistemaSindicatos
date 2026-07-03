@@ -1,28 +1,47 @@
-/* Design tokens institucionais — fonte única de cores/tipografia/espaçamento. */
+/* Design tokens institucionais — identidade da sinalização rodoviária federal.
+   Fonte única de cores, tipografia e espaçamento. */
 :root {
-  /* Cores institucionais */
-  --cor-primaria: #14213d;
-  --cor-primaria-escura: #0b1226;
-  --cor-destaque: #fca311;
-  --cor-fundo: #f4f5f7;
-  --cor-superficie: #ffffff;
-  --cor-texto: #1a1a2e;
-  --cor-texto-suave: #5c6270;
-  --cor-borda: #e2e4e9;
-  --cor-erro: #c1121f;
-  --cor-sucesso: #2d6a4f;
+  /* Paleta institucional (placa de indicação, faixa do asfalto, concreto) */
+  --azul-placa: #0b3d6b; /* azul das placas de indicação das BRs — cor primária */
+  --azul-noite: #071f38; /* asfalto à noite — hero e rodapé */
+  --amarelo-faixa: #f4b301; /* faixa contínua da rodovia — assinatura, uso restrito */
+  --concreto: #e9ebee; /* concreto / guard-rail — fundo da página */
+  --grafite: #1a1d23; /* asfalto — texto principal */
+  --cinza-placa: #5a6472; /* texto secundário / metadados */
+  --branco-placa: #ffffff;
 
-  /* Tipografia */
-  --fonte-base: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  /* Semânticos consumidos pelo CSS (repontados para a paleta acima) */
+  --azul-barra-marca: #1565b8; /* faixa do lockup SINDPRF-CE no header */
+  --cor-primaria: var(--azul-placa);
+  --cor-primaria-escura: var(--azul-noite);
+  --cor-destaque: var(--amarelo-faixa);
+  --cor-fundo: var(--concreto);
+  --cor-superficie: var(--branco-placa);
+  --cor-texto: var(--grafite);
+  --cor-texto-suave: var(--cinza-placa);
+  --cor-borda: #d3d7de;
+  --cor-erro: #b3121b;
+  --cor-sucesso: #1e5b41;
+
+  /* Tipografia — display com autoridade (Archivo) + corpo legível (IBM Plex Sans) */
+  --fonte-display: 'Archivo Variable', 'Archivo', system-ui, sans-serif;
+  --fonte-base: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --texto-sm: 0.875rem;
   --texto-base: 1rem;
   --texto-lg: 1.25rem;
-  --texto-xl: 1.75rem;
-  --texto-2xl: 2.25rem;
+  --texto-xl: clamp(1.75rem, 4vw, 2.25rem);
+  --texto-2xl: clamp(2.25rem, 5vw, 3.25rem);
+  --tracking-label: 0.08em;
 
-  /* Layout */
-  --raio: 8px;
-  --raio-lg: 12px;
-  --sombra: 0 2px 12px rgb(0 0 0 / 8%);
+  /* Layout — cantos discretos ("placa", não "SaaS"); superfícies planas por borda */
+  --raio: 4px;
+  --raio-lg: 6px;
+  --borda-fina: 1px solid var(--cor-borda);
   --largura-conteudo: 1080px;
+
+  /* Assinatura — a faixa de rodovia */
+  --faixa-altura: 3px;
+
+  /* Movimento */
+  --transicao: 180ms ease-out;
 }
