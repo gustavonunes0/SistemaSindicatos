@@ -14,45 +14,102 @@ Monorepo com npm workspaces:
 
 ## Como rodar
 
-### Opção A — Tudo no Docker (recomendado)
-
-Sobe Postgres, API (Nest watch) e Web (Vite) com hot reload:
+### Opção A — Desenvolvimento no Docker (hot reload)
 
 ```bash
 npm run docker:up
-# ou: docker compose up --build
+# ou: docker compose -f docker-compose.dev.yml up --build
 ```
 
 - Web: http://localhost:5173
 - API: http://localhost:3000
 - Postgres: localhost:5432
 
-Na primeira subida a API roda migrations e seed automaticamente (admin `admin@sindprf.local` / `Admin@123`)
-(afiliado `fulano@teste.local` / `NovaSenha@123`).
+Na primeira subida a API roda migrations e seed automaticamente (admin `admin@sindprf.local` / `Admin@123`).
 
-Para parar: `npm run docker:down` ou `docker compose down`.
-
-Variáveis opcionais na raiz (arquivo `.env` ao lado do `docker-compose.yml`):
-
-```
-JWT_SECRET=seu-segredo
-INSTAGRAM_MOCK=true
-SEED_ADMIN_SENHA=Admin@123
-```
+Para parar: `npm run docker:down`.
 
 ### Opção B — Só Postgres no Docker, apps na máquina
 
 ```bash
 npm install
-docker compose up -d postgres
+docker compose -f docker-compose.dev.yml up -d postgres
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 npm run dev
 ```
 
+## Deploy na VPS (Hostinger)
+
+Sobe **Postgres + API + Frontend (nginx)** com o `docker-compose.yml` de produção.
+
+### 1. Na VPS
+
+```bash
+# Docker + Compose (Ubuntu/Debian)
+sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo usermod -aG docker $USER   # saia e entre de novo na sessão
+
+git clone <seu-repositorio> sindprf
+cd sindprf
+cp .env.example .env
+nano .env   # preencha as variáveis abaixo
+```
+
+### 2. Variáveis obrigatórias (`.env` na raiz)
+
+| Variável | Exemplo | Notas |
+|----------|---------|--------|
+| `POSTGRES_PASSWORD` | senha forte | Banco só na rede interna do Docker |
+| `JWT_SECRET` | `openssl rand -hex 32` | Segredo dos tokens |
+| `WEB_URL` | `http://SEU_IP` ou `https://seudominio.com` | Origem do CORS (URL do front) |
+| `VITE_API_URL` | `http://SEU_IP:3000` ou `https://api.seudominio.com` | URL da API no navegador |
+| `SEED_ON_START` | `true` na 1ª vez | Cria admin; depois mude para `false` |
+| `SEED_ADMIN_SENHA` | senha forte | Senha inicial do admin |
+
+Portas padrão: front `80`, API `3000`. Abra-as no firewall da Hostinger (e no `ufw` se estiver ativo).
+
+### 3. Subir
+
+```bash
+docker compose up --build -d
+docker compose logs -f    # acompanhar
+```
+
+- Front: `http://SEU_IP`
+- API health: `http://SEU_IP:3000/`
+- Admin: `admin@sindprf.local` + a senha de `SEED_ADMIN_SENHA`
+
+Após a primeira subida bem-sucedida, edite `.env` com `SEED_ON_START=false` (não precisa rebuild).
+
+Se mudar `VITE_API_URL`, rebuild do front:
+
+```bash
+docker compose up --build -d web
+```
+
+### 4. Domínio + HTTPS (recomendado)
+
+1. Aponte o DNS A do domínio (e opcionalmente `api.`) para o IP da VPS.
+2. Ajuste `WEB_URL` e `VITE_API_URL` para `https://...`.
+3. Use o proxy SSL da Hostinger, Cloudflare (Flexible/Full) ou Caddy/nginx na frente das portas 80/3000.
+
+### 5. Comandos úteis
+
+```bash
+docker compose ps
+docker compose logs -f api
+docker compose exec api npx prisma db seed   # seed manual
+docker compose down                            # para os containers (mantém volumes)
+```
+
+Uploads ficam no volume `api_uploads`; o banco no volume `sindprf_pgdata`.
+
 ## Scripts da raiz
 
 - `npm run dev` — sobe api e web em paralelo (concurrently)
+- `npm run docker:up` / `docker:down` — ambiente de desenvolvimento
+- `npm run docker:prod` / `docker:prod:down` — produção (VPS)
 - `npm run build` — build de todos os workspaces
 - `npm run lint` — lint de todos os workspaces
 - `npm run test` — testes de todos os workspaces
@@ -73,7 +130,7 @@ npm run build -w apps/web
 npm run preview -w apps/web
 ```
 
-## Deploy de produção
+## Deploy de produção (sem Docker)
 
 ### 1. Banco de dados
 
@@ -150,7 +207,7 @@ A Home exibe o feed do Instagram do sindicato via [Instagram Graph API](https://
 
 ### Configuração
 
-No `apps/api/.env`:
+No `apps/api/.env` (ou no `.env` da raiz no Docker):
 
 ```
 INSTAGRAM_USER_ID=<id da conta>

@@ -1,0 +1,46 @@
+# API — imagem de produção (NestJS + Prisma)
+FROM node:20-bookworm-slim AS builder
+
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates python3 make g++ \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+COPY apps/api/package.json apps/api/
+COPY apps/web/package.json apps/web/
+COPY packages/types/package.json packages/types/
+COPY packages/config/package.json packages/config/
+
+RUN npm ci
+
+COPY . .
+
+RUN npm run build -w packages/types
+
+WORKDIR /app/apps/api
+RUN npx prisma generate \
+  && npm run build
+
+# --- runtime ---
+FROM node:20-bookworm-slim AS runner
+
+WORKDIR /app
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app /app
+COPY scripts/docker-api-entrypoint.sh /usr/local/bin/docker-api-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-api-entrypoint.sh \
+  && mkdir -p /app/apps/api/uploads
+
+WORKDIR /app/apps/api
+
+EXPOSE 3000
+
+ENTRYPOINT ["docker-api-entrypoint.sh"]
