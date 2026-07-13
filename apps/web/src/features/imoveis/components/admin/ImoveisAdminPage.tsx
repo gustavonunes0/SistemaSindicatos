@@ -2,6 +2,7 @@ import type { Imovel } from '@sindprf/types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarMoeda } from '../../../../lib/moeda';
 import { useImoveisAdmin, useRemoverImovel } from '../../hooks';
 
@@ -28,7 +29,7 @@ export function ImoveisAdminPage() {
         </Link>
       }
     >
-      {isLoading && <p className="estado-carregando">Carregando imóveis…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
       {isError && (
         <p className="erro">Não foi possível carregar os imóveis. Tente novamente.</p>
       )}

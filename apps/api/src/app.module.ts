@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { AfiliadosModule } from './afiliados/afiliados.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
@@ -18,6 +19,10 @@ import { StorageModule } from './storage/storage.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      { name: 'auth', ttl: 60_000, limit: 10 },
+      { name: 'cadastro', ttl: 60_000, limit: 5 },
+    ]),
     ScheduleModule.forRoot(),
     PrismaModule,
     StorageModule,

@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { paraInputData } from '../../../../lib/datas';
 import { urlDaApi } from '../../../../lib/urls';
 import { useUploadCapa } from '../../../noticias/hooks';
@@ -87,7 +88,7 @@ export function ConvenioFormPage() {
   if (id && isLoading) {
     return (
       <AreaLayout tipo="admin" titulo="Editar convênio">
-        <p className="estado-carregando">Carregando convênio…</p>
+        <EstadoCarregando mensagem="Carregando convênio…" />
       </AreaLayout>
     );
   }

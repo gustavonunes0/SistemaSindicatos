@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../lib/datas';
 import { marca } from '../../../lib/marca';
 import { resumoDeHtml, useSeo } from '../../../lib/seo';
@@ -19,7 +20,7 @@ export function NoticiaDetalhePage() {
     return (
       <main className="secao">
         <div className="secao-inner">
-          <p>Carregando notícia…</p>
+          <EstadoCarregando mensagem="Carregando notícia…" />
         </div>
       </main>
     );

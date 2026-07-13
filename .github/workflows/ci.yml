@@ -1,0 +1,61 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  lint-build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: sindprf
+          POSTGRES_PASSWORD: sindprf
+          POSTGRES_DB: sindprf
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sindprf -d sindprf"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://sindprf:sindprf@localhost:5432/sindprf?schema=public
+      JWT_SECRET: ci-secret-troque-em-producao
+      WEB_URL: http://localhost:5173
+      SEED_ADMIN_SENHA: Admin@123
+      INSTAGRAM_MOCK: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      - name: Compilar types
+        run: npm run build -w packages/types
+
+      - name: Prisma migrate + seed
+        working-directory: apps/api
+        run: |
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testes E2E
+        run: npm run test
+
+      - name: Build
+        run: npm run build

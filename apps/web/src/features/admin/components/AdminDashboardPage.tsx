@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMe } from '../../auth/hooks';
 
 const atalhos = [
@@ -36,7 +37,7 @@ export function AdminDashboardPage() {
 
   return (
     <AreaLayout tipo="admin" titulo="Painel">
-      {isLoading && <p className="estado-carregando">Carregando…</p>}
+      {isLoading && <EstadoCarregando />}
       {isError && <p className="erro">Erro ao carregar seus dados.</p>}
 
       {data && (

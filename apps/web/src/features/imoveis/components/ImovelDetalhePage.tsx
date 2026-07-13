@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarMoeda } from '../../../lib/moeda';
 import { urlDaApi } from '../../../lib/urls';
 import { useImovel } from '../hooks';
@@ -15,7 +16,7 @@ export function ImovelDetalhePage() {
   if (isLoading) {
     return (
       <AreaLayout tipo="afiliado" titulo="Imóvel">
-        <p className="estado-carregando">Carregando imóvel…</p>
+        <EstadoCarregando mensagem="Carregando imóvel…" />
       </AreaLayout>
     );
   }

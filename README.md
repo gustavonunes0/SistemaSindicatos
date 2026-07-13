@@ -57,6 +57,80 @@ npm run dev
 - `npm run lint` — lint de todos os workspaces
 - `npm run test` — testes de todos os workspaces
 
+## PWA (Progressive Web App)
+
+O frontend é instalável como app no celular (Android/Chrome e iOS/Safari).
+
+- **Build de produção** gera manifest + service worker (`vite-plugin-pwa`) com cache do app shell para uso offline básico.
+- **Ícones** em `apps/web/public/icons/` — regenere após trocar o logo: `npm run generate-icons -w apps/web`
+- **Instalação no Android:** barra fixa no rodapé (mobile) com “Adicionar à tela inicial”.
+- **iOS/Safari:** mesma barra abre instruções (Compartilhar → Adicionar à Tela de Início).
+
+Valide com Lighthouse (categoria PWA → Installable) em build de produção:
+
+```bash
+npm run build -w apps/web
+npm run preview -w apps/web
+```
+
+## Deploy de produção
+
+### 1. Banco de dados
+
+Provisione PostgreSQL 16+ e defina `DATABASE_URL` na API.
+
+```bash
+cd apps/api
+npx prisma migrate deploy
+npx prisma db seed   # apenas na primeira subida
+```
+
+### 2. API (NestJS)
+
+Variáveis obrigatórias (`apps/api/.env`):
+
+| Variável | Descrição |
+|----------|-----------|
+| `DATABASE_URL` | Connection string Postgres |
+| `JWT_SECRET` | Segredo forte (`openssl rand -hex 32`) |
+| `WEB_URL` | URL pública do frontend (CORS) |
+| `PORT` | Porta HTTP (padrão 3000) |
+
+```bash
+npm run build -w packages/types
+npm run build -w apps/api
+npm run start -w apps/api
+```
+
+A API expõe uploads estáticos em `/uploads/`. Em produção, prefira object storage (S3) — a abstração atual usa disco local.
+
+### 3. Frontend (Vite)
+
+Defina `VITE_API_URL` apontando para a API pública antes do build:
+
+```bash
+# apps/web/.env.production
+VITE_API_URL=https://api.seudominio.gov.br
+```
+
+```bash
+npm run build -w apps/web
+```
+
+Sirva o conteúdo de `apps/web/dist` via CDN ou nginx. Configure fallback SPA:
+
+```
+try_files $uri $uri/ /index.html;
+```
+
+### 4. Segurança
+
+A API usa **Helmet**, **CORS** restrito a `WEB_URL` e **rate limiting** nos endpoints de auth e cadastro de afiliado.
+
+### 5. CI
+
+O workflow `.github/workflows/ci.yml` roda lint, testes E2E (Postgres) e build a cada push/PR.
+
 ## Integração com Instagram
 
 A Home exibe o feed do Instagram do sindicato via [Instagram Graph API](https://developers.facebook.com/docs/instagram-platform). A api sincroniza os posts a cada hora e os cacheia no banco (tabela `instagram_posts`); se a API do Meta cair, o site continua servindo o cache.

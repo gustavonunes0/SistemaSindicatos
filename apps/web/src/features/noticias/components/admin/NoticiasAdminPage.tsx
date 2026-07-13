@@ -2,6 +2,7 @@ import type { Noticia } from '@sindprf/types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../../lib/datas';
 import { useNoticiasAdmin, useRemoverNoticia } from '../../hooks';
 
@@ -28,7 +29,7 @@ export function NoticiasAdminPage() {
         </Link>
       }
     >
-      {isLoading && <p className="estado-carregando">Carregando…</p>}
+      {isLoading && <EstadoCarregando />}
       {isError && <p className="erro">Erro ao carregar as notícias.</p>}
 
       {noticias && noticias.length === 0 && (

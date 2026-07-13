@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { marca } from '../../../lib/marca';
 import { useSeo } from '../../../lib/seo';
 import { useNoticias } from '../hooks';
@@ -18,7 +19,7 @@ export function NoticiasPage() {
         <span className="eyebrow">Comunicação</span>
         <h1>Notícias</h1>
 
-        {isLoading && <p>Carregando notícias…</p>}
+        {isLoading && <EstadoCarregando mensagem="Carregando notícias…" />}
         {isError && <p className="erro">Não foi possível carregar as notícias.</p>}
         {data && data.items.length === 0 && <p>Nenhuma notícia publicada ainda.</p>}
 

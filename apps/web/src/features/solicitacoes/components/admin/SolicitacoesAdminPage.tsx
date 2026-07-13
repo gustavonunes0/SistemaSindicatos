@@ -2,6 +2,7 @@ import type { StatusSolicitacao } from '@sindprf/types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useSolicitacoesAdmin } from '../../hooks';
 import { rotuloStatusSolicitacao } from '../../status';
 import { SolicitacaoResumoLinha } from '../SolicitacaoShared';
@@ -32,7 +33,7 @@ export function SolicitacoesAdminPage() {
         </label>
       }
     >
-      {isLoading && <p className="estado-carregando">Carregando solicitações…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando solicitações…" />}
       {isError && (
         <p className="erro">Não foi possível carregar as solicitações. Tente novamente.</p>
       )}

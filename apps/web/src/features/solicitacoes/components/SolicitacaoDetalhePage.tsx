@@ -1,6 +1,7 @@
 import type { StatusSolicitacao } from '@sindprf/types';
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../lib/datas';
 import { useAtualizarStatusSolicitacao, useSolicitacao } from '../hooks';
 import { rotuloStatusSolicitacao } from '../status';
@@ -27,7 +28,7 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
   if (isLoading) {
     return (
       <AreaLayout tipo={visao} titulo="Solicitação">
-        <p className="estado-carregando">Carregando…</p>
+        <EstadoCarregando />
       </AreaLayout>
     );
   }

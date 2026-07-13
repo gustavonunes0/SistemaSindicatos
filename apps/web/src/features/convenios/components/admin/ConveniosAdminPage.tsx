@@ -2,6 +2,7 @@ import type { Convenio } from '@sindprf/types';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConveniosAdmin, useRemoverConvenio } from '../../hooks';
 
 export function ConveniosAdminPage() {
@@ -27,7 +28,7 @@ export function ConveniosAdminPage() {
         </Link>
       }
     >
-      {isLoading && <p className="estado-carregando">Carregando convênios…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando convênios…" />}
       {isError && (
         <p className="erro">Não foi possível carregar os convênios. Tente novamente.</p>
       )}

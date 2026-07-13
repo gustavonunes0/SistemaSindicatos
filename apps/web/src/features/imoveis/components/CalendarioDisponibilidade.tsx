@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { inicioDoMes, fimDoMes, rotuloMes, diasDoMes, estadoDoDia } from '../calendario';
 import { useDisponibilidadeImovel } from '../hooks';
 
@@ -48,7 +49,7 @@ export function CalendarioDisponibilidade({ imovelId }: CalendarioDisponibilidad
         </div>
       </header>
 
-      {isLoading && <p className="estado-carregando">Carregando calendário…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando calendário…" />}
       {isError && (
         <p className="erro">Não foi possível carregar a disponibilidade deste mês.</p>
       )}

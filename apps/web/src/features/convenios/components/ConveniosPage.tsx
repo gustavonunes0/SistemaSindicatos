@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useDebounce } from '../../../lib/useDebounce';
 import { useCategoriasConvenios, useConvenios } from '../hooks';
 import { ConvenioCard } from './ConvenioCard';
@@ -49,7 +50,7 @@ export function ConveniosPage() {
         </label>
       </div>
 
-      {isLoading && <p className="estado-carregando">Carregando convênios…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando convênios…" />}
       {isError && (
         <p className="erro">Não foi possível carregar os convênios. Tente novamente em instantes.</p>
       )}

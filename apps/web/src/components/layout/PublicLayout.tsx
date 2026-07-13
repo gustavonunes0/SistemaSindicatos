@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { MarcaHeaderLink } from '../ui/MarcaHeader';
 import { LogoLink } from '../ui/Logo';
+import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
 import { marca } from '../../lib/marca';
@@ -82,6 +83,8 @@ export function PublicLayout() {
           </span>
         </div>
       </footer>
+
+      <BotaoInstalarPwa />
     </div>
   );
 }

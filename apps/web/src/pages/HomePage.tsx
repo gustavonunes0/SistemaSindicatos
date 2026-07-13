@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { EstadoCarregando } from '../components/ui/EstadoCarregando';
 import { InstagramGrid } from '../features/instagram/components/InstagramGrid';
 import { useNoticias } from '../features/noticias/hooks';
 import { NoticiaCard } from '../features/noticias/components/NoticiaCard';
@@ -65,7 +66,7 @@ export function HomePage() {
             <Link to="/noticias">Ver todas</Link>
           </header>
 
-          {isLoading && <p>Carregando notícias…</p>}
+          {isLoading && <EstadoCarregando mensagem="Carregando notícias…" />}
           {isError && <p className="erro">Não foi possível carregar as notícias.</p>}
           {data && data.items.length === 0 && <p>Nenhuma notícia publicada ainda.</p>}
           {data && data.items.length > 0 && (

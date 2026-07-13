@@ -5,6 +5,7 @@ import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { RichTextEditor } from '../../../../components/ui/RichTextEditor';
 import { urlDaApi } from '../../../../lib/urls';
 import { useAtualizarNoticia, useCriarNoticia, useNoticiaAdmin, useUploadCapa } from '../../hooks';
@@ -68,7 +69,7 @@ export function NoticiaFormPage() {
   if (id && isLoading) {
     return (
       <AreaLayout tipo="admin" titulo="Editar notícia">
-        <p className="estado-carregando">Carregando notícia…</p>
+        <EstadoCarregando mensagem="Carregando notícia…" />
       </AreaLayout>
     );
   }

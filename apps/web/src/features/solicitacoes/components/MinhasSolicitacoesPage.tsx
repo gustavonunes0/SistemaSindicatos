@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMinhasSolicitacoes } from '../hooks';
 import { SolicitacaoResumoLinha } from './SolicitacaoShared';
 
@@ -12,7 +13,7 @@ export function MinhasSolicitacoesPage() {
       titulo="Minhas solicitações"
       acoes={<Link to="/afiliado/imoveis">← Apartamentos</Link>}
     >
-      {isLoading && <p className="estado-carregando">Carregando solicitações…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando solicitações…" />}
       {isError && (
         <p className="erro">Não foi possível carregar suas solicitações. Tente novamente.</p>
       )}

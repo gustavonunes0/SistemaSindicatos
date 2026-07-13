@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   atualizarStatusAfiliadoSchema,
   cadastroAfiliadoSchema,
@@ -16,6 +17,8 @@ export class AfiliadosController {
   constructor(private readonly afiliadosService: AfiliadosService) {}
 
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ cadastro: { limit: 5, ttl: 60_000 } })
   @Post('cadastro')
   cadastrar(@Body(new ZodValidationPipe(cadastroAfiliadoSchema)) body: CadastroAfiliadoInput) {
     return this.afiliadosService.cadastrar(body);

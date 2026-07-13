@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
+import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useLogout, useMe } from '../../features/auth/hooks';
 
 type AreaTipo = 'admin' | 'afiliado';
@@ -117,6 +118,8 @@ export function AreaLayout({ tipo, titulo, acoes, children }: AreaLayoutProps) {
         )}
         {children}
       </div>
+
+      <BotaoInstalarPwa />
     </div>
   );
 }

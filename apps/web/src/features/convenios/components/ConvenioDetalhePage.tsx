@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../lib/datas';
 import { urlDaApi } from '../../../lib/urls';
 import { useConvenio } from '../hooks';
@@ -11,7 +12,7 @@ export function ConvenioDetalhePage() {
   if (isLoading) {
     return (
       <AreaLayout tipo="afiliado" titulo="Convênio">
-        <p className="estado-carregando">Carregando convênio…</p>
+        <EstadoCarregando mensagem="Carregando convênio…" />
       </AreaLayout>
     );
   }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useDebounce } from '../../../lib/useDebounce';
 import { useImoveis } from '../hooks';
 import { ImovelCard } from './ImovelCard';
@@ -30,7 +31,7 @@ export function ImoveisPage() {
         </label>
       </div>
 
-      {isLoading && <p className="estado-carregando">Carregando imóveis…</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
       {isError && (
         <p className="erro">Não foi possível carregar os imóveis. Tente novamente em instantes.</p>
       )}

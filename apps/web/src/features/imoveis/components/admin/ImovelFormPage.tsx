@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../../lib/datas';
 import { urlDaApi } from '../../../../lib/urls';
 import {
@@ -213,7 +214,7 @@ export function ImovelFormPage() {
   if (id && isLoading) {
     return (
       <AreaLayout tipo="admin" titulo="Editar apartamento">
-        <p className="estado-carregando">Carregando imóvel…</p>
+        <EstadoCarregando mensagem="Carregando imóvel…" />
       </AreaLayout>
     );
   }

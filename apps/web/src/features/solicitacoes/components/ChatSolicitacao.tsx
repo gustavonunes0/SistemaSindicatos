@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../lib/datas';
 import { useMe } from '../../auth/hooks';
 import { useEnviarMensagem, useMensagensSolicitacao } from '../hooks';
@@ -38,7 +39,7 @@ export function ChatSolicitacao({ solicitacaoId, encerrada }: ChatSolicitacaoPro
   return (
     <div className="chat-solicitacao">
       <div className="chat-mensagens" aria-live="polite">
-        {isLoading && <p className="estado-carregando">Carregando mensagens…</p>}
+        {isLoading && <EstadoCarregando mensagem="Carregando mensagens…" />}
         {mensagens?.map((msg) => {
           const minha = msg.autorId === me?.user.id;
           return (
