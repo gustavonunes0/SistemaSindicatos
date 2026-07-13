@@ -5,7 +5,8 @@ import { join } from 'node:path';
 import { AppModule } from './app.module';
 
 export async function configurarApp(app: NestExpressApplication): Promise<void> {
-  const webUrl = process.env.WEB_URL ?? 'http://localhost:5173';
+  // Origin do browser nunca leva barra final — normaliza WEB_URL para bater no CORS.
+  const webUrl = (process.env.WEB_URL ?? 'http://localhost:5173').replace(/\/+$/, '');
 
   app.use(
     helmet({
@@ -15,7 +16,8 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
   app.enableCors({
     origin: webUrl,
     credentials: true,
-    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE'],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
 }
