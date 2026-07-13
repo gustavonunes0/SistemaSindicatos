@@ -39,7 +39,30 @@ cp apps/web/.env.example apps/web/.env
 npm run dev
 ```
 
-## Deploy na VPS (Hostinger)
+## Deploy na Vercel (frontend)
+
+O **web** (Vite/React) vai bem na Vercel. A **API NestJS** usa disco local para uploads e `@nestjs/schedule` (cron) — isso não funciona bem em serverless. Mantenha a API + Postgres em VPS/Railway/Render/Fly.
+
+### Projeto 1 — Frontend
+
+1. Importar o repositório na Vercel.
+2. **Root Directory:** `apps/web` (obrigatório no monorepo).
+3. A Vercel lê `apps/web/vercel.json` (instala na raiz e roda `npm run build:web`, que compila `@sindprf/types` antes).
+4. Variável de ambiente:
+   - `VITE_API_URL` = URL pública da API (ex.: `https://api.seudominio.com`)
+
+### Projeto 2 — API (opcional / não recomendado na Vercel)
+
+Se mesmo assim quiser tentar a API na Vercel:
+
+1. **Root Directory:** `apps/api`
+2. Variáveis: `DATABASE_URL`, `JWT_SECRET`, `WEB_URL` (URL do front na Vercel), `PORT`
+3. Rode migrations fora do deploy: `npx prisma migrate deploy`
+4. Uploads em disco **não persistem**; Instagram cron pode falhar no modelo serverless.
+
+O erro `Cannot find module '@sindprf/types'` acontece quando o Nest builda sem compilar o pacote compartilhado antes. Use sempre `npm run build:api` / `build:web` (ou o `vercel.json` acima).
+
+## Deploy na VPS (Hostinger) — Docker
 
 Sobe **Postgres + API + Frontend (nginx)** com o `docker-compose.yml` de produção.
 

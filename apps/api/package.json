@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
+    "prisma:generate": "prisma generate",
     "build": "nest build",
     "start": "node dist/main.js",
     "lint": "eslint src prisma test",
