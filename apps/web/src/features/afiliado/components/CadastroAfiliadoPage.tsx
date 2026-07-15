@@ -17,7 +17,7 @@ const etapas = [
   },
   {
     titulo: 'Documentação na secretaria',
-    texto: 'Leve os formulários e documentos listados abaixo à sede.',
+    texto: 'Leve os formulários e cópias listados nesta página à sede.',
   },
   {
     titulo: 'Acesso liberado',
@@ -44,6 +44,47 @@ function normalizarCadastro(dados: CadastroAfiliadoInput): CadastroAfiliadoInput
     email: dados.email.trim().toLowerCase(),
     telefone: telefone && telefone.length > 0 ? telefone : undefined,
   };
+}
+
+function DocumentosNecessarios() {
+  return (
+    <section className="cadastro-docs cadastro-docs--conteudo" aria-label="Documentos necessários">
+      <h2 className="cadastro-docs-titulo">Documentos necessários</h2>
+      <p className="cadastro-docs-intro">
+        Baixe os formulários e compareça à secretaria ({filiacao.sede.endereco}) com as cópias
+        abaixo.
+      </p>
+
+      <div className="cadastro-docs-colunas">
+        <div>
+          <p className="cadastro-docs-subtitulo">Formulários</p>
+          <ul className="cadastro-docs-lista">
+            {filiacao.formularios.map((item) => (
+              <li key={item.url}>
+                <a href={item.url} download>
+                  {item.rotulo}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div>
+          <p className="cadastro-docs-subtitulo">Levar na secretaria</p>
+          <ul className="cadastro-docs-lista">
+            {filiacao.documentos.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+      </div>
+
+      <p className="cadastro-docs-contato">
+        Dúvidas: {filiacao.contato.telefones.join(' / ')} ·{' '}
+        <a href={`mailto:${filiacao.contato.email}`}>{filiacao.contato.email}</a>
+      </p>
+    </section>
+  );
 }
 
 export function CadastroAfiliadoPage() {
@@ -73,7 +114,7 @@ export function CadastroAfiliadoPage() {
           <p className="cadastro-marca">{marca.nome}</p>
           <h1 className="cadastro-painel-titulo">Afiliação ao sindicato</h1>
           <p className="cadastro-painel-texto">
-            Filie-se ao {marca.nome} e participe da luta da categoria. O formulário abaixo inicia o
+            Filie-se ao {marca.nome} e participe da luta da categoria. O formulário ao lado inicia o
             cadastro no sistema; a filiação se completa com a entrega dos documentos na secretaria (
             {filiacao.sede.endereco}).
           </p>
@@ -105,37 +146,6 @@ export function CadastroAfiliadoPage() {
             );
           })}
         </ol>
-
-        <section className="cadastro-docs" aria-label="Documentos necessários">
-          <h2 className="cadastro-docs-titulo">Documentos necessários</h2>
-          <p className="cadastro-docs-intro">
-            Faça o download dos formulários e compareça à secretaria com as cópias abaixo.
-          </p>
-
-          <p className="cadastro-docs-subtitulo">Formulários</p>
-          <ul className="cadastro-docs-lista">
-            {filiacao.formularios.map((item) => (
-              <li key={item.url}>
-                <a href={item.url} download>
-                  {item.rotulo}
-                </a>
-              </li>
-            ))}
-          </ul>
-
-          <p className="cadastro-docs-subtitulo">Levar na secretaria</p>
-          <ul className="cadastro-docs-lista">
-            {filiacao.documentos.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-
-          <p className="cadastro-docs-contato">
-            Dúvidas: {filiacao.contato.telefones.join(' / ')}
-            <br />
-            <a href={`mailto:${filiacao.contato.email}`}>{filiacao.contato.email}</a>
-          </p>
-        </section>
       </aside>
 
       <section className="cadastro-conteudo">
@@ -148,6 +158,7 @@ export function CadastroAfiliadoPage() {
               documentos à secretaria do {marca.nome}. O acesso ao sistema é liberado após a
               aprovação.
             </p>
+            <DocumentosNecessarios />
             <div className="cadastro-sucesso-acoes">
               <Link to="/login" className="botao-primario">
                 Ir para o login
@@ -164,10 +175,11 @@ export function CadastroAfiliadoPage() {
               <h2>Solicitar afiliação</h2>
               <p>
                 Preencha com os mesmos dados da sua identificação funcional. Campos com * são
-                obrigatórios. Em seguida, baixe os formulários e leve a documentação à secretaria —
-                a lista completa está no painel de filiação.
+                obrigatórios.
               </p>
             </header>
+
+            <DocumentosNecessarios />
 
             <form
               className="cadastro-form"
