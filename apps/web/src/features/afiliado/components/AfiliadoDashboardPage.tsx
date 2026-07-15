@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMe } from '../../auth/hooks';
+import { marca } from '../../../lib/marca';
 
 const descricaoStatus = {
   PENDENTE: 'Sua afiliação está em análise. Você receberá acesso aos benefícios após a aprovação.',
@@ -128,8 +129,8 @@ export function AfiliadoDashboardPage() {
           {afiliado.status === 'INATIVO' && (
             <aside className="painel-aviso painel-aviso-erro">
               <p>
-                Fale com o sindicato pela página de <Link to="/contato">contato</Link> ou pelo
-                telefone (85) 3000-0000.
+                Fale com o sindicato pela página de <Link to="/contato">contato</Link> ou pelos
+                telefones {marca.contato.telefones.join(' / ')}.
               </p>
             </aside>
           )}

@@ -68,13 +68,15 @@ export function PublicLayout() {
           </div>
           <div>
             <h4>Contato</h4>
-            <p>contato@sindprf.local</p>
-            <p>(85) 3000-0000</p>
+            <p>
+              <a href={`mailto:${marca.contato.email}`}>{marca.contato.email}</a>
+            </p>
+            <p>{marca.contato.telefones.join(' / ')}</p>
           </div>
           <div>
             <h4>Endereço</h4>
-            <p>Av. Principal, 1000 — Fortaleza/CE</p>
-            <p>Seg. a sex., 8h às 17h</p>
+            <p>{marca.sede.endereco}</p>
+            <p>CEP {marca.sede.cep}</p>
           </div>
         </div>
         <div className="site-footer-copy">

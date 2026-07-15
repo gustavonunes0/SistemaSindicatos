@@ -1,4 +1,4 @@
-import { marca } from '../lib/marca';
+import { marca, telefonePrincipalTel } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 export function ContatoPage() {
@@ -18,18 +18,22 @@ export function ContatoPage() {
           <div className="contato-card">
             <h3>Email</h3>
             <p>
-              <a href="mailto:contato@sindprf.local">contato@sindprf.local</a>
+              <a href={`mailto:${marca.contato.email}`}>{marca.contato.email}</a>
             </p>
           </div>
           <div className="contato-card">
             <h3>Telefone</h3>
             <p>
-              <a href="tel:+558530000000">(85) 3000-0000</a>
+              <a href={`tel:${telefonePrincipalTel()}`}>{marca.contato.telefones[0]}</a>
             </p>
+            {marca.contato.telefones.slice(1).map((telefone) => (
+              <p key={telefone}>{telefone}</p>
+            ))}
           </div>
           <div className="contato-card">
             <h3>Sede</h3>
-            <p>Av. Principal, 1000 — Fortaleza/CE</p>
+            <p>{marca.sede.endereco}</p>
+            <p>CEP {marca.sede.cep}</p>
             <p>Segunda a sexta, das 8h às 17h</p>
           </div>
         </div>

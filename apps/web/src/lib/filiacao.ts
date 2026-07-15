@@ -1,13 +1,9 @@
+import { marca } from './marca';
+
 /** Formulários e checklist de filiação do SINDPRF-CE (arquivos em /public/filiacao). */
 export const filiacao = {
-  sede: {
-    endereco: 'Rua Margarida de Queiroz, 07 — Cajazeiras — Fortaleza/CE',
-    cep: '60.864-300',
-  },
-  contato: {
-    telefones: ['(85) 3279-2848', '(85) 3279-5698', '(85) 3279-7852'],
-    email: 'sindprfce@sindprfce.com.br',
-  },
+  sede: marca.sede,
+  contato: marca.contato,
   formularios: [
     {
       rotulo: 'Solicitação de averbação do PRF',
