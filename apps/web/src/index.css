@@ -1242,6 +1242,8 @@ button.botao-primario {
 
 .cadastro-conteudo {
   padding: 1.75rem 1.25rem 2.5rem;
+  container-type: inline-size;
+  container-name: cadastro-main;
 }
 
 .cadastro-cabecalho {
@@ -1263,16 +1265,38 @@ button.botao-primario {
 }
 
 .cadastro-corpo {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 1.25rem;
   width: 100%;
+  align-items: start;
 }
 
 .cadastro-form {
   width: 100%;
   max-width: none;
   gap: 0;
+  margin: 0;
+}
+
+/* Documentos à esquerda, formulário à direita quando o painel tem espaço. */
+@container cadastro-main (min-width: 40rem) {
+  .cadastro-corpo {
+    grid-template-columns: minmax(15rem, 0.92fr) minmax(18rem, 1.2fr);
+    gap: 1.5rem;
+  }
+
+  .cadastro-docs--conteudo {
+    position: sticky;
+    top: 1.25rem;
+  }
+}
+
+@media (min-width: 960px) {
+  .cadastro-corpo {
+    grid-template-columns: minmax(15rem, 0.92fr) minmax(18rem, 1.2fr);
+    gap: 1.5rem;
+  }
 }
 
 .cadastro-formulario {
@@ -1380,10 +1404,7 @@ button.botao-primario {
 
   .cadastro-conteudo {
     padding: 2.5rem 2.5rem 3rem;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0;
+    display: block;
   }
 
   .cadastro-cabecalho {
@@ -1391,16 +1412,13 @@ button.botao-primario {
   }
 
   .cadastro-corpo {
-    display: grid;
-    grid-template-columns: minmax(16rem, 0.95fr) minmax(20rem, 1.15fr);
-    gap: 1.5rem;
-    align-items: start;
+    grid-template-columns: minmax(13rem, 0.9fr) minmax(16rem, 1.2fr);
+    gap: 1.35rem;
   }
 
-  .cadastro-docs--conteudo,
-  .cadastro-form {
-    width: 100%;
-    max-width: none;
+  .cadastro-docs--conteudo {
+    position: sticky;
+    top: 1.25rem;
   }
 
   .cadastro-grade {
