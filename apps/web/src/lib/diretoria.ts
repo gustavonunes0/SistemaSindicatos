@@ -10,7 +10,12 @@ export type BlocoDiretoria = {
   membros: MembroDiretoria[];
 };
 
-export const diretoria = {
+export const diretoria: {
+  mandato: string;
+  chapa: string;
+  historicoUrl: string;
+  blocos: BlocoDiretoria[];
+} = {
   mandato: '2025/2027',
   chapa: 'Sindicato em Ação',
   historicoUrl: '/diretoria/historico-diretorias.pdf',
@@ -55,5 +60,5 @@ export const diretoria = {
         { nome: 'Lorena Morel' },
       ],
     },
-  ] satisfies BlocoDiretoria[],
-} as const;
+  ],
+};
