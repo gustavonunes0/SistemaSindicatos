@@ -179,17 +179,18 @@ export function CadastroAfiliadoPage() {
               </p>
             </header>
 
-            <DocumentosNecessarios />
+            <div className="cadastro-corpo">
+              <DocumentosNecessarios />
 
-            <form
-              className="cadastro-form"
-              onSubmit={handleSubmit((dados) =>
-                cadastro.mutate(normalizarCadastro(dados), {
-                  onSuccess: () => setSucesso(true),
-                }),
-              )}
-              noValidate
-            >
+              <form
+                className="cadastro-form"
+                onSubmit={handleSubmit((dados) =>
+                  cadastro.mutate(normalizarCadastro(dados), {
+                    onSuccess: () => setSucesso(true),
+                  }),
+                )}
+                noValidate
+              >
               <div className="cadastro-formulario">
                 <fieldset className="cadastro-grupo">
                   <legend>Identificação</legend>
@@ -286,6 +287,7 @@ export function CadastroAfiliadoPage() {
                 </div>
               </div>
             </form>
+            </div>
           </>
         )}
       </section>
