@@ -6,11 +6,21 @@ import type {
 } from '@sindprf/types';
 import * as conveniosApi from './api';
 
-export function useConvenios(filtro: FiltroConveniosInput) {
+export function useConvenios(filtro: FiltroConveniosInput, enabled = true) {
   return useQuery({
     queryKey: ['convenios', 'lista', filtro],
     queryFn: () => conveniosApi.listarConvenios(filtro),
     placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
+export function useCategoriasConvenios(enabled = true) {
+  return useQuery({
+    queryKey: ['convenios', 'categorias'],
+    queryFn: conveniosApi.listarCategorias,
+    staleTime: 5 * 60 * 1000,
+    enabled,
   });
 }
 
@@ -18,14 +28,6 @@ export function useConvenio(id: string) {
   return useQuery({
     queryKey: ['convenios', 'detalhe', id],
     queryFn: () => conveniosApi.buscarConvenio(id),
-  });
-}
-
-export function useCategoriasConvenios() {
-  return useQuery({
-    queryKey: ['convenios', 'categorias'],
-    queryFn: conveniosApi.listarCategorias,
-    staleTime: 5 * 60 * 1000,
   });
 }
 

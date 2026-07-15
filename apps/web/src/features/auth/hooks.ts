@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { Role } from '@sindprf/types';
 import { useNavigate } from 'react-router-dom';
 import * as authApi from './api';
@@ -10,12 +10,14 @@ export function areaPorRole(role: Role): string {
 
 export function useLogin() {
   const setSession = useAuthStore((state) => state.setSession);
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation({
     mutationFn: authApi.login,
-    onSuccess: (sessao) => {
+    onSuccess: async (sessao) => {
       setSession(sessao);
+      await queryClient.invalidateQueries();
       navigate(areaPorRole(sessao.user.role), { replace: true });
     },
   });
@@ -23,6 +25,7 @@ export function useLogin() {
 
 export function useLogout() {
   const { refreshToken, clearSession } = useAuthStore();
+  const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   return useMutation({
@@ -33,6 +36,7 @@ export function useLogout() {
     },
     onSettled: () => {
       clearSession();
+      queryClient.clear();
       navigate('/login', { replace: true });
     },
   });
@@ -44,7 +48,10 @@ export function useMe() {
     queryKey: ['auth', 'me'],
     queryFn: authApi.buscarMe,
     enabled: Boolean(accessToken),
-    staleTime: 60_000,
+    staleTime: 15_000,
+    refetchOnWindowFocus: true,
+    refetchInterval: (query) =>
+      query.state.data?.afiliado?.status === 'PENDENTE' ? 20_000 : false,
   });
 }
 

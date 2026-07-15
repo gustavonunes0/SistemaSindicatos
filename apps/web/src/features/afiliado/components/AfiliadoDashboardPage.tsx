@@ -1,7 +1,9 @@
+import { isAxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMe } from '../../auth/hooks';
+import { AguardandoAprovacao } from './AguardandoAprovacao';
 
 const descricaoStatus = {
   PENDENTE: 'Sua afiliação está em análise. Você receberá acesso aos benefícios após a aprovação.',
@@ -15,8 +17,26 @@ const rotuloStatus = {
   INATIVO: 'Inativa',
 } as const;
 
+const beneficios = [
+  {
+    to: '/afiliado/convenios',
+    titulo: 'Convênios',
+    descricao: 'Descontos e parcerias exclusivas para afiliados.',
+  },
+  {
+    to: '/afiliado/imoveis',
+    titulo: 'Apartamentos',
+    descricao: 'Imóveis para locação — fotos e calendário de disponibilidade.',
+  },
+  {
+    to: '/afiliado/solicitacoes',
+    titulo: 'Solicitações',
+    descricao: 'Acompanhe suas conversas com o sindicato sobre locação.',
+  },
+] as const;
+
 export function AfiliadoDashboardPage() {
-  const { data, isLoading, isError } = useMe();
+  const { data, isLoading, isError, error, refetch, isFetching } = useMe();
   const afiliado = data?.afiliado;
   const aprovado = afiliado?.status === 'APROVADO';
 
@@ -27,7 +47,26 @@ export function AfiliadoDashboardPage() {
       descricao="Acompanhe sua afiliação e acesse os benefícios disponíveis."
     >
       {isLoading && <EstadoCarregando />}
-      {isError && <p className="erro">Erro ao carregar seus dados.</p>}
+      {isError && (
+        <p className="erro">
+          Erro ao carregar seus dados.
+          {isAxiosError(error) && error.response?.status
+            ? ` (código ${error.response.status})`
+            : ''}{' '}
+          <button type="button" className="botao-link-acao" onClick={() => void refetch()}>
+            Tentar de novo
+          </button>
+        </p>
+      )}
+
+      {!isLoading && !isError && !afiliado && (
+        <div className="estado-vazio">
+          <p>Não encontramos o perfil de afiliado vinculado a esta conta.</p>
+          <p>
+            <Link to="/cadastro">Solicitar afiliação</Link>
+          </p>
+        </div>
+      )}
 
       {afiliado && (
         <>
@@ -40,38 +79,49 @@ export function AfiliadoDashboardPage() {
               </span>
             </div>
             <p className="painel-descricao">{descricaoStatus[afiliado.status]}</p>
+            {afiliado.status === 'PENDENTE' && (
+              <button
+                type="button"
+                className="botao-secundario"
+                disabled={isFetching}
+                onClick={() => void refetch()}
+              >
+                {isFetching ? 'Verificando…' : 'Verificar aprovação'}
+              </button>
+            )}
           </section>
 
-          {aprovado && (
-            <section className="painel-secao">
-              <h2 className="painel-secao-titulo">Benefícios</h2>
-              <nav className="painel-atalhos">
-                <Link to="/afiliado/convenios" className="painel-atalho">
-                  <span className="painel-atalho-titulo">Convênios</span>
-                  <span className="painel-atalho-desc">
-                    Descontos e parcerias exclusivas para afiliados.
-                  </span>
-                </Link>
-                <Link to="/afiliado/imoveis" className="painel-atalho">
-                  <span className="painel-atalho-titulo">Apartamentos</span>
-                  <span className="painel-atalho-desc">
-                    Imóveis para locação — fotos e calendário de disponibilidade.
-                  </span>
-                </Link>
-                <Link to="/afiliado/solicitacoes" className="painel-atalho">
-                  <span className="painel-atalho-titulo">Solicitações</span>
-                  <span className="painel-atalho-desc">
-                    Acompanhe suas conversas com o sindicato sobre locação.
-                  </span>
-                </Link>
-              </nav>
-            </section>
-          )}
+          <section className="painel-secao">
+            <h2 className="painel-secao-titulo">Benefícios</h2>
+            <nav className="painel-atalhos">
+              {beneficios.map((item) =>
+                aprovado ? (
+                  <Link key={item.to} to={item.to} className="painel-atalho">
+                    <span className="painel-atalho-titulo">{item.titulo}</span>
+                    <span className="painel-atalho-desc">{item.descricao}</span>
+                  </Link>
+                ) : (
+                  <div
+                    key={item.to}
+                    className="painel-atalho painel-atalho--bloqueado"
+                    aria-disabled="true"
+                  >
+                    <span className="painel-atalho-titulo">
+                      {item.titulo}
+                      <span className="painel-atalho-selo">Após aprovação</span>
+                    </span>
+                    <span className="painel-atalho-desc">{item.descricao}</span>
+                  </div>
+                ),
+              )}
+            </nav>
+          </section>
 
           {afiliado.status === 'PENDENTE' && (
             <aside className="painel-aviso">
               <p>
-                Assim que sua afiliação for aprovada, os convênios aparecerão aqui automaticamente.
+                Assim que sua afiliação for aprovada, convênios e apartamentos liberam
+                automaticamente — use o botão acima ou o menu lateral para conferir.
               </p>
             </aside>
           )}
@@ -79,8 +129,8 @@ export function AfiliadoDashboardPage() {
           {afiliado.status === 'INATIVO' && (
             <aside className="painel-aviso painel-aviso-erro">
               <p>
-                Fale com o sindicato pela página de{' '}
-                <Link to="/contato">contato</Link> ou pelo telefone (85) 3000-0000.
+                Fale com o sindicato pela página de <Link to="/contato">contato</Link> ou pelo
+                telefone (85) 3000-0000.
               </p>
             </aside>
           )}

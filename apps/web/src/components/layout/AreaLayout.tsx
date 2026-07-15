@@ -52,16 +52,15 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   const [menuAberto, setMenuAberto] = useState(false);
   const { data } = useMe();
   const logout = useLogout();
-  const aprovado = data?.afiliado?.status === 'APROVADO';
 
   const gruposAfiliado: GrupoNav[] = [
     {
       titulo: 'Minha conta',
       links: [
         { to: '/afiliado', rotulo: 'Visão geral', end: true },
-        { to: '/afiliado/convenios', rotulo: 'Convênios', visivel: aprovado },
-        { to: '/afiliado/imoveis', rotulo: 'Apartamentos', visivel: aprovado },
-        { to: '/afiliado/solicitacoes', rotulo: 'Solicitações', visivel: aprovado },
+        { to: '/afiliado/convenios', rotulo: 'Convênios' },
+        { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
+        { to: '/afiliado/solicitacoes', rotulo: 'Solicitações' },
       ],
     },
   ];

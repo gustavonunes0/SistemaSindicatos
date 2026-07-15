@@ -9,10 +9,11 @@ import * as solicitacoesApi from './api';
 
 const POLLING_MS = 5000;
 
-export function useMinhasSolicitacoes() {
+export function useMinhasSolicitacoes(enabled = true) {
   return useQuery({
     queryKey: ['solicitacoes', 'minhas'],
     queryFn: solicitacoesApi.listarMinhasSolicitacoes,
+    enabled,
   });
 }
 

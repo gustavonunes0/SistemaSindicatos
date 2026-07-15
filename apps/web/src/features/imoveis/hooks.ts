@@ -8,11 +8,12 @@ import type {
 } from '@sindprf/types';
 import * as imoveisApi from './api';
 
-export function useImoveis(filtro: FiltroImoveisInput) {
+export function useImoveis(filtro: FiltroImoveisInput, enabled = true) {
   return useQuery({
     queryKey: ['imoveis', 'lista', filtro],
     queryFn: () => imoveisApi.listarImoveis(filtro),
     placeholderData: keepPreviousData,
+    enabled,
   });
 }
 

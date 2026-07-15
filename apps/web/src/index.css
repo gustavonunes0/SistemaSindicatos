@@ -1956,11 +1956,35 @@ textarea {
   transform: translateY(-1px);
 }
 
+.painel-atalho--bloqueado {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
+.painel-atalho--bloqueado:hover {
+  border-color: var(--cor-borda);
+  transform: none;
+}
+
 .painel-atalho-titulo {
-  display: block;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
   font-weight: 600;
   color: var(--cor-primaria);
   margin-bottom: 0.3rem;
+}
+
+.painel-atalho-selo {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+  border: 1px solid var(--cor-borda);
+  border-radius: 2px;
+  padding: 0.1rem 0.4rem;
 }
 
 .painel-atalho-desc {
@@ -1968,6 +1992,17 @@ textarea {
   font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
   line-height: 1.45;
+}
+
+.afiliado-bloqueio {
+  max-width: 28rem;
+}
+
+.afiliado-bloqueio-titulo {
+  margin: 0 0 0.5rem;
+  font-family: var(--fonte-display);
+  font-weight: 600;
+  color: var(--cor-primaria);
 }
 
 .painel-aviso {
