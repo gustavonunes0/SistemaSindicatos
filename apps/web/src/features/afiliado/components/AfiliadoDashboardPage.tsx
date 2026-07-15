@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMe } from '../../auth/hooks';
-import { AguardandoAprovacao } from './AguardandoAprovacao';
 
 const descricaoStatus = {
   PENDENTE: 'Sua afiliação está em análise. Você receberá acesso aos benefícios após a aprovação.',
