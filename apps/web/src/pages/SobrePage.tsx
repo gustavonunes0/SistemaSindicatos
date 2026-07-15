@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { marca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
@@ -13,8 +14,8 @@ export function SobrePage() {
         <span className="eyebrow">Quem somos</span>
         <h1>Sobre o sindicato</h1>
         <p>
-          O {marca.nome} representa os Policiais Rodoviários Federais no Ceará na defesa de seus direitos,
-          condições de trabalho e valorização profissional.
+          O {marca.nome} representa os Policiais Rodoviários Federais no Ceará na defesa de seus
+          direitos, condições de trabalho e valorização profissional.
         </p>
         <h2>Missão</h2>
         <p>
@@ -28,6 +29,16 @@ export function SobrePage() {
           <li>Imóveis para lazer disponíveis para aluguel</li>
           <li>Eleições sindicais com votação eletrônica segura</li>
         </ul>
+        <h2>Diretoria</h2>
+        <p>
+          Consulte a composição atual da diretoria, conselho fiscal e representantes junto à
+          FENAPRF.
+        </p>
+        <p>
+          <Link to="/diretoria" className="botao-secundario">
+            Ver diretoria
+          </Link>
+        </p>
       </div>
     </main>
   );

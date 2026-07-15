@@ -11,6 +11,7 @@ const links = [
   { to: '/', rotulo: 'Início' },
   { to: '/noticias', rotulo: 'Notícias' },
   { to: '/sobre', rotulo: 'Sobre' },
+  { to: '/diretoria', rotulo: 'Diretoria' },
   { to: '/contato', rotulo: 'Contato' },
 ];
 

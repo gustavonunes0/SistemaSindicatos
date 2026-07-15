@@ -5,22 +5,23 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { Logo } from '../../../components/ui/Logo';
+import { filiacao } from '../../../lib/filiacao';
 import { marca } from '../../../lib/marca';
 import { useSeo } from '../../../lib/seo';
 import { useCadastroAfiliado } from '../hooks';
 
 const etapas = [
   {
-    titulo: 'Envie seus dados',
-    texto: 'Identificação funcional e contato para conferência.',
+    titulo: 'Cadastro no sistema',
+    texto: 'Preencha identificação e crie a senha de acesso.',
   },
   {
-    titulo: 'Análise do sindicato',
-    texto: 'A secretaria confere a matrícula e libera o acesso.',
+    titulo: 'Documentação na secretaria',
+    texto: 'Leve os formulários e documentos listados abaixo à sede.',
   },
   {
     titulo: 'Acesso liberado',
-    texto: 'Com a aprovação, entre com o e-mail e a senha cadastrados.',
+    texto: 'Após a aprovação, entre com o e-mail e a senha cadastrados.',
   },
 ] as const;
 
@@ -72,8 +73,9 @@ export function CadastroAfiliadoPage() {
           <p className="cadastro-marca">{marca.nome}</p>
           <h1 className="cadastro-painel-titulo">Afiliação ao sindicato</h1>
           <p className="cadastro-painel-texto">
-            Reservada a Policiais Rodoviários Federais do Ceará. O cadastro não libera o acesso de
-            imediato — a liberação acontece após conferência da matrícula.
+            Filie-se ao {marca.nome} e participe da luta da categoria. O formulário abaixo inicia o
+            cadastro no sistema; a filiação se completa com a entrega dos documentos na secretaria (
+            {filiacao.sede.endereco}).
           </p>
         </div>
 
@@ -103,6 +105,37 @@ export function CadastroAfiliadoPage() {
             );
           })}
         </ol>
+
+        <section className="cadastro-docs" aria-label="Documentos necessários">
+          <h2 className="cadastro-docs-titulo">Documentos necessários</h2>
+          <p className="cadastro-docs-intro">
+            Faça o download dos formulários e compareça à secretaria com as cópias abaixo.
+          </p>
+
+          <p className="cadastro-docs-subtitulo">Formulários</p>
+          <ul className="cadastro-docs-lista">
+            {filiacao.formularios.map((item) => (
+              <li key={item.url}>
+                <a href={item.url} download>
+                  {item.rotulo}
+                </a>
+              </li>
+            ))}
+          </ul>
+
+          <p className="cadastro-docs-subtitulo">Levar na secretaria</p>
+          <ul className="cadastro-docs-lista">
+            {filiacao.documentos.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+
+          <p className="cadastro-docs-contato">
+            Dúvidas: {filiacao.contato.telefones.join(' / ')}
+            <br />
+            <a href={`mailto:${filiacao.contato.email}`}>{filiacao.contato.email}</a>
+          </p>
+        </section>
       </aside>
 
       <section className="cadastro-conteudo">
@@ -111,8 +144,9 @@ export function CadastroAfiliadoPage() {
             <p className="eyebrow">Solicitação recebida</p>
             <h2>Cadastro enviado para análise</h2>
             <p>
-              Guardamos seus dados com status pendente. Você receberá a liberação quando a
-              secretaria do {marca.nome} aprovar a afiliação. Até lá, o login permanece bloqueado.
+              Guardamos seus dados com status pendente. Complete a filiação levando os formulários e
+              documentos à secretaria do {marca.nome}. O acesso ao sistema é liberado após a
+              aprovação.
             </p>
             <div className="cadastro-sucesso-acoes">
               <Link to="/login" className="botao-primario">
@@ -130,7 +164,8 @@ export function CadastroAfiliadoPage() {
               <h2>Solicitar afiliação</h2>
               <p>
                 Preencha com os mesmos dados da sua identificação funcional. Campos com * são
-                obrigatórios.
+                obrigatórios. Em seguida, baixe os formulários e leve a documentação à secretaria —
+                a lista completa está no painel de filiação.
               </p>
             </header>
 

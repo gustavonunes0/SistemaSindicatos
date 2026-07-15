@@ -21,6 +21,7 @@ import { MinhasSolicitacoesPage } from './features/solicitacoes/components/Minha
 import { SolicitacaoDetalhePage } from './features/solicitacoes/components/SolicitacaoDetalhePage';
 import { SolicitacoesAdminPage } from './features/solicitacoes/components/admin/SolicitacoesAdminPage';
 import { ContatoPage } from './pages/ContatoPage';
+import { DiretoriaPage } from './pages/DiretoriaPage';
 import { HomePage } from './pages/HomePage';
 import { SobrePage } from './pages/SobrePage';
 
@@ -38,6 +39,7 @@ export const router = createBrowserRouter([
     children: [
       { path: '/', element: <HomePage /> },
       { path: '/sobre', element: <SobrePage /> },
+      { path: '/diretoria', element: <DiretoriaPage /> },
       { path: '/contato', element: <ContatoPage /> },
       { path: '/noticias', element: <NoticiasPage /> },
       { path: '/noticias/:slug', element: <NoticiaDetalhePage /> },

@@ -657,6 +657,100 @@ button.botao-primario {
   margin: 2rem 0 0.5rem;
 }
 
+/* ============ Diretoria ============ */
+.diretoria-cabecalho {
+  margin-bottom: 2rem;
+  max-width: 40rem;
+}
+
+.diretoria-cabecalho h1 {
+  margin: 0 0 0.65rem;
+  font-size: clamp(1.75rem, 3vw, 2.25rem);
+  color: var(--cor-primaria);
+}
+
+.diretoria-mandato {
+  margin: 0 0 0.85rem;
+  font-family: var(--fonte-display);
+  font-size: var(--texto-base);
+  color: var(--cor-texto-suave);
+}
+
+.diretoria-cabecalho > p:last-child {
+  margin: 0;
+  color: var(--cor-texto-suave);
+}
+
+.diretoria-blocos {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.diretoria-bloco h2 {
+  margin: 0 0 0.85rem;
+  padding-bottom: 0.55rem;
+  border-bottom: var(--faixa-altura) solid var(--amarelo-faixa);
+  font-size: var(--texto-base);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-primaria);
+}
+
+.diretoria-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.diretoria-lista li {
+  display: grid;
+  gap: 0.15rem 1.25rem;
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+@media (min-width: 640px) {
+  .diretoria-lista li {
+    grid-template-columns: minmax(12rem, 16rem) 1fr;
+    align-items: baseline;
+  }
+
+  .diretoria-lista-item--nome {
+    grid-template-columns: 1fr;
+  }
+}
+
+.diretoria-cargo {
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+}
+
+.diretoria-nome {
+  font-family: var(--fonte-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.diretoria-historico {
+  margin: 2.25rem 0 0;
+}
+
+.diretoria-historico a {
+  font-weight: 600;
+}
+
+.diretoria-voltar {
+  margin: 1.25rem 0 0;
+  font-size: var(--texto-sm);
+}
+
 /* ============ Notícias ============ */
 .noticias-grid {
   display: grid;
@@ -1049,6 +1143,84 @@ button.botao-primario {
   font-size: 0.8125rem;
   line-height: 1.45;
   color: rgba(244, 246, 248, 0.7);
+}
+
+.cadastro-docs {
+  margin-top: 0.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(244, 246, 248, 0.16);
+}
+
+.cadastro-docs-titulo {
+  margin: 0 0 0.5rem;
+  font-family: var(--fonte-display);
+  font-size: var(--texto-base);
+  font-weight: 600;
+  color: #fff;
+}
+
+.cadastro-docs-intro {
+  margin: 0 0 0.85rem;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: rgba(244, 246, 248, 0.75);
+}
+
+.cadastro-docs-subtitulo {
+  margin: 0.85rem 0 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--amarelo-faixa);
+}
+
+.cadastro-docs-lista {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.cadastro-docs-lista li {
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: rgba(244, 246, 248, 0.88);
+  padding-left: 0.85rem;
+  position: relative;
+}
+
+.cadastro-docs-lista li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.35rem;
+  height: 0.35rem;
+  background: var(--amarelo-faixa);
+}
+
+.cadastro-docs-lista a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cadastro-docs-lista a:hover {
+  color: var(--amarelo-faixa);
+}
+
+.cadastro-docs-contato {
+  margin: 1rem 0 0;
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: rgba(244, 246, 248, 0.7);
+}
+
+.cadastro-docs-contato a {
+  color: rgba(244, 246, 248, 0.9);
 }
 
 .cadastro-conteudo {
