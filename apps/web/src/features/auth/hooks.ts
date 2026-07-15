@@ -44,6 +44,7 @@ export function useMe() {
     queryKey: ['auth', 'me'],
     queryFn: authApi.buscarMe,
     enabled: Boolean(accessToken),
+    staleTime: 60_000,
   });
 }
 

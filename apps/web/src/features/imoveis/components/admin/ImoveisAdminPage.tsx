@@ -1,15 +1,18 @@
 import type { Imovel } from '@sindprf/types';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarMoeda } from '../../../../lib/moeda';
 import { useImoveisAdmin, useRemoverImovel } from '../../hooks';
+import { ImovelFormModal } from './ImovelFormModal';
+
+type ModalImovel = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 
 export function ImoveisAdminPage() {
   const { data: imoveis, isLoading, isError } = useImoveisAdmin();
   const remover = useRemoverImovel();
   const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const [modal, setModal] = useState<ModalImovel>(null);
 
   const onRemover = (imovel: Imovel) => {
     if (confirmandoId !== imovel.id) {
@@ -23,10 +26,15 @@ export function ImoveisAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Apartamentos"
+      descricao="Cadastre imóveis, fotos e disponibilidade."
       acoes={
-        <Link to="/admin/imoveis/novo" className="botao-primario">
+        <button
+          type="button"
+          className="botao-primario"
+          onClick={() => setModal({ modo: 'criar' })}
+        >
           Novo apartamento
-        </Link>
+        </button>
       }
     >
       {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
@@ -37,9 +45,13 @@ export function ImoveisAdminPage() {
       {imoveis && imoveis.length === 0 && (
         <div className="estado-vazio">
           <p>Nenhum apartamento cadastrado ainda.</p>
-          <Link to="/admin/imoveis/novo" className="botao-primario">
+          <button
+            type="button"
+            className="botao-primario"
+            onClick={() => setModal({ modo: 'criar' })}
+          >
             Cadastrar o primeiro
-          </Link>
+          </button>
         </div>
       )}
 
@@ -67,7 +79,13 @@ export function ImoveisAdminPage() {
                     </span>
                   </td>
                   <td className="tabela-acoes">
-                    <Link to={`/admin/imoveis/${imovel.id}/editar`}>Editar</Link>
+                    <button
+                      type="button"
+                      className="botao-link-acao"
+                      onClick={() => setModal({ modo: 'editar', id: imovel.id })}
+                    >
+                      Editar
+                    </button>
                     <button
                       type="button"
                       className="botao-perigo"
@@ -84,6 +102,12 @@ export function ImoveisAdminPage() {
           </table>
         </div>
       )}
+
+      <ImovelFormModal
+        aberto={modal !== null}
+        id={modal?.modo === 'editar' ? modal.id : undefined}
+        onFechar={() => setModal(null)}
+      />
     </AreaLayout>
   );
 }

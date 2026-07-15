@@ -1,14 +1,17 @@
 import type { Convenio } from '@sindprf/types';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConveniosAdmin, useRemoverConvenio } from '../../hooks';
+import { ConvenioFormModal } from './ConvenioFormModal';
+
+type ModalConvenio = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 
 export function ConveniosAdminPage() {
   const { data: convenios, isLoading, isError } = useConveniosAdmin();
   const remover = useRemoverConvenio();
   const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const [modal, setModal] = useState<ModalConvenio>(null);
 
   const onRemover = (convenio: Convenio) => {
     if (confirmandoId !== convenio.id) {
@@ -22,10 +25,15 @@ export function ConveniosAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Convênios"
+      descricao="Gerencie parceiros e benefícios para afiliados."
       acoes={
-        <Link to="/admin/convenios/novo" className="botao-primario">
+        <button
+          type="button"
+          className="botao-primario"
+          onClick={() => setModal({ modo: 'criar' })}
+        >
           Novo convênio
-        </Link>
+        </button>
       }
     >
       {isLoading && <EstadoCarregando mensagem="Carregando convênios…" />}
@@ -36,9 +44,13 @@ export function ConveniosAdminPage() {
       {convenios && convenios.length === 0 && (
         <div className="estado-vazio">
           <p>Nenhum convênio cadastrado ainda.</p>
-          <Link to="/admin/convenios/novo" className="botao-primario">
+          <button
+            type="button"
+            className="botao-primario"
+            onClick={() => setModal({ modo: 'criar' })}
+          >
             Adicionar o primeiro
-          </Link>
+          </button>
         </div>
       )}
 
@@ -64,7 +76,13 @@ export function ConveniosAdminPage() {
                     </span>
                   </td>
                   <td className="tabela-acoes">
-                    <Link to={`/admin/convenios/${convenio.id}/editar`}>Editar</Link>
+                    <button
+                      type="button"
+                      className="botao-link-acao"
+                      onClick={() => setModal({ modo: 'editar', id: convenio.id })}
+                    >
+                      Editar
+                    </button>
                     <button
                       type="button"
                       className="botao-perigo"
@@ -81,6 +99,12 @@ export function ConveniosAdminPage() {
           </table>
         </div>
       )}
+
+      <ConvenioFormModal
+        aberto={modal !== null}
+        id={modal?.modo === 'editar' ? modal.id : undefined}
+        onFechar={() => setModal(null)}
+      />
     </AreaLayout>
   );
 }

@@ -17,13 +17,13 @@ import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { AuthService } from './auth.service';
 
-@UseGuards(ThrottlerGuard)
-@Throttle({ auth: { limit: 10, ttl: 60_000 } })
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ auth: { limit: 10, ttl: 60_000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body(new ZodValidationPipe(loginSchema)) body: LoginInput): Promise<AuthResponse> {
@@ -31,6 +31,8 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ auth: { limit: 20, ttl: 60_000 } })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(
@@ -46,12 +48,15 @@ export class AuthController {
     return this.authService.logout(body.refreshToken);
   }
 
+  // Sem throttle: o front chama /me em várias telas do shell (TanStack Query).
   @Get('me')
   me(@CurrentUser() user: RequestUser): Promise<MeResponse> {
     return this.authService.me(user.id);
   }
 
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
   @Post('forgot')
   @HttpCode(HttpStatus.ACCEPTED)
   async forgot(
@@ -62,6 +67,8 @@ export class AuthController {
   }
 
   @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ auth: { limit: 5, ttl: 60_000 } })
   @Post('reset')
   @HttpCode(HttpStatus.NO_CONTENT)
   reset(@Body(new ZodValidationPipe(resetPasswordSchema)) body: ResetPasswordInput): Promise<void> {

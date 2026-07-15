@@ -1,15 +1,18 @@
 import type { Noticia } from '@sindprf/types';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../../lib/datas';
 import { useNoticiasAdmin, useRemoverNoticia } from '../../hooks';
+import { NoticiaFormModal } from './NoticiaFormModal';
+
+type ModalNoticia = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 
 export function NoticiasAdminPage() {
   const { data: noticias, isLoading, isError } = useNoticiasAdmin();
   const remover = useRemoverNoticia();
   const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const [modal, setModal] = useState<ModalNoticia>(null);
 
   const onRemover = (noticia: Noticia) => {
     if (confirmandoId !== noticia.id) {
@@ -23,10 +26,15 @@ export function NoticiasAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Notícias"
+      descricao="Publique comunicados e organize rascunhos do site."
       acoes={
-        <Link to="/admin/noticias/nova" className="botao-primario">
+        <button
+          type="button"
+          className="botao-primario"
+          onClick={() => setModal({ modo: 'criar' })}
+        >
           Nova notícia
-        </Link>
+        </button>
       }
     >
       {isLoading && <EstadoCarregando />}
@@ -35,9 +43,13 @@ export function NoticiasAdminPage() {
       {noticias && noticias.length === 0 && (
         <div className="estado-vazio">
           <p>Nenhuma notícia criada ainda.</p>
-          <Link to="/admin/noticias/nova" className="botao-primario">
+          <button
+            type="button"
+            className="botao-primario"
+            onClick={() => setModal({ modo: 'criar' })}
+          >
             Publicar a primeira
-          </Link>
+          </button>
         </div>
       )}
 
@@ -63,7 +75,13 @@ export function NoticiasAdminPage() {
                   </td>
                   <td>{noticia.publicadoEm ? formatarData(noticia.publicadoEm) : '—'}</td>
                   <td className="tabela-acoes">
-                    <Link to={`/admin/noticias/${noticia.id}/editar`}>Editar</Link>
+                    <button
+                      type="button"
+                      className="botao-link-acao"
+                      onClick={() => setModal({ modo: 'editar', id: noticia.id })}
+                    >
+                      Editar
+                    </button>
                     <button
                       type="button"
                       className="botao-perigo"
@@ -80,6 +98,12 @@ export function NoticiasAdminPage() {
           </table>
         </div>
       )}
+
+      <NoticiaFormModal
+        aberto={modal !== null}
+        id={modal?.modo === 'editar' ? modal.id : undefined}
+        onFechar={() => setModal(null)}
+      />
     </AreaLayout>
   );
 }

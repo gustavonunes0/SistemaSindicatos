@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AfiliadoDashboardPage } from './features/afiliado/components/AfiliadoDashboardPage';
 import { AdminDashboardPage } from './features/admin/components/AdminDashboardPage';
@@ -7,14 +7,11 @@ import { RequireRole } from './features/auth/components/guards';
 import { LoginPage } from './features/auth/components/LoginPage';
 import { RedefinirSenhaPage } from './features/auth/components/RedefinirSenhaPage';
 import { ConvenioDetalhePage } from './features/convenios/components/ConvenioDetalhePage';
-import { ConvenioFormPage } from './features/convenios/components/admin/ConvenioFormPage';
 import { ConveniosAdminPage } from './features/convenios/components/admin/ConveniosAdminPage';
 import { ConveniosPage } from './features/convenios/components/ConveniosPage';
-import { NoticiaFormPage } from './features/noticias/components/admin/NoticiaFormPage';
 import { NoticiasAdminPage } from './features/noticias/components/admin/NoticiasAdminPage';
 import { NoticiaDetalhePage } from './features/noticias/components/NoticiaDetalhePage';
 import { NoticiasPage } from './features/noticias/components/NoticiasPage';
-import { ImovelFormPage } from './features/imoveis/components/admin/ImovelFormPage';
 import { ImoveisAdminPage } from './features/imoveis/components/admin/ImoveisAdminPage';
 import { ImovelDetalhePage } from './features/imoveis/components/ImovelDetalhePage';
 import { ImoveisPage } from './features/imoveis/components/ImoveisPage';
@@ -49,14 +46,14 @@ export const router = createBrowserRouter([
   { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
   { path: '/admin', element: protegidaAdmin(<AdminDashboardPage />) },
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
-  { path: '/admin/noticias/nova', element: protegidaAdmin(<NoticiaFormPage />) },
-  { path: '/admin/noticias/:id/editar', element: protegidaAdmin(<NoticiaFormPage />) },
+  { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
+  { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/convenios', element: protegidaAdmin(<ConveniosAdminPage />) },
-  { path: '/admin/convenios/novo', element: protegidaAdmin(<ConvenioFormPage />) },
-  { path: '/admin/convenios/:id/editar', element: protegidaAdmin(<ConvenioFormPage />) },
+  { path: '/admin/convenios/novo', element: <Navigate to="/admin/convenios" replace /> },
+  { path: '/admin/convenios/:id/editar', element: <Navigate to="/admin/convenios" replace /> },
   { path: '/admin/imoveis', element: protegidaAdmin(<ImoveisAdminPage />) },
-  { path: '/admin/imoveis/novo', element: protegidaAdmin(<ImovelFormPage />) },
-  { path: '/admin/imoveis/:id/editar', element: protegidaAdmin(<ImovelFormPage />) },
+  { path: '/admin/imoveis/novo', element: <Navigate to="/admin/imoveis" replace /> },
+  { path: '/admin/imoveis/:id/editar', element: <Navigate to="/admin/imoveis" replace /> },
   { path: '/admin/solicitacoes', element: protegidaAdmin(<SolicitacoesAdminPage />) },
   {
     path: '/admin/solicitacoes/:id',

@@ -21,7 +21,11 @@ export function AfiliadoDashboardPage() {
   const aprovado = afiliado?.status === 'APROVADO';
 
   return (
-    <AreaLayout tipo="afiliado" titulo="Minha área">
+    <AreaLayout
+      tipo="afiliado"
+      titulo="Minha área"
+      descricao="Acompanhe sua afiliação e acesse os benefícios disponíveis."
+    >
       {isLoading && <EstadoCarregando />}
       {isError && <p className="erro">Erro ao carregar seus dados.</p>}
 

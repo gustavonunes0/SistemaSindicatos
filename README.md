@@ -62,71 +62,85 @@ Se mesmo assim quiser tentar a API na Vercel:
 
 O erro `Cannot find module '@sindprf/types'` acontece quando o Nest builda sem compilar o pacote compartilhado antes. Use sempre `npm run build:api` / `build:web` (ou o `vercel.json` acima).
 
-## Deploy na VPS (Hostinger) — Docker
+## Deploy na VPS (Hostinger) — Docker + Supabase
 
-Sobe **Postgres + API + Frontend (nginx)** com o `docker-compose.yml` de produção.
+Sobe **API + Frontend (nginx)** na VPS. O banco fica no **Supabase** (já migrado).
 
 ### 1. Na VPS
 
 ```bash
-# Docker + Compose (Ubuntu/Debian)
-sudo apt update && sudo apt install -y docker.io docker-compose-v2
+sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
 sudo usermod -aG docker $USER   # saia e entre de novo na sessão
 
 git clone <seu-repositorio> sindprf
 cd sindprf
 cp .env.example .env
-nano .env   # preencha as variáveis abaixo
+nano .env
 ```
 
 ### 2. Variáveis obrigatórias (`.env` na raiz)
 
 | Variável | Exemplo | Notas |
 |----------|---------|--------|
-| `POSTGRES_PASSWORD` | senha forte | Banco só na rede interna do Docker |
+| `DATABASE_URL` | connection string Supabase | Session pooler ou Direct (`:5432`) |
 | `JWT_SECRET` | `openssl rand -hex 32` | Segredo dos tokens |
-| `WEB_URL` | `http://SEU_IP` ou `https://seudominio.com` | Origem do CORS (URL do front) |
-| `VITE_API_URL` | `http://SEU_IP:3000` ou `https://api.seudominio.com` | URL da API no navegador |
-| `SEED_ON_START` | `true` na 1ª vez | Cria admin; depois mude para `false` |
-| `SEED_ADMIN_SENHA` | senha forte | Senha inicial do admin |
+| `WEB_URL` | `http://SEU_IP` ou `https://seudominio.com` | CORS do front (**sem** `/` no final) |
+| `VITE_API_URL` | `http://SEU_IP:3000` | URL da API no navegador |
+| `SEED_ON_START` | `false` | Banco Supabase já tem admin; use `true` só se estiver vazio |
 
-Portas padrão: front `80`, API `3000`. Abra-as no firewall da Hostinger (e no `ufw` se estiver ativo).
+No Supabase → **Connect** → copie a URI **Session** (ou Direct). Na VPS não precisa do pooler `6543` da Vercel.
 
-### 3. Subir
+Portas: front `80`, API `3000` — abra no firewall da Hostinger.
+
+### 3. Subir (só api + web)
 
 ```bash
 docker compose up --build -d
-docker compose logs -f    # acompanhar
+docker compose ps
+curl http://127.0.0.1:3000/    # deve responder {"status":"ok",...}
 ```
 
 - Front: `http://SEU_IP`
-- API health: `http://SEU_IP:3000/`
-- Admin: `admin@sindprf.local` + a senha de `SEED_ADMIN_SENHA`
+- API: `http://SEU_IP:3000/`
+- Login: `admin@sindprf.local` (mesmo usuário do Supabase)
 
-Após a primeira subida bem-sucedida, edite `.env` com `SEED_ON_START=false` (não precisa rebuild).
+Migrations rodam no start da API (`prisma migrate deploy`). Como o banco já foi migrado, isso só confirma.
 
-Se mudar `VITE_API_URL`, rebuild do front:
+Se mudar `VITE_API_URL` ou `WEB_URL`:
 
 ```bash
+# WEB_URL: só reiniciar a api
+docker compose up -d api
+
+# VITE_API_URL: rebuild do front
 docker compose up --build -d web
 ```
 
-### 4. Domínio + HTTPS (recomendado)
+### 4. Postgres local (opcional)
 
-1. Aponte o DNS A do domínio (e opcionalmente `api.`) para o IP da VPS.
-2. Ajuste `WEB_URL` e `VITE_API_URL` para `https://...`.
-3. Use o proxy SSL da Hostinger, Cloudflare (Flexible/Full) ou Caddy/nginx na frente das portas 80/3000.
-
-### 5. Comandos úteis
+Só se **não** for usar Supabase:
 
 ```bash
-docker compose ps
-docker compose logs -f api
-docker compose exec api npx prisma db seed   # seed manual
-docker compose down                            # para os containers (mantém volumes)
+# no .env:
+# DATABASE_URL=postgresql://sindprf:SENHA@postgres:5432/sindprf?schema=public
+docker compose --profile local-db up --build -d
 ```
 
-Uploads ficam no volume `api_uploads`; o banco no volume `sindprf_pgdata`.
+### 5. Domínio + HTTPS
+
+1. DNS A do domínio → IP da VPS.
+2. `WEB_URL` / `VITE_API_URL` com `https://...`.
+3. Proxy SSL da Hostinger, Cloudflare ou Caddy na frente das portas 80/3000.
+
+### 6. Comandos úteis
+
+```bash
+docker compose logs -f api
+docker compose exec api npx prisma db seed
+docker compose down
+```
+
+Uploads ficam no volume `api_uploads`. O banco continua no Supabase.
 
 ## Scripts da raiz
 

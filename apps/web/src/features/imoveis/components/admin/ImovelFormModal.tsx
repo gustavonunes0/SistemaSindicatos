@@ -3,9 +3,8 @@ import { criarImovelSchema, type CriarImovelInput } from '@sindprf/types';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Link, useNavigate, useParams } from 'react-router-dom';
-import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { Modal } from '../../../../components/ui/Modal';
 import { formatarData } from '../../../../lib/datas';
 import { urlDaApi } from '../../../../lib/urls';
 import {
@@ -67,7 +66,7 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
 
   return (
     <section className="imovel-admin-periodos">
-      <h2 className="imovel-secao-titulo">Disponibilidade</h2>
+      <h3 className="imovel-secao-titulo">Disponibilidade</h3>
       <p className="area-subtitulo">
         Bloqueie ou marque reservas para o calendário dos afiliados.
       </p>
@@ -83,7 +82,10 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
         </label>
         <label>
           Tipo
-          <select value={tipo} onChange={(e) => setTipo(e.target.value as 'BLOQUEADO' | 'RESERVADO')}>
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value as 'BLOQUEADO' | 'RESERVADO')}
+          >
             <option value="BLOQUEADO">Indisponível</option>
             <option value="RESERVADO">Reservado</option>
           </select>
@@ -125,16 +127,21 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
   );
 }
 
-export function ImovelFormPage() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const { data: imovelExistente, isLoading } = useImovelAdmin(id);
+type ImovelFormModalProps = {
+  aberto: boolean;
+  id?: string;
+  onFechar: () => void;
+};
+
+export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) {
+  const { data: imovelExistente, isLoading } = useImovelAdmin(aberto ? id : undefined);
   const criar = useCriarImovel();
   const atualizar = useAtualizarImovel();
   const uploadFotos = useUploadFotosImovel();
   const removerFoto = useRemoverFotoImovel();
   const inputFotosRef = useRef<HTMLInputElement>(null);
   const [arquivosPendentes, setArquivosPendentes] = useState<File[]>([]);
+  const editando = Boolean(id);
 
   const {
     register,
@@ -154,6 +161,7 @@ export function ImovelFormPage() {
   });
 
   useEffect(() => {
+    if (!aberto) return;
     if (imovelExistente) {
       reset({
         titulo: imovelExistente.titulo,
@@ -163,8 +171,20 @@ export function ImovelFormPage() {
         comodidadesTexto: imovelExistente.comodidades.join('\n'),
         ativo: imovelExistente.ativo,
       });
+      return;
     }
-  }, [imovelExistente, reset]);
+    if (!id) {
+      reset({
+        titulo: '',
+        descricao: '',
+        endereco: '',
+        valor: 0,
+        comodidadesTexto: '',
+        ativo: true,
+      });
+      setArquivosPendentes([]);
+    }
+  }, [aberto, id, imovelExistente, reset]);
 
   const salvando = criar.isPending || atualizar.isPending || uploadFotos.isPending;
 
@@ -179,10 +199,9 @@ export function ImovelFormPage() {
 
   const onSubmit = (dados: ImovelFormValues) => {
     const payload = montarPayload(dados);
-    const irParaLista = () => navigate('/admin/imoveis');
 
     if (id) {
-      atualizar.mutate({ id, ...payload }, { onSuccess: irParaLista });
+      atualizar.mutate({ id, ...payload }, { onSuccess: onFechar });
       return;
     }
 
@@ -191,10 +210,10 @@ export function ImovelFormPage() {
         if (arquivosPendentes.length > 0) {
           uploadFotos.mutate(
             { id: imovel.id, arquivos: arquivosPendentes },
-            { onSuccess: irParaLista },
+            { onSuccess: onFechar },
           );
         } else {
-          irParaLista();
+          onFechar();
         }
       },
     });
@@ -211,106 +230,117 @@ export function ImovelFormPage() {
     if (inputFotosRef.current) inputFotosRef.current.value = '';
   };
 
-  if (id && isLoading) {
-    return (
-      <AreaLayout tipo="admin" titulo="Editar apartamento">
-        <EstadoCarregando mensagem="Carregando imóvel…" />
-      </AreaLayout>
-    );
-  }
-
   const fotos = imovelExistente?.fotos ?? [];
 
   return (
-    <AreaLayout
-      tipo="admin"
-      titulo={id ? 'Editar apartamento' : 'Novo apartamento'}
-      acoes={<Link to="/admin/imoveis">← Voltar</Link>}
+    <Modal
+      aberto={aberto}
+      onFechar={onFechar}
+      titulo={editando ? 'Editar apartamento' : 'Novo apartamento'}
+      descricao="Cadastre o imóvel, fotos e, após salvar, os períodos de disponibilidade."
+      tamanho="xl"
     >
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area">
-        <label>
-          Título
-          <input type="text" {...register('titulo')} autoComplete="off" />
-          {errors.titulo && <span className="erro">{errors.titulo.message}</span>}
-        </label>
+      {editando && isLoading ? (
+        <EstadoCarregando mensagem="Carregando imóvel…" />
+      ) : (
+        <>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area form-area--modal">
+            <label>
+              Título
+              <input type="text" {...register('titulo')} autoComplete="off" />
+              {errors.titulo && <span className="erro">{errors.titulo.message}</span>}
+            </label>
 
-        <label>
-          Endereço
-          <input type="text" {...register('endereco')} autoComplete="off" />
-          {errors.endereco && <span className="erro">{errors.endereco.message}</span>}
-        </label>
+            <label>
+              Endereço
+              <input type="text" {...register('endereco')} autoComplete="off" />
+              {errors.endereco && <span className="erro">{errors.endereco.message}</span>}
+            </label>
 
-        <label>
-          Valor por dia (R$)
-          <input type="number" step="0.01" min="0" {...register('valor')} />
-          {errors.valor && <span className="erro">{errors.valor.message}</span>}
-        </label>
+            <label>
+              Valor por dia (R$)
+              <input type="number" step="0.01" min="0" {...register('valor')} />
+              {errors.valor && <span className="erro">{errors.valor.message}</span>}
+            </label>
 
-        <label>
-          Descrição
-          <textarea rows={4} {...register('descricao')} />
-          {errors.descricao && <span className="erro">{errors.descricao.message}</span>}
-        </label>
+            <label>
+              Descrição
+              <textarea rows={4} {...register('descricao')} />
+              {errors.descricao && <span className="erro">{errors.descricao.message}</span>}
+            </label>
 
-        <label>
-          Comodidades
-          <textarea
-            rows={3}
-            {...register('comodidadesTexto')}
-            placeholder="Uma comodidade por linha (ex.: Wi-Fi, Garagem)"
-          />
-        </label>
+            <label>
+              Comodidades
+              <textarea
+                rows={3}
+                {...register('comodidadesTexto')}
+                placeholder="Uma comodidade por linha (ex.: Wi-Fi, Garagem)"
+              />
+            </label>
 
-        <div className="campo">
-          <span className="campo-rotulo">Fotos</span>
-          <input
-            ref={inputFotosRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            multiple
-            onChange={(evento) => onSelecionarFotos(evento.target.files)}
-          />
-          {uploadFotos.isPending && <span>Enviando fotos…</span>}
-          {uploadFotos.isError && <span className="erro">Erro ao enviar as fotos.</span>}
+            <div className="campo">
+              <span className="campo-rotulo">Fotos</span>
+              <input
+                ref={inputFotosRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                multiple
+                onChange={(evento) => onSelecionarFotos(evento.target.files)}
+              />
+              {uploadFotos.isPending && <span>Enviando fotos…</span>}
+              {uploadFotos.isError && <span className="erro">Erro ao enviar as fotos.</span>}
 
-          {!id && arquivosPendentes.length > 0 && (
-            <p className="imovel-fotos-pendentes">
-              {arquivosPendentes.length} foto(s) serão enviadas ao salvar.
-            </p>
-          )}
+              {!id && arquivosPendentes.length > 0 && (
+                <p className="imovel-fotos-pendentes">
+                  {arquivosPendentes.length} foto(s) serão enviadas ao salvar.
+                </p>
+              )}
 
-          {fotos.length > 0 && (
-            <div className="imovel-admin-fotos">
-              {fotos.map((foto) => (
-                <figure key={foto.id}>
-                  <img src={urlDaApi(foto.url)} alt="" />
-                  <button
-                    type="button"
-                    className="botao-link botao-perigo-texto"
-                    disabled={removerFoto.isPending}
-                    onClick={() => removerFoto.mutate({ imovelId: id!, fotoId: foto.id })}
-                  >
-                    Remover
-                  </button>
-                </figure>
-              ))}
+              {fotos.length > 0 && (
+                <div className="imovel-admin-fotos">
+                  {fotos.map((foto) => (
+                    <figure key={foto.id}>
+                      <img src={urlDaApi(foto.url)} alt="" />
+                      <button
+                        type="button"
+                        className="botao-link botao-perigo-texto"
+                        disabled={removerFoto.isPending}
+                        onClick={() => removerFoto.mutate({ imovelId: id!, fotoId: foto.id })}
+                      >
+                        Remover
+                      </button>
+                    </figure>
+                  ))}
+                </div>
+              )}
             </div>
-          )}
-        </div>
 
-        <label className="campo-checkbox">
-          <input type="checkbox" {...register('ativo')} />
-          Apartamento ativo (visível para afiliados aprovados)
-        </label>
+            <label className="campo-checkbox">
+              <input type="checkbox" {...register('ativo')} />
+              Apartamento ativo (visível para afiliados aprovados)
+            </label>
 
-        <div className="form-acoes">
-          <button type="submit" className="botao-primario" disabled={salvando}>
-            {salvando ? 'Salvando…' : id ? 'Salvar alterações' : 'Cadastrar apartamento'}
-          </button>
-        </div>
-      </form>
+            {(criar.isError || atualizar.isError) && (
+              <p className="erro">Erro ao salvar o apartamento. Tente novamente.</p>
+            )}
 
-      {id && <ImovelPeriodosAdmin imovelId={id} />}
-    </AreaLayout>
+            <div className="form-acoes">
+              <button type="button" className="botao-secundario" onClick={onFechar}>
+                Cancelar
+              </button>
+              <button type="submit" className="botao-primario" disabled={salvando}>
+                {salvando
+                  ? 'Salvando…'
+                  : editando
+                    ? 'Salvar alterações'
+                    : 'Cadastrar apartamento'}
+              </button>
+            </div>
+          </form>
+
+          {id && <ImovelPeriodosAdmin imovelId={id} />}
+        </>
+      )}
+    </Modal>
   );
 }

@@ -13,44 +13,65 @@ type LinkNav = {
   visivel?: boolean;
 };
 
+type GrupoNav = {
+  titulo?: string;
+  links: LinkNav[];
+};
+
 type AreaLayoutProps = {
   tipo: AreaTipo;
   titulo?: string;
+  descricao?: string;
   acoes?: React.ReactNode;
   children: React.ReactNode;
 };
 
-const linksAdmin: LinkNav[] = [
-  { to: '/admin', rotulo: 'Painel', end: true },
-  { to: '/admin/noticias', rotulo: 'Notícias' },
-  { to: '/admin/convenios', rotulo: 'Convênios' },
-  { to: '/admin/imoveis', rotulo: 'Apartamentos' },
-  { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
-  { to: '/', rotulo: 'Site público' },
+const gruposAdmin: GrupoNav[] = [
+  {
+    titulo: 'Operação',
+    links: [
+      { to: '/admin', rotulo: 'Painel', end: true },
+      { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
+    ],
+  },
+  {
+    titulo: 'Conteúdo',
+    links: [
+      { to: '/admin/noticias', rotulo: 'Notícias' },
+      { to: '/admin/convenios', rotulo: 'Convênios' },
+      { to: '/admin/imoveis', rotulo: 'Apartamentos' },
+    ],
+  },
+  {
+    links: [{ to: '/', rotulo: 'Site público' }],
+  },
 ];
 
-export function AreaLayout({ tipo, titulo, acoes, children }: AreaLayoutProps) {
+export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLayoutProps) {
   const [menuAberto, setMenuAberto] = useState(false);
   const { data } = useMe();
   const logout = useLogout();
   const aprovado = data?.afiliado?.status === 'APROVADO';
 
-  const linksAfiliado: LinkNav[] = [
-    { to: '/afiliado', rotulo: 'Minha área', end: true },
-    { to: '/afiliado/convenios', rotulo: 'Convênios', visivel: aprovado },
-    { to: '/afiliado/imoveis', rotulo: 'Apartamentos', visivel: aprovado },
-    { to: '/afiliado/solicitacoes', rotulo: 'Solicitações', visivel: aprovado },
+  const gruposAfiliado: GrupoNav[] = [
+    {
+      titulo: 'Minha conta',
+      links: [
+        { to: '/afiliado', rotulo: 'Visão geral', end: true },
+        { to: '/afiliado/convenios', rotulo: 'Convênios', visivel: aprovado },
+        { to: '/afiliado/imoveis', rotulo: 'Apartamentos', visivel: aprovado },
+        { to: '/afiliado/solicitacoes', rotulo: 'Solicitações', visivel: aprovado },
+      ],
+    },
   ];
 
-  const links = tipo === 'admin' ? linksAdmin : linksAfiliado.filter((link) => link.visivel !== false);
+  const grupos = tipo === 'admin' ? gruposAdmin : gruposAfiliado;
   const rotuloArea = tipo === 'admin' ? 'Administração' : 'Área do afiliado';
   const identificacao =
-    tipo === 'admin'
-      ? data?.user.email
-      : data?.afiliado?.nome ?? data?.user.email;
+    tipo === 'admin' ? data?.user.email : (data?.afiliado?.nome ?? data?.user.email);
 
   return (
-    <div className="area-shell">
+    <div className={`area-shell area-shell--${tipo}`}>
       <button
         type="button"
         className="area-menu-toggle"
@@ -58,7 +79,11 @@ export function AreaLayout({ tipo, titulo, acoes, children }: AreaLayoutProps) {
         aria-expanded={menuAberto}
         onClick={() => setMenuAberto((aberto) => !aberto)}
       >
-        {menuAberto ? 'Fechar' : 'Menu'}
+        <span className="area-menu-toggle-barras" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </span>
       </button>
 
       {menuAberto && (
@@ -80,39 +105,60 @@ export function AreaLayout({ tipo, titulo, acoes, children }: AreaLayoutProps) {
           <span className="area-sidebar-tipo">{rotuloArea}</span>
         </div>
 
-        <nav className="area-sidebar-nav">
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.end}
-              className={({ isActive }) =>
-                isActive ? 'area-nav-link ativo' : 'area-nav-link'
-              }
-              onClick={() => setMenuAberto(false)}
-            >
-              {link.rotulo}
-            </NavLink>
-          ))}
+        <nav className="area-sidebar-nav" aria-label={rotuloArea}>
+          {grupos.map((grupo, indiceGrupo) => {
+            const links = grupo.links.filter((link) => link.visivel !== false);
+            if (links.length === 0) return null;
+
+            return (
+              <div key={grupo.titulo ?? `grupo-${indiceGrupo}`} className="area-nav-grupo">
+                {grupo.titulo && <p className="area-nav-grupo-titulo">{grupo.titulo}</p>}
+                {links.map((link) => (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    end={link.end}
+                    className={({ isActive }) =>
+                      isActive ? 'area-nav-link ativo' : 'area-nav-link'
+                    }
+                    onClick={() => setMenuAberto(false)}
+                  >
+                    {link.rotulo}
+                  </NavLink>
+                ))}
+              </div>
+            );
+          })}
         </nav>
 
         <div className="area-sidebar-rodape">
-          {identificacao && <span className="area-sidebar-usuario">{identificacao}</span>}
+          {identificacao && (
+            <div className="area-sidebar-usuario-bloco">
+              <span className="area-sidebar-papel">
+                {tipo === 'admin' ? 'Administrador' : 'Afiliado'}
+              </span>
+              <span className="area-sidebar-usuario">{identificacao}</span>
+            </div>
+          )}
           <button
             type="button"
             className="area-sidebar-sair"
             onClick={() => logout.mutate()}
             disabled={logout.isPending}
           >
-            Sair
+            Encerrar sessão
           </button>
         </div>
       </aside>
 
       <div className="area-conteudo">
-        {(titulo || acoes) && (
+        {(titulo || acoes || descricao) && (
           <header className="area-topo">
-            {titulo && <h1>{titulo}</h1>}
+            <div className="area-topo-texto">
+              {tipo === 'admin' && <span className="eyebrow">Painel administrativo</span>}
+              {titulo && <h1>{titulo}</h1>}
+              {descricao && <p className="area-topo-descricao">{descricao}</p>}
+            </div>
             {acoes && <div className="area-topo-acoes">{acoes}</div>}
           </header>
         )}

@@ -1,18 +1,24 @@
 # Produção — VPS (Hostinger etc.)
-# Uso:
-#   1. cp .env.example .env   # preencha os valores
+# Uso com Supabase (recomendado):
+#   1. cp .env.example .env   # preencha DATABASE_URL do Supabase
 #   2. docker compose up --build -d
 #
-# Desenvolvimento local com hot reload: docker compose -f docker-compose.dev.yml up --build
+# Uso com Postgres local do Compose:
+#   docker compose --profile local-db up --build -d
+#   (e DATABASE_URL apontando para postgres:5432)
+#
+# Desenvolvimento local com hot reload:
+#   docker compose -f docker-compose.dev.yml up --build
 
 services:
   postgres:
+    profiles: ["local-db"]
     image: postgres:16
     container_name: sindprf-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-sindprf}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD no .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-sindprf}
       POSTGRES_DB: ${POSTGRES_DB:-sindprf}
     volumes:
       - sindprf_pgdata:/var/lib/postgresql/data
@@ -26,7 +32,6 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    # Porta NÃO publicada na internet — só a rede interna do Compose
 
   api:
     build:
@@ -37,7 +42,7 @@ services:
     ports:
       - "${API_PORT:-3000}:3000"
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-sindprf}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-sindprf}?schema=public
+      DATABASE_URL: ${DATABASE_URL:?Defina DATABASE_URL no .env (Supabase ou Postgres)}
       PORT: "3000"
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
       WEB_URL: ${WEB_URL:?Defina WEB_URL no .env}
@@ -51,6 +56,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: false
     healthcheck:
       test:
         [
