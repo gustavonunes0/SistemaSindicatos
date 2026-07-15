@@ -17,11 +17,17 @@ type ModuloAdmin = {
 
 const modulos: ModuloAdmin[] = [
   {
+    to: '/admin/afiliados',
+    titulo: 'Afiliados',
+    descricao: 'Aprove cadastros e gerencie o status da afiliação.',
+    acao: 'Abrir afiliados',
+    destaque: true,
+  },
+  {
     to: '/admin/solicitacoes',
     titulo: 'Solicitações de locação',
     descricao: 'Acompanhe e responda as conversas abertas pelos afiliados.',
     acao: 'Abrir fila',
-    destaque: true,
   },
   {
     to: '/admin/noticias',

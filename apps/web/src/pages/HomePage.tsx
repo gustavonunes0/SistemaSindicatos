@@ -29,8 +29,8 @@ export function HomePage() {
               <Link to="/login" className="botao-primario">
                 Área do afiliado
               </Link>
-              <Link to="/sobre" className="hero-link">
-                Conheça o sindicato <span aria-hidden="true">→</span>
+              <Link to="/cadastro" className="hero-link">
+                Quero me afiliar <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>

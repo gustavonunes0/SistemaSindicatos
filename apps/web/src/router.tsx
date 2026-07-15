@@ -1,6 +1,8 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AfiliadoDashboardPage } from './features/afiliado/components/AfiliadoDashboardPage';
+import { CadastroAfiliadoPage } from './features/afiliado/components/CadastroAfiliadoPage';
+import { AfiliadosAdminPage } from './features/afiliado/components/admin/AfiliadosAdminPage';
 import { AdminDashboardPage } from './features/admin/components/AdminDashboardPage';
 import { EsqueciSenhaPage } from './features/auth/components/EsqueciSenhaPage';
 import { RequireRole } from './features/auth/components/guards';
@@ -42,9 +44,11 @@ export const router = createBrowserRouter([
     ],
   },
   { path: '/login', element: <LoginPage /> },
+  { path: '/cadastro', element: <CadastroAfiliadoPage /> },
   { path: '/esqueci-senha', element: <EsqueciSenhaPage /> },
   { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
   { path: '/admin', element: protegidaAdmin(<AdminDashboardPage />) },
+  { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
   { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },
