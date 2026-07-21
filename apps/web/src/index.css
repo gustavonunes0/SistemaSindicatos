@@ -3517,6 +3517,47 @@ textarea {
   border: 0;
 }
 
+/* ---- Push: alertas de notícias ---- */
+.push-alertas {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  margin: 0 0 1.5rem;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid var(--amarelo-faixa);
+  background: color-mix(in srgb, var(--cor-primaria) 6%, transparent);
+}
+
+.push-alertas-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.push-alertas-texto strong {
+  font-size: var(--texto-sm);
+  color: var(--cor-primaria);
+}
+
+.push-alertas-texto span {
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+.push-alertas-acoes {
+  flex-shrink: 0;
+}
+
+.push-alertas-erro {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cor-erro, #b42318);
+}
+
 /* ---- PWA: instalar no celular ---- */
 .pwa-instalar-bar {
   position: fixed;

@@ -8,4 +8,5 @@ export * from './health';
 export * from './imovel';
 export * from './instagram';
 export * from './noticia';
+export * from './push';
 export * from './solicitacao-aluguel';

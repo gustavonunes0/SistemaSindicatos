@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
+import { BotaoAlertasNoticia } from '../../pwa/components/BotaoAlertasNoticia';
 import { marca } from '../../../lib/marca';
 import { useSeo } from '../../../lib/seo';
 import { useNoticias } from '../hooks';
@@ -18,6 +19,7 @@ export function NoticiasPage() {
       <div className="secao-inner">
         <span className="eyebrow">Comunicação</span>
         <h1>Notícias</h1>
+        <BotaoAlertasNoticia />
 
         {isLoading && <EstadoCarregando mensagem="Carregando notícias…" />}
         {isError && <p className="erro">Não foi possível carregar as notícias.</p>}

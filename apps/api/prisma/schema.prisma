@@ -121,6 +121,19 @@ model Noticia {
   @@map("noticias")
 }
 
+// Inscrições Web Push (notificações de notícias)
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  @@map("push_subscriptions")
+}
+
 // Cache do feed do Instagram (Fase 2.4)
 model InstagramPost {
   id           String   @id @default(cuid())

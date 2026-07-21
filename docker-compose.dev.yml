@@ -1,8 +1,13 @@
 # Desenvolvimento local (hot reload).
 # Uso: docker compose -f docker-compose.dev.yml up --build
+#
+# Por padrão a API usa DATABASE_URL do .env da raiz (ex.: Supabase produção).
+# Postgres local: docker compose -f docker-compose.dev.yml --profile local-db up --build
+#   e defina DATABASE_URL=postgresql://sindprf:sindprf@postgres:5432/sindprf?schema=public
 
 services:
   postgres:
+    profiles: ["local-db"]
     image: postgres:16
     container_name: sindprf-postgres
     restart: unless-stopped
@@ -31,7 +36,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DATABASE_URL: postgresql://sindprf:sindprf@postgres:5432/sindprf?schema=public
+      DATABASE_URL: ${DATABASE_URL}
       PORT: "3000"
       JWT_SECRET: ${JWT_SECRET:-dev-secret-troque-em-producao}
       WEB_URL: http://localhost:5173
@@ -39,13 +44,15 @@ services:
       INSTAGRAM_USER_ID: ${INSTAGRAM_USER_ID:-}
       INSTAGRAM_ACCESS_TOKEN: ${INSTAGRAM_ACCESS_TOKEN:-}
       SEED_ADMIN_SENHA: ${SEED_ADMIN_SENHA:-Admin@123}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:sindprfce@sindprfce.com.br}
     volumes:
       - .:/app
       - node_modules:/app/node_modules
       - api_uploads:/app/apps/api/uploads
-    depends_on:
-      postgres:
-        condition: service_healthy
+    env_file:
+      - .env
 
   web:
     build:

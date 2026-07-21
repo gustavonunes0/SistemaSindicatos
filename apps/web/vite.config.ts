@@ -46,9 +46,12 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/uploads\//],
+        importScripts: ['/sw-push.js'],
       },
+      // Push precisa de SW; em localhost o navegador aceita sem HTTPS.
+      // Sem `type: 'module'` para o importScripts de /sw-push.js funcionar.
       devOptions: {
-        enabled: false,
+        enabled: true,
       },
     }),
   ],

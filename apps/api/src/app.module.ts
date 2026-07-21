@@ -12,6 +12,7 @@ import { ConveniosModule } from './convenios/convenios.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
 import { InstagramModule } from './instagram/instagram.module';
 import { NoticiasModule } from './noticias/noticias.module';
+import { PushModule } from './push/push.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
@@ -29,6 +30,7 @@ import { StorageModule } from './storage/storage.module';
     AuthModule,
     AfiliadosModule,
     NoticiasModule,
+    PushModule,
     InstagramModule,
     ConveniosModule,
     ImoveisModule,

@@ -6,14 +6,18 @@ import type {
   ListarNoticiasQuery,
 } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { PushService } from '../push/push.service';
 import { gerarSlug } from './slug';
 
 @Injectable()
 export class NoticiasService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly pushService: PushService,
+  ) {}
 
   async criar(autorId: string, input: CriarNoticiaInput) {
-    return this.prisma.noticia.create({
+    const noticia = await this.prisma.noticia.create({
       data: {
         titulo: input.titulo,
         slug: await this.slugDisponivel(gerarSlug(input.titulo)),
@@ -24,6 +28,12 @@ export class NoticiasService {
         autorId,
       },
     });
+
+    if (noticia.status === 'PUBLICADO') {
+      void this.pushService.notificarNovaNoticia(noticia);
+    }
+
+    return noticia;
   }
 
   async atualizar(id: string, input: AtualizarNoticiaInput) {
@@ -43,6 +53,10 @@ export class NoticiasService {
     if (input.capaUrl !== undefined) {
       data.capaUrl = input.capaUrl;
     }
+
+    const publicandoAgora =
+      input.status === 'PUBLICADO' && noticia.status !== 'PUBLICADO';
+
     if (input.status !== undefined) {
       data.status = input.status;
       if (input.status === 'PUBLICADO' && !noticia.publicadoEm) {
@@ -50,7 +64,13 @@ export class NoticiasService {
       }
     }
 
-    return this.prisma.noticia.update({ where: { id }, data });
+    const atualizada = await this.prisma.noticia.update({ where: { id }, data });
+
+    if (publicandoAgora) {
+      void this.pushService.notificarNovaNoticia(atualizada);
+    }
+
+    return atualizada;
   }
 
   async remover(id: string): Promise<void> {

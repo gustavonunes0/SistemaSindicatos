@@ -51,6 +51,9 @@ services:
       INSTAGRAM_ACCESS_TOKEN: ${INSTAGRAM_ACCESS_TOKEN:-}
       SEED_ON_START: ${SEED_ON_START:-false}
       SEED_ADMIN_SENHA: ${SEED_ADMIN_SENHA:-}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:sindprfce@sindprfce.com.br}
     volumes:
       - api_uploads:/app/apps/api/uploads
     depends_on:
