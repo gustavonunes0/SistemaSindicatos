@@ -12,6 +12,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
     "strictBindCallApply": true,
     "noImplicitAny": true
   },
