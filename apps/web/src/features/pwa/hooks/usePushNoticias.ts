@@ -1,23 +1,24 @@
 import { useEffect, useState } from 'react';
+import { ativarPushNoticias, garantirPushNoticiasAtivo, mensagemErroPush } from '../ativar-push-noticias';
+import { cancelarInscricaoPush } from '../api';
 import {
-  buscarChaveVapid,
-  cancelarInscricaoPush,
-  registrarInscricaoPush,
-} from '../api';
-import {
-  chaveVapidParaUint8Array,
   marcarPushAtivadoLocal,
+  marcarPushOptOut,
   obterSubscriptionAtual,
-  pushAtivadoLocal,
   pushSuportado,
+  usuarioDesativouPush,
 } from '../push';
 
 type EstadoPush = 'indisponivel' | 'desativado' | 'ativado' | 'carregando';
 
+function estadoInicial(): EstadoPush {
+  if (!pushSuportado()) return 'indisponivel';
+  if (usuarioDesativouPush() || Notification.permission === 'denied') return 'desativado';
+  return 'carregando';
+}
+
 export function usePushNoticias() {
-  const [estado, setEstado] = useState<EstadoPush>(() =>
-    pushSuportado() ? (pushAtivadoLocal() ? 'ativado' : 'desativado') : 'indisponivel',
-  );
+  const [estado, setEstado] = useState<EstadoPush>(estadoInicial);
   const [erro, setErro] = useState<string | null>(null);
 
   useEffect(() => {
@@ -29,14 +30,11 @@ export function usePushNoticias() {
     let cancelado = false;
     void (async () => {
       try {
-        const sub = await obterSubscriptionAtual();
+        const ativo = await garantirPushNoticiasAtivo();
         if (cancelado) return;
-        if (sub && Notification.permission === 'granted') {
-          marcarPushAtivadoLocal(true);
-          setEstado('ativado');
-        } else {
+        setEstado(ativo ? 'ativado' : 'desativado');
+        if (!ativo && !usuarioDesativouPush()) {
           marcarPushAtivadoLocal(false);
-          setEstado('desativado');
         }
       } catch {
         if (!cancelado) setEstado('desativado');
@@ -54,39 +52,18 @@ export function usePushNoticias() {
     setEstado('carregando');
 
     try {
-      const permissao = await Notification.requestPermission();
-      if (permissao !== 'granted') {
-        setEstado('desativado');
-        setErro('Permissão de notificação negada.');
-        return;
+      const ok = await ativarPushNoticias();
+      setEstado(ok ? 'ativado' : 'desativado');
+      if (!ok) {
+        setErro(
+          Notification.permission === 'denied'
+            ? 'Notificações bloqueadas no navegador. Libere nas configurações do site.'
+            : 'Não foi possível ativar os alertas.',
+        );
       }
-
-      const publicKey = await buscarChaveVapid();
-      const registro = await navigator.serviceWorker.ready;
-      let subscription = await registro.pushManager.getSubscription();
-
-      if (!subscription) {
-        subscription = await registro.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: chaveVapidParaUint8Array(publicKey) as BufferSource,
-        });
-      }
-
-      const json = subscription.toJSON();
-      if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) {
-        throw new Error('Inscrição inválida');
-      }
-
-      await registrarInscricaoPush({
-        endpoint: json.endpoint,
-        keys: { p256dh: json.keys.p256dh, auth: json.keys.auth },
-      });
-
-      marcarPushAtivadoLocal(true);
-      setEstado('ativado');
     } catch (e) {
       setEstado('desativado');
-      setErro(e instanceof Error ? e.message : 'Não foi possível ativar os alertas.');
+      setErro(mensagemErroPush(e));
     }
   }
 
@@ -101,13 +78,22 @@ export function usePushNoticias() {
         await cancelarInscricaoPush(subscription.endpoint);
         await subscription.unsubscribe();
       }
+      marcarPushOptOut(true);
       marcarPushAtivadoLocal(false);
       setEstado('desativado');
     } catch (e) {
       setEstado('ativado');
-      setErro(e instanceof Error ? e.message : 'Não foi possível desativar os alertas.');
+      setErro(mensagemErroPush(e));
     }
   }
 
   return { estado, erro, ativar, desativar, suportado: estado !== 'indisponivel' };
+}
+
+/** Ativa alertas ao entrar no site (opt-out). Roda uma vez por montagem do layout público. */
+export function usePushNoticiasPorPadrao(): void {
+  useEffect(() => {
+    if (!pushSuportado() || usuarioDesativouPush()) return;
+    void garantirPushNoticiasAtivo().catch(() => undefined);
+  }, []);
 }

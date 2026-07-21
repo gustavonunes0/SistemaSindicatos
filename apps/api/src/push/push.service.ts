@@ -55,6 +55,9 @@ export class PushService {
 
     const inscricoes = await this.prisma.pushSubscription.findMany();
     if (inscricoes.length === 0) {
+      this.logger.warn(
+        'Nenhum dispositivo inscrito em push — peça para ativar alertas em /noticias',
+      );
       return;
     }
 

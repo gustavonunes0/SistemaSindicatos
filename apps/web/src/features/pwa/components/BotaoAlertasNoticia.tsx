@@ -7,29 +7,39 @@ export function BotaoAlertasNoticia() {
     return null;
   }
 
+  const carregando = estado === 'carregando';
+  const mostrarComoAtivo = estado === 'ativado' || carregando;
+
   return (
     <aside className="push-alertas" aria-label="Alertas de notícias">
       <div className="push-alertas-texto">
-        <strong>Alertas no celular</strong>
+        <strong>Alertas de notícias</strong>
         <span>
-          {estado === 'ativado'
-            ? 'Você recebe aviso quando uma notícia for publicada.'
-            : 'Ative para ser avisado ao publicar uma notícia.'}
+          {mostrarComoAtivo
+            ? carregando
+              ? 'Ativando alertas neste aparelho…'
+              : 'Ativos por padrão neste aparelho. Você recebe aviso ao publicar uma notícia.'
+            : 'Alertas desativados. Toque em reativar para voltar a receber novidades.'}
         </span>
       </div>
       <div className="push-alertas-acoes">
-        {estado === 'ativado' ? (
-          <button type="button" className="botao-secundario" onClick={() => void desativar()}>
+        {mostrarComoAtivo ? (
+          <button
+            type="button"
+            className="botao-secundario"
+            disabled={carregando}
+            onClick={() => void desativar()}
+          >
             Desativar alertas
           </button>
         ) : (
           <button
             type="button"
             className="botao-primario"
-            disabled={estado === 'carregando'}
+            disabled={carregando}
             onClick={() => void ativar()}
           >
-            {estado === 'carregando' ? 'Ativando…' : 'Ativar alertas'}
+            Reativar alertas
           </button>
         )}
       </div>

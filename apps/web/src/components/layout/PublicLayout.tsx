@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { MarcaHeaderLink } from '../ui/MarcaHeader';
 import { LogoLink } from '../ui/Logo';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
+import { usePushNoticiasPorPadrao } from '../../features/pwa/hooks/usePushNoticias';
 import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
 import { marca } from '../../lib/marca';
@@ -18,6 +19,7 @@ const links = [
 export function PublicLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
   const user = useAuthStore((state) => state.user);
+  usePushNoticiasPorPadrao();
 
   return (
     <div className="site">
