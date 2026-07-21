@@ -26,6 +26,7 @@ jobs:
 
     env:
       DATABASE_URL: postgresql://sindprf:sindprf@localhost:5432/sindprf?schema=public
+      DIRECT_URL: postgresql://sindprf:sindprf@localhost:5432/sindprf?schema=public
       JWT_SECRET: ci-secret-troque-em-producao
       WEB_URL: http://localhost:5173
       SEED_ADMIN_SENHA: Admin@123
