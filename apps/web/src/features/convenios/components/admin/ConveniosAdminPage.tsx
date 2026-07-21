@@ -2,6 +2,7 @@ import type { Convenio } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { useConveniosAdmin, useRemoverConvenio } from '../../hooks';
 import { ConvenioFormModal } from './ConvenioFormModal';
 
@@ -10,15 +11,16 @@ type ModalConvenio = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 export function ConveniosAdminPage() {
   const { data: convenios, isLoading, isError } = useConveniosAdmin();
   const remover = useRemoverConvenio();
-  const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalConvenio>(null);
 
   const onRemover = (convenio: Convenio) => {
-    if (confirmandoId !== convenio.id) {
-      setConfirmandoId(convenio.id);
-      return;
-    }
-    remover.mutate(convenio.id, { onSettled: () => setConfirmandoId(null) });
+    pedirConfirmacao({
+      titulo: 'Excluir convênio?',
+      descricao: `O convênio “${convenio.nome}” será removido permanentemente.`,
+      confirmarRotulo: 'Excluir',
+      onConfirmar: () => remover.mutateAsync(convenio.id),
+    });
   };
 
   return (
@@ -86,11 +88,10 @@ export function ConveniosAdminPage() {
                     <button
                       type="button"
                       className="botao-perigo"
-                      disabled={remover.isPending && confirmandoId === convenio.id}
+                      disabled={remover.isPending}
                       onClick={() => onRemover(convenio)}
-                      onBlur={() => setConfirmandoId(null)}
                     >
-                      {confirmandoId === convenio.id ? 'Confirmar exclusão?' : 'Excluir'}
+                      Excluir
                     </button>
                   </td>
                 </tr>
@@ -105,6 +106,7 @@ export function ConveniosAdminPage() {
         id={modal?.modo === 'editar' ? modal.id : undefined}
         onFechar={() => setModal(null)}
       />
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

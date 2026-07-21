@@ -2,6 +2,7 @@ import type { StatusSolicitacao } from '@sindprf/types';
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../hooks/useConfirmacao';
 import { formatarData } from '../../../lib/datas';
 import { useAtualizarStatusSolicitacao, useSolicitacao } from '../hooks';
 import { rotuloStatusSolicitacao } from '../status';
@@ -16,13 +17,22 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
   const { id = '' } = useParams();
   const { data: solicitacao, isLoading, isError } = useSolicitacao(id);
   const atualizarStatus = useAtualizarStatusSolicitacao();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   const voltar =
     visao === 'admin' ? '/admin/solicitacoes' : '/afiliado/solicitacoes';
   const rotuloVoltar = visao === 'admin' ? '← Solicitações' : '← Minhas solicitações';
 
   const onMudarStatus = (status: StatusSolicitacao) => {
-    atualizarStatus.mutate({ id, status });
+    if (!solicitacao || status === solicitacao.status) return;
+
+    pedirConfirmacao({
+      titulo: 'Alterar status?',
+      descricao: `A solicitação passará de “${rotuloStatusSolicitacao[solicitacao.status]}” para “${rotuloStatusSolicitacao[status]}”.`,
+      confirmarRotulo: 'Alterar',
+      tom: status === 'FECHADA' ? 'perigo' : 'primario',
+      onConfirmar: () => atualizarStatus.mutateAsync({ id, status }),
+    });
   };
 
   if (isLoading) {
@@ -87,6 +97,7 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
         solicitacaoId={solicitacao.id}
         encerrada={solicitacao.status === 'FECHADA'}
       />
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

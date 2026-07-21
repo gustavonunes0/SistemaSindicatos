@@ -2,6 +2,7 @@ import type { Imovel } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarMoeda } from '../../../../lib/moeda';
 import { useImoveisAdmin, useRemoverImovel } from '../../hooks';
 import { ImovelFormModal } from './ImovelFormModal';
@@ -11,15 +12,16 @@ type ModalImovel = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 export function ImoveisAdminPage() {
   const { data: imoveis, isLoading, isError } = useImoveisAdmin();
   const remover = useRemoverImovel();
-  const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalImovel>(null);
 
   const onRemover = (imovel: Imovel) => {
-    if (confirmandoId !== imovel.id) {
-      setConfirmandoId(imovel.id);
-      return;
-    }
-    remover.mutate(imovel.id, { onSettled: () => setConfirmandoId(null) });
+    pedirConfirmacao({
+      titulo: 'Excluir apartamento?',
+      descricao: `O imóvel “${imovel.titulo}” será removido permanentemente, incluindo fotos e períodos.`,
+      confirmarRotulo: 'Excluir',
+      onConfirmar: () => remover.mutateAsync(imovel.id),
+    });
   };
 
   return (
@@ -89,11 +91,10 @@ export function ImoveisAdminPage() {
                     <button
                       type="button"
                       className="botao-perigo"
-                      disabled={remover.isPending && confirmandoId === imovel.id}
+                      disabled={remover.isPending}
                       onClick={() => onRemover(imovel)}
-                      onBlur={() => setConfirmandoId(null)}
                     >
-                      {confirmandoId === imovel.id ? 'Confirmar exclusão?' : 'Excluir'}
+                      Excluir
                     </button>
                   </td>
                 </tr>
@@ -108,6 +109,7 @@ export function ImoveisAdminPage() {
         id={modal?.modo === 'editar' ? modal.id : undefined}
         onFechar={() => setModal(null)}
       />
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

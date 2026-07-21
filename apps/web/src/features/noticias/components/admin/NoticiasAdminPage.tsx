@@ -2,6 +2,7 @@ import type { Noticia } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import { useNoticiasAdmin, useRemoverNoticia } from '../../hooks';
 import { NoticiaFormModal } from './NoticiaFormModal';
@@ -11,15 +12,16 @@ type ModalNoticia = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 export function NoticiasAdminPage() {
   const { data: noticias, isLoading, isError } = useNoticiasAdmin();
   const remover = useRemoverNoticia();
-  const [confirmandoId, setConfirmandoId] = useState<string | null>(null);
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalNoticia>(null);
 
   const onRemover = (noticia: Noticia) => {
-    if (confirmandoId !== noticia.id) {
-      setConfirmandoId(noticia.id);
-      return;
-    }
-    remover.mutate(noticia.id, { onSettled: () => setConfirmandoId(null) });
+    pedirConfirmacao({
+      titulo: 'Excluir notícia?',
+      descricao: `A notícia “${noticia.titulo}” será removida permanentemente.`,
+      confirmarRotulo: 'Excluir',
+      onConfirmar: () => remover.mutateAsync(noticia.id),
+    });
   };
 
   return (
@@ -85,11 +87,10 @@ export function NoticiasAdminPage() {
                     <button
                       type="button"
                       className="botao-perigo"
-                      disabled={remover.isPending && confirmandoId === noticia.id}
+                      disabled={remover.isPending}
                       onClick={() => onRemover(noticia)}
-                      onBlur={() => setConfirmandoId(null)}
                     >
-                      {confirmandoId === noticia.id ? 'Confirmar exclusão?' : 'Excluir'}
+                      Excluir
                     </button>
                   </td>
                 </tr>
@@ -104,6 +105,7 @@ export function NoticiasAdminPage() {
         id={modal?.modo === 'editar' ? modal.id : undefined}
         onFechar={() => setModal(null)}
       />
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

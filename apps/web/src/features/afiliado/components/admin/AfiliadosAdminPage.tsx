@@ -2,9 +2,10 @@ import type { StatusAfiliado } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
-import { useAfiliadosAdmin, useAtualizarStatusAfiliado } from '../../hooks';
 import type { AfiliadoAdmin } from '../../api';
+import { useAfiliadosAdmin, useAtualizarStatusAfiliado } from '../../hooks';
 import { AfiliadoSenhaModal } from './AfiliadoSenhaModal';
 
 const filtros: { valor: StatusAfiliado | ''; rotulo: string }[] = [
@@ -27,6 +28,21 @@ export function AfiliadosAdminPage() {
   );
   const { data: afiliados, isLoading, isError } = useAfiliadosAdmin(filtro || undefined);
   const atualizarStatus = useAtualizarStatusAfiliado();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
+
+  const onMudarStatus = (
+    afiliado: AfiliadoAdmin,
+    status: StatusAfiliado,
+    opcoes: { titulo: string; descricao: string; confirmarRotulo: string; tom?: 'perigo' | 'primario' },
+  ) => {
+    pedirConfirmacao({
+      titulo: opcoes.titulo,
+      descricao: opcoes.descricao,
+      confirmarRotulo: opcoes.confirmarRotulo,
+      tom: opcoes.tom,
+      onConfirmar: () => atualizarStatus.mutateAsync({ id: afiliado.id, status }),
+    });
+  };
 
   return (
     <AreaLayout
@@ -97,7 +113,12 @@ export function AfiliadosAdminPage() {
                         className="botao-link-acao"
                         disabled={atualizarStatus.isPending}
                         onClick={() =>
-                          atualizarStatus.mutate({ id: afiliado.id, status: 'APROVADO' })
+                          onMudarStatus(afiliado, 'APROVADO', {
+                            titulo: 'Aprovar afiliado?',
+                            descricao: `${afiliado.nome} passará a ter acesso à área do afiliado.`,
+                            confirmarRotulo: 'Aprovar',
+                            tom: 'primario',
+                          })
                         }
                       >
                         Aprovar
@@ -109,7 +130,11 @@ export function AfiliadosAdminPage() {
                         className="botao-perigo"
                         disabled={atualizarStatus.isPending}
                         onClick={() =>
-                          atualizarStatus.mutate({ id: afiliado.id, status: 'INATIVO' })
+                          onMudarStatus(afiliado, 'INATIVO', {
+                            titulo: 'Inativar afiliado?',
+                            descricao: `${afiliado.nome} perderá o acesso à área do afiliado.`,
+                            confirmarRotulo: 'Inativar',
+                          })
                         }
                       >
                         Inativar
@@ -121,7 +146,12 @@ export function AfiliadosAdminPage() {
                         className="botao-link-acao"
                         disabled={atualizarStatus.isPending}
                         onClick={() =>
-                          atualizarStatus.mutate({ id: afiliado.id, status: 'PENDENTE' })
+                          onMudarStatus(afiliado, 'PENDENTE', {
+                            titulo: 'Reabrir afiliação?',
+                            descricao: `${afiliado.nome} voltará para o status pendente.`,
+                            confirmarRotulo: 'Reabrir',
+                            tom: 'primario',
+                          })
                         }
                       >
                         Reabrir
@@ -136,6 +166,7 @@ export function AfiliadosAdminPage() {
       )}
 
       <AfiliadoSenhaModal afiliado={afiliadoSenha} onFechar={() => setAfiliadoSenha(null)} />
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

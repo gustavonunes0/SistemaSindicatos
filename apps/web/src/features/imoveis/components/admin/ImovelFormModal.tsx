@@ -5,6 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { Modal } from '../../../../components/ui/Modal';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import { urlDaApi } from '../../../../lib/urls';
 import {
@@ -36,6 +37,7 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
   const { data: periodos } = usePeriodosAdmin(imovelId);
   const criarPeriodo = useCriarPeriodoImovel();
   const removerPeriodo = useRemoverPeriodoImovel();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [inicio, setInicio] = useState('');
   const [fim, setFim] = useState('');
   const [tipo, setTipo] = useState<'BLOQUEADO' | 'RESERVADO'>('BLOQUEADO');
@@ -115,7 +117,15 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
                 type="button"
                 className="botao-link botao-perigo-texto"
                 disabled={removerPeriodo.isPending}
-                onClick={() => removerPeriodo.mutate({ imovelId, periodoId: periodo.id })}
+                onClick={() =>
+                  pedirConfirmacao({
+                    titulo: 'Remover período?',
+                    descricao: `O período de ${formatarData(periodo.inicio)} a ${formatarData(periodo.fim)} será removido do calendário.`,
+                    confirmarRotulo: 'Remover',
+                    onConfirmar: () =>
+                      removerPeriodo.mutateAsync({ imovelId, periodoId: periodo.id }),
+                  })
+                }
               >
                 Remover
               </button>
@@ -123,6 +133,7 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
           ))}
         </ul>
       )}
+      {modalConfirmacao}
     </section>
   );
 }
@@ -139,6 +150,7 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
   const atualizar = useAtualizarImovel();
   const uploadFotos = useUploadFotosImovel();
   const removerFoto = useRemoverFotoImovel();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const inputFotosRef = useRef<HTMLInputElement>(null);
   const [arquivosPendentes, setArquivosPendentes] = useState<File[]>([]);
   const editando = Boolean(id);
@@ -233,23 +245,24 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
   const fotos = imovelExistente?.fotos ?? [];
 
   return (
-    <Modal
-      aberto={aberto}
-      onFechar={onFechar}
-      titulo={editando ? 'Editar apartamento' : 'Novo apartamento'}
-      descricao="Cadastre o imóvel, fotos e, após salvar, os períodos de disponibilidade."
-      tamanho="xl"
-    >
-      {editando && isLoading ? (
-        <EstadoCarregando mensagem="Carregando imóvel…" />
-      ) : (
-        <>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area form-area--modal">
-            <label>
-              Título
-              <input type="text" {...register('titulo')} autoComplete="off" />
-              {errors.titulo && <span className="erro">{errors.titulo.message}</span>}
-            </label>
+    <>
+      <Modal
+        aberto={aberto}
+        onFechar={onFechar}
+        titulo={editando ? 'Editar apartamento' : 'Novo apartamento'}
+        descricao="Cadastre o imóvel, fotos e, após salvar, os períodos de disponibilidade."
+        tamanho="xl"
+      >
+        {editando && isLoading ? (
+          <EstadoCarregando mensagem="Carregando imóvel…" />
+        ) : (
+          <>
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area form-area--modal">
+              <label>
+                Título
+                <input type="text" {...register('titulo')} autoComplete="off" />
+                {errors.titulo && <span className="erro">{errors.titulo.message}</span>}
+              </label>
 
             <label>
               Endereço
@@ -305,7 +318,15 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
                         type="button"
                         className="botao-link botao-perigo-texto"
                         disabled={removerFoto.isPending}
-                        onClick={() => removerFoto.mutate({ imovelId: id!, fotoId: foto.id })}
+                        onClick={() =>
+                          pedirConfirmacao({
+                            titulo: 'Remover foto?',
+                            descricao: 'A foto será excluída permanentemente deste apartamento.',
+                            confirmarRotulo: 'Remover',
+                            onConfirmar: () =>
+                              removerFoto.mutateAsync({ imovelId: id!, fotoId: foto.id }),
+                          })
+                        }
                       >
                         Remover
                       </button>
@@ -341,6 +362,8 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
           {id && <ImovelPeriodosAdmin imovelId={id} />}
         </>
       )}
-    </Modal>
+      </Modal>
+      {modalConfirmacao}
+    </>
   );
 }

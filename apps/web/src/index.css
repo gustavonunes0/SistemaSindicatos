@@ -2416,6 +2416,12 @@ textarea {
   border-top: var(--borda-fina);
 }
 
+.confirmacao-modal .form-acoes {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
 .form-linha-completa {
   grid-column: 1 / -1;
 }
