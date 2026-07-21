@@ -10,7 +10,7 @@
     "experimentalDecorators": true,
     "sourceMap": true,
     "outDir": "./dist",
-    "baseUrl": "./",
+    "rootDir": "./src",
     "incremental": true,
     "strictBindCallApply": true,
     "noImplicitAny": true
