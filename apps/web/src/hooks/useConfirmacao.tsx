@@ -7,7 +7,7 @@ type PedidoConfirmacao = {
   confirmarRotulo?: string;
   cancelarRotulo?: string;
   tom?: 'perigo' | 'primario';
-  onConfirmar: () => void | Promise<void>;
+  onConfirmar: () => void | Promise<unknown>;
 };
 
 export function useConfirmacao() {
