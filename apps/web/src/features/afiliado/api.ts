@@ -1,4 +1,9 @@
-import { afiliadoSchema, type CadastroAfiliadoInput, type StatusAfiliado } from '@sindprf/types';
+import {
+  afiliadoSchema,
+  type AdminAtualizarSenhaAfiliadoInput,
+  type CadastroAfiliadoInput,
+  type StatusAfiliado,
+} from '@sindprf/types';
 import { z } from 'zod';
 import { api } from '../../lib/http';
 
@@ -21,4 +26,11 @@ export async function listarAfiliadosAdmin(status?: StatusAfiliado) {
 export async function atualizarStatusAfiliado(id: string, status: StatusAfiliado) {
   const { data } = await api.patch(`/afiliados/${id}/status`, { status });
   return afiliadoSchema.parse(data);
+}
+
+export async function atualizarSenhaAfiliadoAdmin(
+  id: string,
+  input: AdminAtualizarSenhaAfiliadoInput,
+): Promise<void> {
+  await api.patch(`/afiliados/${id}/senha`, input);
 }

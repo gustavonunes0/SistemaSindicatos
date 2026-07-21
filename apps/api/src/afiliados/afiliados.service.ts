@@ -55,4 +55,27 @@ export class AfiliadosService {
       throw error;
     }
   }
+
+  async atualizarSenha(id: string, novaSenha: string): Promise<void> {
+    const afiliado = await this.prisma.afiliado.findUnique({
+      where: { id },
+      select: { userId: true },
+    });
+    if (!afiliado) {
+      throw new NotFoundException('Afiliado não encontrado');
+    }
+
+    const senhaHash = await bcrypt.hash(novaSenha, BCRYPT_ROUNDS);
+    await this.prisma.$transaction([
+      this.prisma.user.update({
+        where: { id: afiliado.userId },
+        data: { senhaHash },
+      }),
+      // Derruba sessões ativas após troca de senha pelo admin.
+      this.prisma.refreshToken.updateMany({
+        where: { userId: afiliado.userId, revogado: false },
+        data: { revogado: true },
+      }),
+    ]);
+  }
 }

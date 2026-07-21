@@ -31,6 +31,11 @@ export const atualizarStatusAfiliadoSchema = z.object({
 });
 export type AtualizarStatusAfiliadoInput = z.infer<typeof atualizarStatusAfiliadoSchema>;
 
+export const adminAtualizarSenhaAfiliadoSchema = z.object({
+  novaSenha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+});
+export type AdminAtualizarSenhaAfiliadoInput = z.infer<typeof adminAtualizarSenhaAfiliadoSchema>;
+
 export const filtroAfiliadosSchema = z.object({
   status: statusAfiliadoSchema.optional(),
 });

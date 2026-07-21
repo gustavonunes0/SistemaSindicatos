@@ -1,5 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { CadastroAfiliadoInput, StatusAfiliado } from '@sindprf/types';
+import type {
+  AdminAtualizarSenhaAfiliadoInput,
+  CadastroAfiliadoInput,
+  StatusAfiliado,
+} from '@sindprf/types';
 import * as afiliadosApi from './api';
 
 export function useCadastroAfiliado() {
@@ -23,5 +27,12 @@ export function useAtualizarStatusAfiliado() {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['afiliados'] });
     },
+  });
+}
+
+export function useAtualizarSenhaAfiliadoAdmin() {
+  return useMutation({
+    mutationFn: ({ id, ...input }: { id: string } & AdminAtualizarSenhaAfiliadoInput) =>
+      afiliadosApi.atualizarSenhaAfiliadoAdmin(id, input),
   });
 }

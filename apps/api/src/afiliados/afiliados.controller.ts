@@ -1,9 +1,22 @@
-import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
+  adminAtualizarSenhaAfiliadoSchema,
   atualizarStatusAfiliadoSchema,
   cadastroAfiliadoSchema,
   filtroAfiliadosSchema,
+  type AdminAtualizarSenhaAfiliadoInput,
   type AtualizarStatusAfiliadoInput,
   type CadastroAfiliadoInput,
   type FiltroAfiliadosInput,
@@ -37,5 +50,16 @@ export class AfiliadosController {
     @Body(new ZodValidationPipe(atualizarStatusAfiliadoSchema)) body: AtualizarStatusAfiliadoInput,
   ) {
     return this.afiliadosService.atualizarStatus(id, body.status);
+  }
+
+  @Roles('ADMIN')
+  @Patch(':id/senha')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  atualizarSenha(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(adminAtualizarSenhaAfiliadoSchema))
+    body: AdminAtualizarSenhaAfiliadoInput,
+  ) {
+    return this.afiliadosService.atualizarSenha(id, body.novaSenha);
   }
 }
