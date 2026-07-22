@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   adminAtualizarSenhaAfiliadoSchema,
   atualizarStatusAfiliadoSchema,
@@ -32,6 +32,7 @@ export class AfiliadosController {
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ cadastro: { limit: 5, ttl: 60_000 } })
+  @SkipThrottle({ auth: true })
   @Post('cadastro')
   cadastrar(@Body(new ZodValidationPipe(cadastroAfiliadoSchema)) body: CadastroAfiliadoInput) {
     return this.afiliadosService.cadastrar(body);

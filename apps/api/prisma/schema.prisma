@@ -45,6 +45,8 @@ model User {
   resetTokens    PasswordResetToken[]
   noticias       Noticia[]        @relation("AutorNoticia")
   mensagens      Mensagem[]       @relation("AutorMensagem")
+  membrosComissao        MembroComissaoEleitoral[]
+  contestacoesDecididas  ContestacaoChapa[]        @relation("DecisorContestacao")
 
   @@map("users")
 }
@@ -92,6 +94,7 @@ model Afiliado {
   elegibilidades   Elegivel[]
   comparecimentos  Comparecimento[]
   solicitacoes     SolicitacaoAluguel[]
+  contestacoes     ContestacaoChapa[]
 
   @@map("afiliados")
 }
@@ -188,41 +191,108 @@ enum StatusEleicao {
   APURADA
 }
 
+enum ChapaStatus {
+  INSCRITA
+  HOMOLOGADA
+  NAO_HOMOLOGADA
+}
+
+enum TipoContestacao {
+  IMPUGNACAO
+  RECURSO
+}
+
+enum StatusContestacao {
+  ABERTA
+  DEFERIDA
+  INDEFERIDA
+}
+
 model Eleicao {
-  id        String        @id @default(cuid())
-  titulo    String
-  descricao String?       @db.Text
-  inicio    DateTime      @db.Timestamptz
-  fim       DateTime      @db.Timestamptz
-  status    StatusEleicao @default(AGENDADA)
-  createdAt DateTime      @default(now()) @db.Timestamptz
-  updatedAt DateTime      @updatedAt @db.Timestamptz
+  id                    String        @id @default(cuid())
+  titulo                String
+  descricao             String?       @db.Text
+  inicio                DateTime      @db.Timestamptz
+  fim                   DateTime      @db.Timestamptz
+  inscricaoInicio       DateTime?     @db.Timestamptz
+  inscricaoFim          DateTime?     @db.Timestamptz
+  status                StatusEleicao @default(AGENDADA)
+  resolvidaPorAclamacao Boolean       @default(false)
+  createdAt             DateTime      @default(now()) @db.Timestamptz
+  updatedAt             DateTime      @updatedAt @db.Timestamptz
 
   chapas          Chapa[]
   elegiveis       Elegivel[]
   comparecimentos Comparecimento[]
   votos           Voto[]
   resultados      ResultadoApuracao[]
+  membrosComissao MembroComissaoEleitoral[]
 
   @@map("eleicoes")
 }
 
-model Chapa {
+// Comissão Eleitoral (Art. 38 §4º do Estatuto) — membros ADMIN designados
+// para acompanhar/decidir o pleito de uma eleição específica. Registro
+// informativo/auditoria: NÃO cria uma permissão própria, os guards
+// continuam checando só role === ADMIN.
+model MembroComissaoEleitoral {
   id        String   @id @default(cuid())
   eleicaoId String
-  numero    Int
-  nome      String
-  slogan    String?
+  userId    String
+  titular   Boolean  @default(true)
   createdAt DateTime @default(now()) @db.Timestamptz
 
-  eleicao    Eleicao             @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
-  candidatos Candidato[]
-  votos      Voto[]
-  resultados ResultadoApuracao[]
+  eleicao Eleicao @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eleicaoId, userId])
+  @@index([eleicaoId])
+  @@map("membros_comissao_eleitoral")
+}
+
+model Chapa {
+  id                        String      @id @default(cuid())
+  eleicaoId                 String
+  numero                    Int
+  nome                      String
+  slogan                    String?
+  status                    ChapaStatus @default(INSCRITA)
+  justificativaHomologacao  String?     @db.Text
+  homologadaEm              DateTime?   @db.Timestamptz
+  prazoContestacaoFim       DateTime?   @db.Timestamptz
+  createdAt                 DateTime    @default(now()) @db.Timestamptz
+
+  eleicao      Eleicao             @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
+  candidatos   Candidato[]
+  votos        Voto[]
+  resultados   ResultadoApuracao[]
+  contestacoes ContestacaoChapa[]
 
   @@unique([eleicaoId, numero])
   @@index([eleicaoId])
   @@map("chapas")
+}
+
+// Impugnação (contra chapa HOMOLOGADA) ou recurso (contra NAO_HOMOLOGADA),
+// dentro do prazo de Chapa.prazoContestacaoFim (Art. 38 §13º/§18º/§19º).
+model ContestacaoChapa {
+  id                String            @id @default(cuid())
+  chapaId           String
+  tipo              TipoContestacao
+  afiliadoId        String
+  motivo            String            @db.Text
+  status            StatusContestacao @default(ABERTA)
+  decisao           String?           @db.Text
+  decididoPorUserId String?
+  decididoEm        DateTime?         @db.Timestamptz
+  createdAt         DateTime          @default(now()) @db.Timestamptz
+
+  chapa       Chapa    @relation(fields: [chapaId], references: [id], onDelete: Cascade)
+  afiliado    Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Cascade)
+  decididoPor User?    @relation("DecisorContestacao", fields: [decididoPorUserId], references: [id])
+
+  @@index([chapaId])
+  @@map("contestacoes_chapa")
 }
 
 model Candidato {
@@ -286,12 +356,13 @@ model Voto {
 
 // Resultado consolidado após apuração (reproduzível)
 model ResultadoApuracao {
-  id         String   @id @default(cuid())
-  eleicaoId  String
-  chapaId    String
-  totalVotos Int
-  percentual Float
-  apuradoEm  DateTime @default(now()) @db.Timestamptz
+  id           String   @id @default(cuid())
+  eleicaoId    String
+  chapaId      String
+  totalVotos   Int
+  percentual   Float
+  porAclamacao Boolean  @default(false)
+  apuradoEm    DateTime @default(now()) @db.Timestamptz
 
   eleicao Eleicao @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
   chapa   Chapa   @relation(fields: [chapaId], references: [id], onDelete: Cascade)

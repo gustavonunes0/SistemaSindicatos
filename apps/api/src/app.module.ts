@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ConveniosModule } from './convenios/convenios.module';
+import { EleicaoModule } from './eleicao/eleicao.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
 import { InstagramModule } from './instagram/instagram.module';
 import { NoticiasModule } from './noticias/noticias.module';
@@ -35,6 +36,7 @@ import { StorageModule } from './storage/storage.module';
     ConveniosModule,
     ImoveisModule,
     SolicitacoesModule,
+    EleicaoModule,
   ],
   controllers: [AppController],
   providers: [

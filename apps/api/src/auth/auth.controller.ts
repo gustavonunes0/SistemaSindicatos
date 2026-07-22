@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards } from '@nestjs/common';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
+import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   forgotPasswordSchema,
   loginSchema,
@@ -24,6 +24,7 @@ export class AuthController {
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ auth: { limit: 10, ttl: 60_000 } })
+  @SkipThrottle({ cadastro: true })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body(new ZodValidationPipe(loginSchema)) body: LoginInput): Promise<AuthResponse> {
@@ -33,6 +34,7 @@ export class AuthController {
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ auth: { limit: 20, ttl: 60_000 } })
+  @SkipThrottle({ cadastro: true })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   refresh(
@@ -57,6 +59,7 @@ export class AuthController {
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ auth: { limit: 5, ttl: 60_000 } })
+  @SkipThrottle({ cadastro: true })
   @Post('forgot')
   @HttpCode(HttpStatus.ACCEPTED)
   async forgot(
@@ -69,6 +72,7 @@ export class AuthController {
   @Public()
   @UseGuards(ThrottlerGuard)
   @Throttle({ auth: { limit: 5, ttl: 60_000 } })
+  @SkipThrottle({ cadastro: true })
   @Post('reset')
   @HttpCode(HttpStatus.NO_CONTENT)
   reset(@Body(new ZodValidationPipe(resetPasswordSchema)) body: ResetPasswordInput): Promise<void> {

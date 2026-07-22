@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useLogout, useMe } from '../../features/auth/hooks';
@@ -33,6 +33,7 @@ const gruposAdmin: GrupoNav[] = [
       { to: '/admin', rotulo: 'Painel', end: true },
       { to: '/admin/afiliados', rotulo: 'Afiliados' },
       { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
+      { to: '/admin/eleicoes', rotulo: 'Eleições' },
     ],
   },
   {
@@ -61,7 +62,11 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         { to: '/afiliado/convenios', rotulo: 'Convênios' },
         { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
         { to: '/afiliado/solicitacoes', rotulo: 'Solicitações' },
+        { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
       ],
+    },
+    {
+      links: [{ to: '/', rotulo: 'Site institucional' }],
     },
   ];
 
@@ -152,14 +157,23 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
       </aside>
 
       <div className="area-conteudo">
-        {(titulo || acoes || descricao) && (
+        {(titulo || acoes || descricao || tipo === 'afiliado') && (
           <header className="area-topo">
             <div className="area-topo-texto">
               {tipo === 'admin' && <span className="eyebrow">Painel administrativo</span>}
               {titulo && <h1>{titulo}</h1>}
               {descricao && <p className="area-topo-descricao">{descricao}</p>}
             </div>
-            {acoes && <div className="area-topo-acoes">{acoes}</div>}
+            {(acoes || tipo === 'afiliado') && (
+              <div className="area-topo-acoes">
+                {tipo === 'afiliado' && (
+                  <Link to="/" className="botao-secundario">
+                    Site institucional
+                  </Link>
+                )}
+                {acoes}
+              </div>
+            )}
           </header>
         )}
         {children}

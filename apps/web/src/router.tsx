@@ -11,6 +11,11 @@ import { RedefinirSenhaPage } from './features/auth/components/RedefinirSenhaPag
 import { ConvenioDetalhePage } from './features/convenios/components/ConvenioDetalhePage';
 import { ConveniosAdminPage } from './features/convenios/components/admin/ConveniosAdminPage';
 import { ConveniosPage } from './features/convenios/components/ConveniosPage';
+import { EleicaoDetalheAdminPage } from './features/eleicao/components/admin/EleicaoDetalheAdminPage';
+import { EleicoesAdminPage } from './features/eleicao/components/admin/EleicoesAdminPage';
+import { EleicaoResultadoPage } from './features/eleicao/components/EleicaoResultadoPage';
+import { EleicaoVotacaoPage } from './features/eleicao/components/EleicaoVotacaoPage';
+import { EleicoesPage } from './features/eleicao/components/EleicoesPage';
 import { NoticiasAdminPage } from './features/noticias/components/admin/NoticiasAdminPage';
 import { NoticiaDetalhePage } from './features/noticias/components/NoticiaDetalhePage';
 import { NoticiasPage } from './features/noticias/components/NoticiasPage';
@@ -57,6 +62,8 @@ export const router = createBrowserRouter([
   { path: '/admin/convenios', element: protegidaAdmin(<ConveniosAdminPage />) },
   { path: '/admin/convenios/novo', element: <Navigate to="/admin/convenios" replace /> },
   { path: '/admin/convenios/:id/editar', element: <Navigate to="/admin/convenios" replace /> },
+  { path: '/admin/eleicoes', element: protegidaAdmin(<EleicoesAdminPage />) },
+  { path: '/admin/eleicoes/:id', element: protegidaAdmin(<EleicaoDetalheAdminPage />) },
   { path: '/admin/imoveis', element: protegidaAdmin(<ImoveisAdminPage />) },
   { path: '/admin/imoveis/novo', element: <Navigate to="/admin/imoveis" replace /> },
   { path: '/admin/imoveis/:id/editar', element: <Navigate to="/admin/imoveis" replace /> },
@@ -70,6 +77,12 @@ export const router = createBrowserRouter([
   { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
   { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },
   { path: '/afiliado/imoveis/:id', element: protegidaAfiliado(<ImovelDetalhePage />) },
+  { path: '/afiliado/eleicoes', element: protegidaAfiliado(<EleicoesPage />) },
+  { path: '/afiliado/eleicoes/:id', element: protegidaAfiliado(<EleicaoVotacaoPage />) },
+  {
+    path: '/afiliado/eleicoes/:id/resultado',
+    element: protegidaAfiliado(<EleicaoResultadoPage />),
+  },
   { path: '/afiliado/solicitacoes', element: protegidaAfiliado(<MinhasSolicitacoesPage />) },
   {
     path: '/afiliado/solicitacoes/:id',

@@ -33,6 +33,11 @@ const beneficios = [
     titulo: 'Solicitações',
     descricao: 'Acompanhe suas conversas com o sindicato sobre locação.',
   },
+  {
+    to: '/afiliado/eleicoes',
+    titulo: 'Eleições',
+    descricao: 'Vote na diretoria e presidência do sindicato.',
+  },
 ] as const;
 
 export function AfiliadoDashboardPage() {

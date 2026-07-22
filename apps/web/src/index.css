@@ -3326,6 +3326,180 @@ textarea {
   color: var(--cor-texto-suave);
 }
 
+/* ---- Eleição ---- */
+.form-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.form-linha label {
+  flex: 1 1 200px;
+}
+
+.badge-eleicao-agendada,
+.badge-eleicao-encerrada,
+.badge-chapa-inscrita {
+  background: #eceef1;
+  color: var(--cor-texto-suave);
+}
+
+.badge-chapa-inscrita {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.badge-eleicao-aberta,
+.badge-chapa-homologada,
+.badge-contestacao-deferida {
+  background: #d8f3dc;
+  color: var(--cor-sucesso);
+}
+
+.badge-eleicao-apurada {
+  background: #e8f0fe;
+  color: #1a4a8a;
+}
+
+.badge-chapa-nao_homologada,
+.badge-contestacao-indeferida {
+  background: #fce8e8;
+  color: var(--cor-erro);
+}
+
+.badge-contestacao-aberta {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.eleicoes-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .eleicoes-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.eleicao-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  text-decoration: none;
+  color: inherit;
+}
+
+.eleicao-card:hover {
+  border-color: var(--cor-primaria);
+}
+
+.eleicao-card-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.chapas-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+  margin-top: 1rem;
+}
+
+@media (min-width: 640px) {
+  .chapas-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.chapa-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 1.25rem;
+  background: var(--cor-superficie);
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  text-align: left;
+}
+
+.chapa-card--selecionavel {
+  cursor: pointer;
+}
+
+.chapa-card--selecionada {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 0 0 1px var(--cor-primaria);
+}
+
+.chapa-card-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chapa-card-numero {
+  font-weight: 700;
+  color: var(--cor-texto-suave);
+}
+
+.candidatos-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.candidatos-lista li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.candidato-cargo {
+  color: var(--cor-texto-suave);
+}
+
+.resultado-linha {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 1rem;
+}
+
+.resultado-linha-topo {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.resultado-barra-trilho {
+  height: 0.6rem;
+  border-radius: var(--raio);
+  background: #eceef1;
+  overflow: hidden;
+}
+
+.resultado-barra-preenchimento {
+  height: 100%;
+  background: var(--cor-primaria);
+  border-radius: var(--raio);
+}
+
 .solicitacoes-lista {
   display: flex;
   flex-direction: column;

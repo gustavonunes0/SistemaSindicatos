@@ -30,6 +30,12 @@ const modulos: ModuloAdmin[] = [
     acao: 'Abrir fila',
   },
   {
+    to: '/admin/eleicoes',
+    titulo: 'Eleições',
+    descricao: 'Chapas, homologação, votação eletrônica e apuração da diretoria.',
+    acao: 'Gerenciar eleições',
+  },
+  {
     to: '/admin/noticias',
     titulo: 'Notícias',
     descricao: 'Publique comunicados e atualize o site público.',

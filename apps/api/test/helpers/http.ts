@@ -40,6 +40,24 @@ export async function criarImovelTeste(
   return res.body.id as string;
 }
 
+export async function criarEleicaoTeste(
+  app: INestApplication,
+  tokenAdmin: string,
+): Promise<string> {
+  const agora = Date.now();
+  const res = await http(app)
+    .post('/eleicoes')
+    .set('Authorization', `Bearer ${tokenAdmin}`)
+    .send({
+      titulo: 'Eleição teste E2E',
+      inicio: new Date(agora - 60_000).toISOString(),
+      fim: new Date(agora + 60 * 60_000).toISOString(),
+    })
+    .expect(201);
+
+  return res.body.id as string;
+}
+
 export type SessaoAfiliado = {
   accessToken: string;
   afiliadoId: string;
