@@ -13,6 +13,13 @@ const rotuloStatus = {
   APURADA: 'Apurada',
 } as const;
 
+const ajudaStatus = {
+  AGENDADA: 'Preparação — chapas, homologação e elegíveis',
+  ABERTA: 'Votação em andamento',
+  ENCERRADA: 'Urnas fechadas — aguardando apuração',
+  APURADA: 'Resultado eletrônico disponível',
+} as const;
+
 export function EleicoesAdminPage() {
   const { data: eleicoes, isLoading, isError } = useEleicoesAdmin();
   const [modalAberto, setModalAberto] = useState(false);
@@ -41,39 +48,33 @@ export function EleicoesAdminPage() {
       )}
 
       {eleicoes && eleicoes.length > 0 && (
-        <div className="tabela-wrapper">
-          <table className="tabela">
-            <thead>
-              <tr>
-                <th>Título</th>
-                <th>Início</th>
-                <th>Fim</th>
-                <th>Status</th>
-                <th aria-label="Ações" />
-              </tr>
-            </thead>
-            <tbody>
-              {eleicoes.map((eleicao) => (
-                <tr key={eleicao.id}>
-                  <td>{eleicao.titulo}</td>
-                  <td>{formatarDataHora(eleicao.inicio)}</td>
-                  <td>{formatarDataHora(eleicao.fim)}</td>
-                  <td>
-                    <span className={`badge badge-eleicao-${eleicao.status.toLowerCase()}`}>
-                      {rotuloStatus[eleicao.status]}
-                      {eleicao.resolvidaPorAclamacao ? ' (aclamação)' : ''}
-                    </span>
-                  </td>
-                  <td className="tabela-acoes">
-                    <Link className="botao-link-acao" to={`/admin/eleicoes/${eleicao.id}`}>
-                      Gerenciar
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ul className="eleicao-admin-lista">
+          {eleicoes.map((eleicao) => (
+            <li key={eleicao.id}>
+              <Link className="eleicao-admin-item" to={`/admin/eleicoes/${eleicao.id}`}>
+                <div className="eleicao-admin-item-topo">
+                  <h2 className="eleicao-admin-item-titulo">{eleicao.titulo}</h2>
+                  <span className={`badge badge-eleicao-${eleicao.status.toLowerCase()}`}>
+                    {rotuloStatus[eleicao.status]}
+                    {eleicao.resolvidaPorAclamacao ? ' · aclamação' : ''}
+                  </span>
+                </div>
+                <p className="eleicao-admin-item-ajuda">{ajudaStatus[eleicao.status]}</p>
+                <dl className="eleicao-admin-item-meta">
+                  <div>
+                    <dt>Início</dt>
+                    <dd>{formatarDataHora(eleicao.inicio)}</dd>
+                  </div>
+                  <div>
+                    <dt>Fim</dt>
+                    <dd>{formatarDataHora(eleicao.fim)}</dd>
+                  </div>
+                </dl>
+                <span className="eleicao-admin-item-cta">Gerenciar →</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       )}
 
       <EleicaoFormModal aberto={modalAberto} onFechar={() => setModalAberto(false)} />

@@ -8,6 +8,11 @@ type ContestacoesAdminPanelProps = {
 };
 
 const rotuloTipo = { IMPUGNACAO: 'Impugnação', RECURSO: 'Recurso' } as const;
+const rotuloStatus = {
+  ABERTA: 'Aberta',
+  DEFERIDA: 'Deferida',
+  INDEFERIDA: 'Indeferida',
+} as const;
 
 export function ContestacoesAdminPanel({ eleicaoId }: ContestacoesAdminPanelProps) {
   const { data: contestacoes, isLoading } = useContestacoes(eleicaoId);
@@ -15,34 +20,40 @@ export function ContestacoesAdminPanel({ eleicaoId }: ContestacoesAdminPanelProp
   const [decisoes, setDecisoes] = useState<Record<string, string>>({});
 
   return (
-    <section className="painel-secao">
-      <div className="dash-secao-cabecalho">
-        <h2 className="painel-secao-titulo">Impugnações e recursos</h2>
-        <p className="dash-secao-ajuda">
-          Prazo de 3 dias úteis a partir da homologação (Art. 38 §13º/§18º/§19º).
-        </p>
+    <section className="eleicao-admin-bloco" aria-labelledby="eleicao-contestacoes-titulo">
+      <div className="eleicao-admin-bloco-cabecalho">
+        <div>
+          <h2 id="eleicao-contestacoes-titulo">Impugnações e recursos</h2>
+          <p>Prazo de 3 dias úteis a partir da homologação (Art. 38 §13º/§18º/§19º).</p>
+        </div>
       </div>
 
       {isLoading && <EstadoCarregando mensagem="Carregando contestações…" />}
-      {contestacoes && contestacoes.length === 0 && <p>Nenhuma contestação registrada.</p>}
+      {contestacoes && contestacoes.length === 0 && (
+        <div className="eleicao-admin-vazio">
+          <p>Nenhuma contestação registrada.</p>
+        </div>
+      )}
 
       {contestacoes && contestacoes.length > 0 && (
-        <ul className="candidatos-lista" style={{ gap: '1rem' }}>
+        <ul className="eleicao-admin-contestacoes">
           {contestacoes.map((contestacao) => (
-            <li key={contestacao.id} style={{ flexDirection: 'column', alignItems: 'stretch' }}>
-              <div className="chapa-card-cabecalho">
-                <span>
-                  <strong>{rotuloTipo[contestacao.tipo]}</strong> ·{' '}
-                  {formatarDataHora(contestacao.createdAt)}
-                </span>
+            <li className="eleicao-admin-contestacao" key={contestacao.id}>
+              <div className="eleicao-admin-contestacao-topo">
+                <div>
+                  <strong>{rotuloTipo[contestacao.tipo]}</strong>
+                  <time dateTime={String(contestacao.createdAt)}>
+                    {formatarDataHora(contestacao.createdAt)}
+                  </time>
+                </div>
                 <span className={`badge badge-contestacao-${contestacao.status.toLowerCase()}`}>
-                  {contestacao.status}
+                  {rotuloStatus[contestacao.status]}
                 </span>
               </div>
-              <p>{contestacao.motivo}</p>
+              <p className="eleicao-admin-contestacao-motivo">{contestacao.motivo}</p>
 
               {contestacao.status === 'ABERTA' ? (
-                <div className="form-linha">
+                <div className="chapa-card-homologacao">
                   <label>
                     Decisão
                     <input
@@ -57,37 +68,39 @@ export function ContestacoesAdminPanel({ eleicaoId }: ContestacoesAdminPanelProp
                       placeholder="Justificativa da decisão"
                     />
                   </label>
-                  <button
-                    type="button"
-                    className="botao-primario"
-                    disabled={resolver.isPending || !decisoes[contestacao.id]?.trim()}
-                    onClick={() =>
-                      resolver.mutate({
-                        contestacaoId: contestacao.id,
-                        status: 'DEFERIDA',
-                        decisao: decisoes[contestacao.id]!.trim(),
-                      })
-                    }
-                  >
-                    Deferir
-                  </button>
-                  <button
-                    type="button"
-                    className="botao-perigo"
-                    disabled={resolver.isPending || !decisoes[contestacao.id]?.trim()}
-                    onClick={() =>
-                      resolver.mutate({
-                        contestacaoId: contestacao.id,
-                        status: 'INDEFERIDA',
-                        decisao: decisoes[contestacao.id]!.trim(),
-                      })
-                    }
-                  >
-                    Indeferir
-                  </button>
+                  <div className="chapa-card-homologacao-acoes">
+                    <button
+                      type="button"
+                      className="botao-primario"
+                      disabled={resolver.isPending || !decisoes[contestacao.id]?.trim()}
+                      onClick={() =>
+                        resolver.mutate({
+                          contestacaoId: contestacao.id,
+                          status: 'DEFERIDA',
+                          decisao: decisoes[contestacao.id]!.trim(),
+                        })
+                      }
+                    >
+                      Deferir
+                    </button>
+                    <button
+                      type="button"
+                      className="botao-perigo"
+                      disabled={resolver.isPending || !decisoes[contestacao.id]?.trim()}
+                      onClick={() =>
+                        resolver.mutate({
+                          contestacaoId: contestacao.id,
+                          status: 'INDEFERIDA',
+                          decisao: decisoes[contestacao.id]!.trim(),
+                        })
+                      }
+                    >
+                      Indeferir
+                    </button>
+                  </div>
                 </div>
               ) : (
-                <p className="dash-secao-ajuda">Decisão: {contestacao.decisao}</p>
+                <p className="chapa-card-justificativa">Decisão: {contestacao.decisao}</p>
               )}
             </li>
           ))}
