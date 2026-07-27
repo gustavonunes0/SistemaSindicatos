@@ -8,7 +8,8 @@
     "build": "nest build",
     "start": "node dist/main.js",
     "lint": "eslint src prisma test",
-    "test": "jest --config ./test/jest-e2e.json --runInBand"
+    "test": "jest --config ./test/jest-e2e.json --runInBand",
+    "d8:importar-inicial": "node --env-file=.env scripts/importar-d8-host.mjs"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

@@ -11,6 +11,8 @@ import { RedefinirSenhaPage } from './features/auth/components/RedefinirSenhaPag
 import { ConvenioDetalhePage } from './features/convenios/components/ConvenioDetalhePage';
 import { ConveniosAdminPage } from './features/convenios/components/admin/ConveniosAdminPage';
 import { ConveniosPage } from './features/convenios/components/ConveniosPage';
+import { D8AdminPage } from './features/d8/components/admin/D8AdminPage';
+import { D8DetalheAdminPage } from './features/d8/components/admin/D8DetalheAdminPage';
 import { EleicaoDetalheAdminPage } from './features/eleicao/components/admin/EleicaoDetalheAdminPage';
 import { EleicoesAdminPage } from './features/eleicao/components/admin/EleicoesAdminPage';
 import { EleicaoResultadoPage } from './features/eleicao/components/EleicaoResultadoPage';
@@ -56,6 +58,8 @@ export const router = createBrowserRouter([
   { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
   { path: '/admin', element: protegidaAdmin(<AdminDashboardPage />) },
   { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },
+  { path: '/admin/d8', element: protegidaAdmin(<D8AdminPage />) },
+  { path: '/admin/d8/:id', element: protegidaAdmin(<D8DetalheAdminPage />) },
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
   { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },

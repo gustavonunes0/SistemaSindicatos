@@ -4,6 +4,7 @@ export * from './afiliado';
 export * from './auth';
 export * from './convenio';
 export * from './cpf';
+export * from './d8';
 export * from './eleicao';
 export * from './health';
 export * from './imovel';

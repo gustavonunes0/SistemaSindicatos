@@ -4554,6 +4554,341 @@ textarea {
   }
 }
 
+/* ============ Admin — Importação D8 ============ */
+.d8-admin-upload,
+.d8-admin-lista-bloco,
+.d8-admin-bloco {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.d8-admin-secao-titulo {
+  margin: 0;
+  font-size: var(--texto-md);
+  font-weight: 700;
+  color: var(--cor-texto);
+}
+
+.d8-admin-secao-texto {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  max-width: 48rem;
+}
+
+.d8-admin-form {
+  display: grid;
+  gap: 0.85rem;
+  max-width: 36rem;
+}
+
+.d8-admin-form label,
+.d8-admin-bloco-topo label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.d8-admin-form select,
+.d8-admin-form input[type='file'],
+.d8-admin-bloco-topo select {
+  font: inherit;
+  font-weight: 400;
+}
+
+.d8-admin-sucesso {
+  margin: 0;
+  color: var(--cor-primaria);
+  font-weight: 600;
+}
+
+.d8-admin-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.d8-competencias {
+  display: grid;
+  gap: 1.1rem;
+}
+
+.d8-competencias-topo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.d8-competencias-filtros {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 720px) {
+  .d8-competencias-filtros {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    align-items: end;
+  }
+}
+
+.d8-competencias-filtros label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.d8-competencias-filtros select,
+.d8-competencias-filtros input {
+  font: inherit;
+  font-weight: 400;
+  width: 100%;
+}
+
+.d8-competencias-busca {
+  min-width: 0;
+}
+
+.d8-competencias-resumo {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  padding-bottom: 0.35rem;
+  border-bottom: var(--borda-fina);
+}
+
+.d8-competencias-resumo > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.d8-competencias-resumo strong {
+  font-size: var(--texto-sm);
+}
+
+.d8-competencias-resumo-sufixo {
+  margin-left: 0.2rem;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: var(--cor-texto-suave);
+}
+
+.d8-competencias-grupos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1.15rem;
+}
+
+.d8-competencia-grupo {
+  display: grid;
+  gap: 0.85rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio-md);
+  background: color-mix(in srgb, var(--cor-superficie) 92%, transparent);
+}
+
+.d8-competencia-grupo-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  align-items: start;
+}
+
+.d8-competencia-grupo-cabecalho h3 {
+  margin: 0 0 0.25rem;
+  font-size: var(--texto-sm);
+}
+
+.d8-competencia-grupo-cabecalho p {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: 0.9rem;
+}
+
+.d8-competencia-grupo-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.d8-badge-ok {
+  background: color-mix(in srgb, var(--cor-primaria) 14%, transparent);
+  color: var(--cor-primaria);
+}
+
+.d8-badge-faltando,
+.d8-badge-incompleta {
+  background: color-mix(in srgb, #b45309 16%, transparent);
+  color: #92400e;
+}
+
+.d8-badge-completa {
+  background: color-mix(in srgb, var(--cor-primaria) 18%, transparent);
+  color: var(--cor-primaria);
+  font-weight: 700;
+}
+
+.d8-competencia-grupo-itens {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 900px) {
+  .d8-competencia-grupo-itens {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.d8-competencia-item {
+  height: 100%;
+}
+
+.d8-competencia-item h4 {
+  margin: 0;
+  font-size: var(--texto-sm);
+}
+
+.d8-competencia-item .d8-admin-item-meta dd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.d8-admin-item {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem 1.1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio-md);
+  text-decoration: none;
+  color: inherit;
+  background: color-mix(in srgb, var(--cor-superficie) 88%, transparent);
+  transition: border-color 160ms ease, transform 160ms ease;
+}
+
+.d8-admin-item:hover {
+  border-color: color-mix(in srgb, var(--cor-primaria) 45%, var(--cor-borda));
+  transform: translateY(-1px);
+}
+
+.d8-admin-item-topo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  align-items: center;
+}
+
+.d8-admin-item-topo h3 {
+  margin: 0;
+  font-size: var(--texto-sm);
+}
+
+.d8-admin-item-meta {
+  display: grid;
+  gap: 0.65rem;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  margin: 0;
+}
+
+.d8-admin-item-meta dt {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.d8-admin-item-meta dd {
+  margin: 0.15rem 0 0;
+}
+
+.d8-admin-item-cta {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.d8-admin-metricas {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  padding: 1rem 0 1.5rem;
+  margin-bottom: 1rem;
+  border-bottom: var(--borda-fina);
+}
+
+.d8-admin-metricas > div {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.d8-admin-metrica-rotulo {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.d8-admin-metricas strong {
+  font-size: var(--texto-sm);
+}
+
+.d8-admin-bloco-topo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  align-items: end;
+}
+
+.d8-admin-tabela-wrap {
+  overflow-x: auto;
+  border: var(--borda-fina);
+  border-radius: var(--raio-md);
+}
+
+.d8-admin-tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.d8-admin-tabela th,
+.d8-admin-tabela td {
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  border-bottom: var(--borda-fina);
+  white-space: nowrap;
+}
+
+.d8-admin-tabela th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+  background: color-mix(in srgb, var(--cor-superficie) 70%, transparent);
+}
+
+.d8-admin-tabela tbody tr:last-child td {
+  border-bottom: 0;
+}
+
 /* ============ Movimento: respeito a prefers-reduced-motion ============ */
 @media (prefers-reduced-motion: reduce) {
   *,

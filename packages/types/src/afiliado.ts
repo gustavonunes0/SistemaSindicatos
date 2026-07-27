@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { cpfSchema } from './cpf';
-import { statusAfiliadoSchema } from './enums';
+import { statusAfiliadoSchema, tipoD8Schema } from './enums';
 
 export const afiliadoSchema = z.object({
   id: z.string(),
@@ -9,6 +9,7 @@ export const afiliadoSchema = z.object({
   cpf: z.string().regex(/^\d{11}$/, 'CPF deve conter 11 dígitos numéricos'),
   matricula: z.string().min(1),
   telefone: z.string().nullable(),
+  categoria: tipoD8Schema.nullable().optional(),
   status: statusAfiliadoSchema,
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),

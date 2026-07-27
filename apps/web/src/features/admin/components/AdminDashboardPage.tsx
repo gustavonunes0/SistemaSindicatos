@@ -24,6 +24,12 @@ const modulos: ModuloAdmin[] = [
     destaque: true,
   },
   {
+    to: '/admin/d8',
+    titulo: 'Importação D8',
+    descricao: 'Importe o SIAPE, analise a arrecadação e sincronize afiliados.',
+    acao: 'Abrir D8',
+  },
+  {
     to: '/admin/solicitacoes',
     titulo: 'Solicitações de locação',
     descricao: 'Acompanhe e responda as conversas abertas pelos afiliados.',

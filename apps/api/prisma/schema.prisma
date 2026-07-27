@@ -32,6 +32,11 @@ enum StatusAfiliado {
   INATIVO
 }
 
+enum TipoD8 {
+  SERVIDOR
+  PENSIONISTA
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -80,23 +85,67 @@ model PasswordResetToken {
 }
 
 model Afiliado {
-  id        String         @id @default(cuid())
-  userId    String         @unique
-  nome      String
-  cpf       String         @unique
-  matricula String         @unique
-  telefone  String?
-  status    StatusAfiliado @default(PENDENTE)
-  createdAt DateTime       @default(now()) @db.Timestamptz
-  updatedAt DateTime       @updatedAt @db.Timestamptz
+  id         String         @id @default(cuid())
+  userId     String         @unique
+  nome       String
+  cpf        String         @unique
+  matricula  String         @unique
+  telefone   String?
+  categoria  TipoD8?
+  status     StatusAfiliado @default(PENDENTE)
+  createdAt  DateTime       @default(now()) @db.Timestamptz
+  updatedAt  DateTime       @updatedAt @db.Timestamptz
 
   user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   elegibilidades   Elegivel[]
   comparecimentos  Comparecimento[]
   solicitacoes     SolicitacaoAluguel[]
   contestacoes     ContestacaoChapa[]
+  linhasD8         LinhaD8[]
 
   @@map("afiliados")
+}
+
+// =====================================================================
+// IMPORTAÇÃO D8 (SIAPE — mensalidade sindical)
+// =====================================================================
+
+model ImportacaoD8 {
+  id               String   @id @default(cuid())
+  competenciaAno   Int
+  competenciaMes   Int
+  tipo             TipoD8
+  arquivoNome      String
+  totalLinhas      Int
+  totalValor       Decimal  @db.Decimal(12, 2)
+  createdAt        DateTime @default(now()) @db.Timestamptz
+
+  linhas LinhaD8[]
+
+  @@unique([competenciaAno, competenciaMes, tipo])
+  @@index([competenciaAno, competenciaMes])
+  @@map("importacoes_d8")
+}
+
+model LinhaD8 {
+  id           String   @id @default(cuid())
+  importacaoId String
+  sequencia    Int
+  matricula    String
+  nome         String
+  cpf          String
+  descricao    String
+  valor        Decimal  @db.Decimal(12, 2)
+  afiliadoId   String?
+
+  importacao ImportacaoD8 @relation(fields: [importacaoId], references: [id], onDelete: Cascade)
+  afiliado   Afiliado?    @relation(fields: [afiliadoId], references: [id], onDelete: SetNull)
+
+  @@index([importacaoId])
+  @@index([cpf])
+  @@index([matricula])
+  @@index([afiliadoId])
+  @@map("linhas_d8")
 }
 
 // =====================================================================
