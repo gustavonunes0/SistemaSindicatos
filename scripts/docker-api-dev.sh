@@ -5,8 +5,8 @@ echo ">> Compilando @sindprf/types..."
 npm run build -w packages/types
 
 echo ">> Preparando banco (Prisma)..."
+npm run prisma:generate
 cd apps/api
-npx prisma generate
 npx prisma migrate deploy
 npx prisma db seed
 cd ../..

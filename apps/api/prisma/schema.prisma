@@ -7,7 +7,9 @@
 // - IDs em cuid() por padrão.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // native = local/Docker; rhel-openssl-3.0.x = runtime Node da Vercel
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
