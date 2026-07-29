@@ -1,16 +1,9 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AdminAtualizarSenhaAfiliadoInput,
-  CadastroAfiliadoInput,
   StatusAfiliado,
 } from '@sindprf/types';
 import * as afiliadosApi from './api';
-
-export function useCadastroAfiliado() {
-  return useMutation({
-    mutationFn: (input: CadastroAfiliadoInput) => afiliadosApi.cadastrarAfiliado(input),
-  });
-}
 
 export function useAfiliadosAdmin(status?: StatusAfiliado) {
   return useQuery({

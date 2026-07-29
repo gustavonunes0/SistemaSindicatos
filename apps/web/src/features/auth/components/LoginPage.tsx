@@ -46,7 +46,7 @@ export function LoginPage() {
         <Link to="/esqueci-senha">Esqueci minha senha</Link>
       </p>
       <p>
-        Ainda não é afiliado? <Link to="/cadastro">Cadastre-se</Link>
+        Ainda não é afiliado? <Link to="/cadastro">Veja como se filiar</Link>
       </p>
     </AuthLayout>
   );

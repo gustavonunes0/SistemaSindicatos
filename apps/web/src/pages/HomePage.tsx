@@ -30,7 +30,7 @@ export function HomePage() {
                 Área do afiliado
               </Link>
               <Link to="/cadastro" className="hero-link">
-                Quero me afiliar <span aria-hidden="true">→</span>
+                Como me afiliar <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>

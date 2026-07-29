@@ -1541,6 +1541,10 @@ button.botao-primario {
   margin-top: 1.5rem;
 }
 
+.cadastro-filiacao-acoes {
+  margin-top: 1.75rem;
+}
+
 @media (min-width: 880px) {
   .cadastro-page {
     grid-template-columns: minmax(18rem, 22rem) minmax(0, 1fr);
@@ -5218,6 +5222,32 @@ textarea {
 .tut-passos li {
   padding-left: 0.2rem;
   line-height: 1.45;
+}
+
+.tut-etapas {
+  display: grid;
+  gap: 1.15rem;
+  margin-top: 1rem;
+}
+
+.tut-etapa {
+  padding: 0.85rem 0 0;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.tut-etapa:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.tut-etapa-titulo {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--cor-primaria);
+}
+
+.tut-etapa .tut-passos {
+  margin-top: 0.65rem;
 }
 
 .tut-dicas {

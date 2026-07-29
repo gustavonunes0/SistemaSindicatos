@@ -2,6 +2,11 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 
+type TutorialEtapa = {
+  titulo: string;
+  passos: string[];
+};
+
 type Tutorial = {
   id: string;
   titulo: string;
@@ -9,7 +14,10 @@ type Tutorial = {
   resumo: string;
   rota: string;
   acao: string;
-  passos: string[];
+  /** Passos simples (tutoriais curtos). */
+  passos?: string[];
+  /** Etapas nomeadas (tutoriais longos, ex.: eleição). */
+  etapas?: TutorialEtapa[];
   dicas?: string[];
 };
 
@@ -18,7 +26,7 @@ const TUTORIAIS: Tutorial[] = [
     id: 'afiliados',
     titulo: 'Aprovar e gerenciar afiliados',
     grupo: 'Operação',
-    resumo: 'O afiliado se cadastra no site. No admin você aprova, inativa ou redefine a senha.',
+    resumo: 'A filiação é presencial. No admin você aprova, inativa ou redefine a senha.',
     rota: '/admin/afiliados',
     acao: 'Abrir afiliados',
     passos: [
@@ -29,8 +37,8 @@ const TUTORIAIS: Tutorial[] = [
       'Em Senha, defina uma nova senha quando o afiliado precisar recuperar o acesso.',
     ],
     dicas: [
+      'Não há cadastro online no site — o interessado baixa os formulários em /cadastro e comparece à secretaria.',
       'Novos afiliados também podem surgir automaticamente na importação do D8.',
-      'O cadastro público fica em /cadastro — o admin não cria afiliado manualmente nesta tela.',
     ],
   },
   {
@@ -90,19 +98,85 @@ const TUTORIAIS: Tutorial[] = [
     id: 'eleicoes',
     titulo: 'Cadastrar e conduzir uma eleição',
     grupo: 'Operação',
-    resumo: 'Crie a eleição, cadastre chapas e candidatos, homologue, abra a votação e apure.',
+    resumo:
+      'Fluxo completo: criar a eleição, chapas, candidatos, homologação, elegíveis, votação e apuração (ou aclamação).',
     rota: '/admin/eleicoes',
     acao: 'Abrir eleições',
-    passos: [
-      'Em Eleições, clique em Nova eleição e preencha título, prazos e regras.',
-      'Abra a eleição criada e cadastre as chapas.',
-      'Inclua os candidatos em cada chapa.',
-      'Homologue as chapas e sincronize ou ajuste a lista de elegíveis.',
-      'Quando for a hora, abra a votação; ao terminar, encerre e apure (ou use aclamação se houver uma chapa).',
+    etapas: [
+      {
+        titulo: '1. Criar a eleição',
+        passos: [
+          'Em Eleições, clique em Nova eleição.',
+          'Preencha o Título (mínimo 3 caracteres), por exemplo: Eleição da Diretoria — Triênio 2028/2030.',
+          'Informe Início da votação e Fim da votação (o fim precisa ser depois do início).',
+          'Opcional: datas de inscrição de chapas — são só informativas; o cadastro de chapas no admin não fica bloqueado por elas.',
+          'Clique em Criar eleição. O status inicial será Agendada.',
+          'Na lista, clique em Gerenciar para abrir o detalhe.',
+        ],
+      },
+      {
+        titulo: '2. Cadastrar chapas e candidatos',
+        passos: [
+          'Na seção Chapas, clique em Nova chapa (só funciona enquanto a eleição está Agendada).',
+          'Informe Número (inteiro ≥ 1, único na eleição), Nome da chapa e, se quiser, Slogan.',
+          'Clique em Cadastrar chapa. A chapa nasce como Aguardando homologação.',
+          'No card da chapa, em Candidatos, clique em + Candidato.',
+          'Preencha Nome, Cargo (ex.: Presidente, Vice-presidente) e, se quiser, Foto (URL).',
+          'Repita para todas as chapas e candidatos. Depois que a votação abrir, não dá mais para alterar chapas nem candidatos.',
+        ],
+      },
+      {
+        titulo: '3. Homologar as chapas',
+        passos: [
+          'Em cada chapa com status Aguardando homologação, preencha Justificativa da decisão (mínimo 5 caracteres).',
+          'Clique em Homologar (vira Homologada) ou Não homologar (vira Não homologada).',
+          'Ao decidir, o sistema grava a justificativa e abre prazo de 3 dias úteis para contestação (pula sábado e domingo; não considera feriados).',
+          'Confira no topo: quantas chapas estão homologadas e quantas pendentes.',
+        ],
+      },
+      {
+        titulo: '4. Contestações (impugnações e recursos)',
+        passos: [
+          'Quem cria a contestação é o afiliado, no prazo de 3 dias úteis após a homologação.',
+          'Chapa Homologada → afiliado pode Impugnar; chapa Não homologada → afiliado pode Recorrer.',
+          'No painel Impugnações e recursos, abra cada item com status Aberta.',
+          'Escreva a Decisão e clique em Deferir ou Indeferir.',
+          'Deferir impugnação torna a chapa Não homologada; deferir recurso torna a chapa Homologada.',
+        ],
+      },
+      {
+        titulo: '5. Comissão Eleitoral e elegíveis',
+        passos: [
+          'Em Comissão Eleitoral, informe o ID do usuário ADMIN, escolha Titular ou Suplente e clique em Adicionar. Isso é registro/auditoria — não muda permissões.',
+          'Em Elegíveis, clique em Sincronizar aprovados para incluir todos os afiliados aprovados que ainda não estão na lista (não remove quem já está).',
+          'Ajuste manualmente: use Incluir afiliado aprovado ou Remover, conforme quem aderiu ao voto eletrônico (Art. 38 §3º).',
+          'Não é possível remover quem já votou. Use as abas Todos / Já votaram / Pendentes e a busca por nome ou matrícula.',
+        ],
+      },
+      {
+        titulo: '6. Abrir votação ou aclamação',
+        passos: [
+          'Antes de abrir: nenhuma chapa pode estar Aguardando homologação, e não pode haver contestação Aberta ainda dentro do prazo.',
+          'Na seção Ação desta fase, clique em Abrir votação e confirme. A eleição passa para Aberta.',
+          'Alternativa: se houver exatamente 1 chapa Homologada, use Resolver por aclamação — a eleição vai direto para Apurada · aclamação, sem urna.',
+          'A abertura é sempre manual. O sistema pode encerrar sozinho depois do horário de Fim, mas nunca abre sozinho.',
+        ],
+      },
+      {
+        titulo: '7. Encerrar e apurar',
+        passos: [
+          'Com a eleição Aberta, clique em Encerrar votação quando for fechar as urnas (ou aguarde o fim do prazo).',
+          'Com status Encerrada, clique em Apurar votos.',
+          'O Resultado eletrônico mostra os votos por chapa homologada. Some manualmente os votos presenciais da Comissão para a proclamação oficial.',
+          'Editar ou excluir a eleição só é possível enquanto ela estiver Agendada.',
+        ],
+      },
     ],
     dicas: [
-      'Contestações e comissão eleitoral ficam no detalhe da eleição.',
-      'Só avance de etapa quando a anterior estiver concluída.',
+      'Linha do tempo no topo: Preparação → Votação → Encerrada → Apurada.',
+      'Não há resultado parcial enquanto a votação está Aberta — nem para o admin.',
+      'O painel de contestações não mostra o nome da chapa; cruze pelo motivo e pela data.',
+      'Sincronizar elegíveis traz todos os aprovados — revise a lista antes de abrir a urna.',
     ],
   },
   {
@@ -164,10 +238,13 @@ export function TutoriaisAdminPage() {
     return TUTORIAIS.filter((item) => {
       if (filtroGrupo !== 'todos' && item.grupo !== filtroGrupo) return false;
       if (!termo) return true;
+      const passosSimples = item.passos ?? [];
+      const passosEtapas = item.etapas?.flatMap((etapa) => [etapa.titulo, ...etapa.passos]) ?? [];
       return (
         item.titulo.toLowerCase().includes(termo) ||
         item.resumo.toLowerCase().includes(termo) ||
-        item.passos.some((passo) => passo.toLowerCase().includes(termo))
+        passosSimples.some((passo) => passo.toLowerCase().includes(termo)) ||
+        passosEtapas.some((passo) => passo.toLowerCase().includes(termo))
       );
     });
   }, [busca, filtroGrupo]);
@@ -251,11 +328,26 @@ export function TutoriaisAdminPage() {
 
                 {aberto && (
                   <div className="tut-item-corpo">
-                    <ol className="tut-passos">
-                      {tutorial.passos.map((passo) => (
-                        <li key={passo}>{passo}</li>
-                      ))}
-                    </ol>
+                    {tutorial.etapas && tutorial.etapas.length > 0 ? (
+                      <div className="tut-etapas">
+                        {tutorial.etapas.map((etapa) => (
+                          <section key={etapa.titulo} className="tut-etapa">
+                            <h3 className="tut-etapa-titulo">{etapa.titulo}</h3>
+                            <ol className="tut-passos">
+                              {etapa.passos.map((passo) => (
+                                <li key={passo}>{passo}</li>
+                              ))}
+                            </ol>
+                          </section>
+                        ))}
+                      </div>
+                    ) : (
+                      <ol className="tut-passos">
+                        {(tutorial.passos ?? []).map((passo) => (
+                          <li key={passo}>{passo}</li>
+                        ))}
+                      </ol>
+                    )}
 
                     {tutorial.dicas && tutorial.dicas.length > 0 && (
                       <aside className="tut-dicas">
