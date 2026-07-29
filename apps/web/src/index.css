@@ -4889,6 +4889,217 @@ textarea {
   border-bottom: 0;
 }
 
+/* ============ Admin — Tutoriais ============ */
+.tut-intro {
+  margin-bottom: 1.25rem;
+}
+
+.tut-intro-titulo {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+}
+
+.tut-intro-texto {
+  margin: 0.5rem 0 0;
+  max-width: 52ch;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.tut-toolbar {
+  display: grid;
+  gap: 0.85rem;
+  margin-bottom: 1.15rem;
+}
+
+@media (min-width: 820px) {
+  .tut-toolbar {
+    grid-template-columns: 1fr minmax(14rem, 18rem);
+    align-items: end;
+  }
+}
+
+.tut-segmentos {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.2rem;
+  padding: 0.2rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+
+.tut-segmento {
+  padding: 0.45rem 0.8rem;
+  border: 0;
+  border-radius: calc(var(--raio) - 2px);
+  background: transparent;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.tut-segmento:hover:not(:disabled) {
+  background: var(--cor-fundo);
+  color: var(--cor-primaria);
+}
+
+.tut-segmento--ativo {
+  background: var(--cor-primaria);
+  color: #fff;
+}
+
+.tut-segmento--ativo:hover:not(:disabled) {
+  background: var(--azul-noite);
+  color: #fff;
+}
+
+.tut-busca {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.tut-busca input {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font: inherit;
+}
+
+.tut-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.tut-item {
+  overflow: hidden;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  border-left: var(--faixa-altura) solid var(--cor-primaria);
+}
+
+.tut-item--aberto {
+  border-left-color: var(--amarelo-faixa);
+}
+
+.tut-item-cabecalho {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.85rem;
+  align-items: start;
+  padding: 1rem 1.05rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tut-item-cabecalho:hover {
+  background: color-mix(in srgb, var(--cor-fundo) 65%, transparent);
+}
+
+.tut-item-texto {
+  display: grid;
+  gap: 0.25rem;
+  min-width: 0;
+}
+
+.tut-item-grupo {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.tut-item-titulo {
+  font-family: var(--fonte-display);
+  font-size: 1.05rem;
+  color: var(--cor-primaria);
+}
+
+.tut-item-resumo {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.45;
+}
+
+.tut-item-chevron {
+  display: inline-flex;
+  width: 1.55rem;
+  height: 1.55rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--cor-fundo);
+  color: var(--cor-primaria);
+  font-weight: 700;
+}
+
+.tut-item-corpo {
+  padding: 0 1.05rem 1.15rem 1.05rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.tut-passos {
+  margin: 1rem 0 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.55rem;
+  color: var(--cor-texto);
+}
+
+.tut-passos li {
+  padding-left: 0.2rem;
+  line-height: 1.45;
+}
+
+.tut-dicas {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background:
+    linear-gradient(180deg, rgb(244 179 1 / 0.1), transparent 70%),
+    var(--cor-fundo);
+  border: 1px solid color-mix(in srgb, var(--amarelo-faixa) 45%, var(--cor-borda));
+  border-radius: var(--raio);
+}
+
+.tut-dicas-titulo {
+  margin: 0 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-primaria);
+}
+
+.tut-dicas ul {
+  margin: 0;
+  padding-left: 1.1rem;
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto);
+}
+
+.tut-item-acao {
+  margin-top: 1rem;
+  width: fit-content;
+}
+
 /* ============ Admin — Financeiro ============ */
 .fin-subnav {
   display: flex;

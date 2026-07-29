@@ -4,6 +4,7 @@ import { AfiliadoDashboardPage } from './features/afiliado/components/AfiliadoDa
 import { CadastroAfiliadoPage } from './features/afiliado/components/CadastroAfiliadoPage';
 import { AfiliadosAdminPage } from './features/afiliado/components/admin/AfiliadosAdminPage';
 import { AdminDashboardPage } from './features/admin/components/AdminDashboardPage';
+import { TutoriaisAdminPage } from './features/admin/components/TutoriaisAdminPage';
 import { EsqueciSenhaPage } from './features/auth/components/EsqueciSenhaPage';
 import { RequireRole } from './features/auth/components/guards';
 import { LoginPage } from './features/auth/components/LoginPage';
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
   { path: '/esqueci-senha', element: <EsqueciSenhaPage /> },
   { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
   { path: '/admin', element: protegidaAdmin(<AdminDashboardPage />) },
+  { path: '/admin/tutoriais', element: protegidaAdmin(<TutoriaisAdminPage />) },
   { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },
   { path: '/admin/financeiro', element: protegidaAdmin(<FinanceiroHubPage />) },
   {

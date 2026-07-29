@@ -31,6 +31,7 @@ const gruposAdmin: GrupoNav[] = [
     titulo: 'Operação',
     links: [
       { to: '/admin', rotulo: 'Painel', end: true },
+      { to: '/admin/tutoriais', rotulo: 'Tutoriais' },
       { to: '/admin/afiliados', rotulo: 'Afiliados' },
       { to: '/admin/financeiro', rotulo: 'Financeiro' },
       { to: '/admin/solicitacoes', rotulo: 'Solicitações' },

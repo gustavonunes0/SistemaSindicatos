@@ -17,6 +17,13 @@ type ModuloAdmin = {
 
 const modulos: ModuloAdmin[] = [
   {
+    to: '/admin/tutoriais',
+    titulo: 'Tutoriais',
+    descricao: 'Passo a passo para cadastrar e operar cada módulo do sistema.',
+    acao: 'Ver tutoriais',
+    destaque: true,
+  },
+  {
     to: '/admin/afiliados',
     titulo: 'Afiliados',
     descricao: 'Aprove cadastros e gerencie o status da afiliação.',
@@ -28,7 +35,6 @@ const modulos: ModuloAdmin[] = [
     titulo: 'Financeiro',
     descricao: 'Balancetes Fortes e importação D8 (SIAPE) em um módulo só.',
     acao: 'Abrir financeiro',
-    destaque: true,
   },
   {
     to: '/admin/solicitacoes',
