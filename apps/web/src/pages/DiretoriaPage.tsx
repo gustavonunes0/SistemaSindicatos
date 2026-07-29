@@ -20,7 +20,11 @@ export function DiretoriaPage() {
     description: `Diretoria do ${marca.nomeCompleto} — mandato ${diretoria.mandato} (${diretoria.chapa}).`,
   });
 
-  const [executiva, ...conselhos] = diretoria.blocos;
+  const executiva = diretoria.blocos[0];
+  const conselhos = diretoria.blocos.slice(1);
+  if (!executiva) {
+    return null;
+  }
   const { destaques, demais } = separarExecutiva(executiva);
 
   return (
