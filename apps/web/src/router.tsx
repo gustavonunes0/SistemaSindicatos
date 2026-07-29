@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import { PublicLayout } from './components/layout/PublicLayout';
 import { AfiliadoDashboardPage } from './features/afiliado/components/AfiliadoDashboardPage';
 import { CadastroAfiliadoPage } from './features/afiliado/components/CadastroAfiliadoPage';
@@ -15,6 +15,7 @@ import { D8AdminPage } from './features/d8/components/admin/D8AdminPage';
 import { D8DetalheAdminPage } from './features/d8/components/admin/D8DetalheAdminPage';
 import { BalancetesAdminPage } from './features/balancetes/components/admin/BalancetesAdminPage';
 import { BalanceteDetalheAdminPage } from './features/balancetes/components/admin/BalanceteDetalheAdminPage';
+import { FinanceiroHubPage } from './features/financeiro/components/admin/FinanceiroHubPage';
 import { EleicaoDetalheAdminPage } from './features/eleicao/components/admin/EleicaoDetalheAdminPage';
 import { EleicoesAdminPage } from './features/eleicao/components/admin/EleicoesAdminPage';
 import { EleicaoResultadoPage } from './features/eleicao/components/EleicaoResultadoPage';
@@ -42,6 +43,16 @@ function protegidaAfiliado(element: React.ReactNode) {
   return <RequireRole role="AFILIADO">{element}</RequireRole>;
 }
 
+function RedirecionarBalanceteDetalhe() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/admin/financeiro/balancetes/${id ?? ''}`} replace />;
+}
+
+function RedirecionarD8Detalhe() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/admin/financeiro/d8/${id ?? ''}`} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -60,10 +71,21 @@ export const router = createBrowserRouter([
   { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
   { path: '/admin', element: protegidaAdmin(<AdminDashboardPage />) },
   { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },
-  { path: '/admin/d8', element: protegidaAdmin(<D8AdminPage />) },
-  { path: '/admin/d8/:id', element: protegidaAdmin(<D8DetalheAdminPage />) },
-  { path: '/admin/balancetes', element: protegidaAdmin(<BalancetesAdminPage />) },
-  { path: '/admin/balancetes/:id', element: protegidaAdmin(<BalanceteDetalheAdminPage />) },
+  { path: '/admin/financeiro', element: protegidaAdmin(<FinanceiroHubPage />) },
+  {
+    path: '/admin/financeiro/balancetes',
+    element: protegidaAdmin(<BalancetesAdminPage />),
+  },
+  {
+    path: '/admin/financeiro/balancetes/:id',
+    element: protegidaAdmin(<BalanceteDetalheAdminPage />),
+  },
+  { path: '/admin/financeiro/d8', element: protegidaAdmin(<D8AdminPage />) },
+  { path: '/admin/financeiro/d8/:id', element: protegidaAdmin(<D8DetalheAdminPage />) },
+  { path: '/admin/balancetes', element: <Navigate to="/admin/financeiro/balancetes" replace /> },
+  { path: '/admin/balancetes/:id', element: <RedirecionarBalanceteDetalhe /> },
+  { path: '/admin/d8', element: <Navigate to="/admin/financeiro/d8" replace /> },
+  { path: '/admin/d8/:id', element: <RedirecionarD8Detalhe /> },
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
   { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },

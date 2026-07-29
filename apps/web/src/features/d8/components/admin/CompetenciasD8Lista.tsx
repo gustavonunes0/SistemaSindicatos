@@ -265,7 +265,7 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
               <ul className="d8-competencia-grupo-itens">
                 {grupo.importacoes.map((item) => (
                   <li key={item.id}>
-                    <Link className="d8-admin-item d8-competencia-item" to={`/admin/d8/${item.id}`}>
+                    <Link className="d8-admin-item d8-competencia-item" to={`/admin/financeiro/d8/${item.id}`}>
                       <div className="d8-admin-item-topo">
                         <h4>{rotuloTipo[item.tipo]}</h4>
                         <span className="badge">{item.totalLinhas} registros</span>

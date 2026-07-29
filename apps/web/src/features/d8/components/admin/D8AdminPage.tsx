@@ -3,6 +3,7 @@ import { useState } from 'react';
 import type { TipoD8 } from '@sindprf/types';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { useImportacoesD8, useImportarD8 } from '../../hooks';
 import { CompetenciasD8Lista } from './CompetenciasD8Lista';
 
@@ -61,6 +62,8 @@ export function D8AdminPage() {
       titulo="Importação D8"
       descricao="Importe os relatórios SIAPE de mensalidade sindical e sincronize a base de afiliados."
     >
+      <FinanceiroSubnav />
+
       <section className="d8-admin-upload">
         <h2 className="d8-admin-secao-titulo">Nova importação</h2>
         <p className="d8-admin-secao-texto">

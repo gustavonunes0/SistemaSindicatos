@@ -4,6 +4,7 @@ import type { FiltroLinhasD8, TipoD8 } from '@sindprf/types';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarDataHora } from '../../../../lib/datas';
+import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { useImportacaoD8, useLinhasD8 } from '../../hooks';
 
 const rotuloTipo: Record<TipoD8, string> = {
@@ -38,7 +39,7 @@ export function D8DetalheAdminPage() {
     return (
       <AreaLayout tipo="admin" titulo="Análise D8" descricao="Importação não encontrada.">
         <p className="erro">Não foi possível carregar esta importação.</p>
-        <Link to="/admin/d8" className="botao-secundario">
+        <Link to="/admin/financeiro/d8" className="botao-secundario">
           Voltar
         </Link>
       </AreaLayout>
@@ -51,11 +52,13 @@ export function D8DetalheAdminPage() {
       titulo={`D8 ${String(detalhe.competenciaMes).padStart(2, '0')}/${detalhe.competenciaAno}`}
       descricao={`${rotuloTipo[detalhe.tipo]} · ${detalhe.arquivoNome}`}
       acoes={
-        <Link to="/admin/d8" className="botao-secundario">
+        <Link to="/admin/financeiro/d8" className="botao-secundario">
           Voltar
         </Link>
       }
     >
+      <FinanceiroSubnav />
+
       <section className="d8-admin-metricas" aria-label="Resumo da competência">
         <div>
           <span className="d8-admin-metrica-rotulo">Linhas</span>

@@ -125,7 +125,7 @@ export function CompetenciasBalanceteLista({ importacoes }: CompetenciasBalancet
 
               return (
                 <li key={item.id}>
-                  <Link className="bal-mes" to={`/admin/balancetes/${item.id}`}>
+                  <Link className="bal-mes" to={`/admin/financeiro/balancetes/${item.id}`}>
                     <div className="bal-mes-cabecalho">
                       <div>
                         <h3 className="bal-mes-titulo">

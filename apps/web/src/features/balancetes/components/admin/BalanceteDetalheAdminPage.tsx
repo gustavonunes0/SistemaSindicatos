@@ -4,6 +4,7 @@ import type { GrupoBalancete } from '@sindprf/types';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { formatarDataHora } from '../../../../lib/datas';
+import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { useImportacaoBalancete } from '../../hooks';
 
 const MESES = [
@@ -91,7 +92,7 @@ export function BalanceteDetalheAdminPage() {
     return (
       <AreaLayout tipo="admin" titulo="Balancete" descricao="Importação não encontrada.">
         <p className="erro">Não foi possível carregar este balancete.</p>
-        <Link to="/admin/balancetes" className="botao-secundario">
+        <Link to="/admin/financeiro/balancetes" className="botao-secundario">
           Voltar aos balancetes
         </Link>
       </AreaLayout>
@@ -203,11 +204,13 @@ export function BalanceteDetalheAdminPage() {
       titulo={tituloMes}
       descricao={`${detalhe.arquivoNome} · importado em ${formatarDataHora(detalhe.createdAt)}`}
       acoes={
-        <Link to="/admin/balancetes" className="botao-secundario">
+        <Link to="/admin/financeiro/balancetes" className="botao-secundario">
           Voltar
         </Link>
       }
     >
+      <FinanceiroSubnav />
+
       <section className="bal-detalhe-resumo" aria-label="Resumo do mês">
         <div className="bal-detalhe-cards">
           <article className="bal-resumo-card">

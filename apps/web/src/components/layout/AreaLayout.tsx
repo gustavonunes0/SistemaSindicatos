@@ -32,10 +32,16 @@ const gruposAdmin: GrupoNav[] = [
     links: [
       { to: '/admin', rotulo: 'Painel', end: true },
       { to: '/admin/afiliados', rotulo: 'Afiliados' },
-      { to: '/admin/balancetes', rotulo: 'Balancetes' },
-      { to: '/admin/d8', rotulo: 'Importação D8' },
       { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
       { to: '/admin/eleicoes', rotulo: 'Eleições' },
+    ],
+  },
+  {
+    titulo: 'Financeiro',
+    links: [
+      { to: '/admin/financeiro', rotulo: 'Visão geral', end: true },
+      { to: '/admin/financeiro/balancetes', rotulo: 'Balancetes' },
+      { to: '/admin/financeiro/d8', rotulo: 'D8 (SIAPE)' },
     ],
   },
   {

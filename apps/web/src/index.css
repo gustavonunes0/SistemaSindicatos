@@ -4889,6 +4889,145 @@ textarea {
   border-bottom: 0;
 }
 
+/* ============ Admin — Financeiro ============ */
+.fin-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0 0 1.35rem;
+  padding: 0.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+}
+
+.fin-subnav-link {
+  padding: 0.5rem 0.9rem;
+  border-radius: calc(var(--raio) - 1px);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+  text-decoration: none;
+  transition: background var(--transicao), color var(--transicao);
+}
+
+.fin-subnav-link:hover {
+  color: var(--cor-primaria);
+  background: var(--cor-fundo);
+}
+
+.fin-subnav-link--ativo {
+  color: #fff;
+  background: var(--cor-primaria);
+}
+
+.fin-subnav-link--ativo:hover {
+  color: #fff;
+  background: var(--azul-noite);
+}
+
+.fin-resumo {
+  display: grid;
+  gap: 0.75rem;
+  margin-bottom: 1.35rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .fin-resumo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 980px) {
+  .fin-resumo {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.fin-modulos {
+  display: grid;
+  gap: 0.9rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 800px) {
+  .fin-modulos {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.fin-modulo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 1.35rem 1.3rem;
+  text-decoration: none;
+  color: inherit;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  border-left: var(--faixa-altura) solid var(--cor-primaria);
+  transition: border-color var(--transicao), transform var(--transicao);
+}
+
+.fin-modulo:hover {
+  border-left-color: var(--amarelo-faixa);
+  transform: translateY(-1px);
+}
+
+.fin-modulo--destaque {
+  background:
+    linear-gradient(180deg, rgb(11 61 107 / 0.05), transparent 65%),
+    var(--cor-superficie);
+}
+
+.fin-modulo-titulo {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.fin-modulo-desc {
+  margin: 0.35rem 0 0;
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+  color: var(--cor-texto-suave);
+  flex: 1;
+}
+
+.fin-modulo-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0 0;
+}
+
+.fin-modulo-meta dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.fin-modulo-meta dd {
+  margin: 0.2rem 0 0;
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  color: var(--cor-primaria);
+}
+
+.fin-modulo-acao {
+  margin-top: 1rem;
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  color: var(--cor-primaria);
+}
+
+.fin-modulo:hover .fin-modulo-acao {
+  text-decoration: underline;
+}
+
 /* ============ Admin — Balancetes ============ */
 .bal-upload {
   display: grid;

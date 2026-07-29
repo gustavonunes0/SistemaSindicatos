@@ -24,17 +24,11 @@ const modulos: ModuloAdmin[] = [
     destaque: true,
   },
   {
-    to: '/admin/balancetes',
-    titulo: 'Balancetes',
-    descricao: 'Importe o balancete Fortes e veja receitas/despesas por mês e categoria.',
-    acao: 'Abrir balancetes',
+    to: '/admin/financeiro',
+    titulo: 'Financeiro',
+    descricao: 'Balancetes Fortes e importação D8 (SIAPE) em um módulo só.',
+    acao: 'Abrir financeiro',
     destaque: true,
-  },
-  {
-    to: '/admin/d8',
-    titulo: 'Importação D8',
-    descricao: 'Importe o SIAPE, analise a arrecadação e sincronize afiliados.',
-    acao: 'Abrir D8',
   },
   {
     to: '/admin/solicitacoes',

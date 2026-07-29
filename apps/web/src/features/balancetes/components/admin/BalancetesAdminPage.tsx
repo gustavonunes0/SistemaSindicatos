@@ -2,6 +2,7 @@ import { isAxiosError } from 'axios';
 import { useRef, useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { useImportacoesBalancete, useImportarBalancete } from '../../hooks';
 import { CompetenciasBalanceteLista } from './CompetenciasBalanceteLista';
 
@@ -67,6 +68,8 @@ export function BalancetesAdminPage() {
       titulo="Balancetes"
       descricao="Importação mensal do Fortes Contábil e visão de receitas e despesas por categoria."
     >
+      <FinanceiroSubnav />
+
       <section
         className={`bal-upload ${arrastando ? 'bal-upload--ativo' : ''} ${arquivo ? 'bal-upload--com-arquivo' : ''}`}
         onDragEnter={(event) => {
