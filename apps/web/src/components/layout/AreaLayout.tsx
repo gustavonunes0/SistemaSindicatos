@@ -32,6 +32,7 @@ const gruposAdmin: GrupoNav[] = [
     links: [
       { to: '/admin', rotulo: 'Painel', end: true },
       { to: '/admin/afiliados', rotulo: 'Afiliados' },
+      { to: '/admin/balancetes', rotulo: 'Balancetes' },
       { to: '/admin/d8', rotulo: 'Importação D8' },
       { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
       { to: '/admin/eleicoes', rotulo: 'Eleições' },

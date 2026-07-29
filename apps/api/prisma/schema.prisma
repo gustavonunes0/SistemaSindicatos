@@ -513,3 +513,64 @@ model Mensagem {
   @@index([solicitacaoId])
   @@map("mensagens")
 }
+
+// =====================================================================
+// BALANCETE CONTÁBIL (Fortes)
+// =====================================================================
+
+enum TipoLinhaBalancete {
+  ATIVO
+  PASSIVO
+  RECEITA
+  DESPESA
+  OUTRO
+}
+
+enum NaturezaConta {
+  D
+  C
+}
+
+model ImportacaoBalancete {
+  id             String   @id @default(cuid())
+  competenciaAno Int
+  competenciaMes Int
+  arquivoNome    String
+  totalLinhas    Int
+  totalReceitas  Decimal  @db.Decimal(14, 2)
+  totalDespesas  Decimal  @db.Decimal(14, 2)
+  resultado      Decimal  @db.Decimal(14, 2)
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  linhas LinhaBalancete[]
+
+  @@unique([competenciaAno, competenciaMes])
+  @@index([competenciaAno, competenciaMes])
+  @@map("importacoes_balancete")
+}
+
+model LinhaBalancete {
+  id            String             @id @default(cuid())
+  importacaoId  String
+  sequencia     Int
+  codigoConta   String
+  descricao     String
+  nivel         Int
+  tipo          TipoLinhaBalancete
+  natureza      NaturezaConta?
+  saldoAnterior Decimal            @db.Decimal(14, 2)
+  debitos       Decimal            @db.Decimal(14, 2)
+  creditos      Decimal            @db.Decimal(14, 2)
+  saldoAtual    Decimal            @db.Decimal(14, 2)
+  movimento     Decimal            @db.Decimal(14, 2)
+  categoriaSlug String?
+  categoriaNome String?
+  ehFolha       Boolean            @default(false)
+
+  importacao ImportacaoBalancete @relation(fields: [importacaoId], references: [id], onDelete: Cascade)
+
+  @@index([importacaoId])
+  @@index([importacaoId, tipo])
+  @@index([importacaoId, categoriaSlug])
+  @@map("linhas_balancete")
+}

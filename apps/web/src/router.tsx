@@ -13,6 +13,8 @@ import { ConveniosAdminPage } from './features/convenios/components/admin/Conven
 import { ConveniosPage } from './features/convenios/components/ConveniosPage';
 import { D8AdminPage } from './features/d8/components/admin/D8AdminPage';
 import { D8DetalheAdminPage } from './features/d8/components/admin/D8DetalheAdminPage';
+import { BalancetesAdminPage } from './features/balancetes/components/admin/BalancetesAdminPage';
+import { BalanceteDetalheAdminPage } from './features/balancetes/components/admin/BalanceteDetalheAdminPage';
 import { EleicaoDetalheAdminPage } from './features/eleicao/components/admin/EleicaoDetalheAdminPage';
 import { EleicoesAdminPage } from './features/eleicao/components/admin/EleicoesAdminPage';
 import { EleicaoResultadoPage } from './features/eleicao/components/EleicaoResultadoPage';
@@ -60,6 +62,8 @@ export const router = createBrowserRouter([
   { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },
   { path: '/admin/d8', element: protegidaAdmin(<D8AdminPage />) },
   { path: '/admin/d8/:id', element: protegidaAdmin(<D8DetalheAdminPage />) },
+  { path: '/admin/balancetes', element: protegidaAdmin(<BalancetesAdminPage />) },
+  { path: '/admin/balancetes/:id', element: protegidaAdmin(<BalanceteDetalheAdminPage />) },
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
   { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },

@@ -6,6 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AfiliadosModule } from './afiliados/afiliados.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
+import { BalancetesModule } from './balancetes/balancetes.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ConveniosModule } from './convenios/convenios.module';
@@ -39,6 +40,7 @@ import { StorageModule } from './storage/storage.module';
     SolicitacoesModule,
     EleicaoModule,
     D8Module,
+    BalancetesModule,
   ],
   controllers: [AppController],
   providers: [
