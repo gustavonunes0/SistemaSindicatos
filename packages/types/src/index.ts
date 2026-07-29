@@ -3,6 +3,7 @@ export * from './user';
 export * from './afiliado';
 export * from './auth';
 export * from './convenio';
+export * from './contato';
 export * from './cpf';
 export * from './balancete';
 export * from './d8';

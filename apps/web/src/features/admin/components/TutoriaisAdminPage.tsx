@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { AreaLayout } from '../../../../components/layout/AreaLayout';
+import { AreaLayout } from '../../../components/layout/AreaLayout';
 
 type Tutorial = {
   id: string;

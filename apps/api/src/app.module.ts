@@ -10,6 +10,7 @@ import { BalancetesModule } from './balancetes/balancetes.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { ConveniosModule } from './convenios/convenios.module';
+import { ContatoModule } from './contato/contato.module';
 import { D8Module } from './d8/d8.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
@@ -36,6 +37,7 @@ import { StorageModule } from './storage/storage.module';
     PushModule,
     InstagramModule,
     ConveniosModule,
+    ContatoModule,
     ImoveisModule,
     SolicitacoesModule,
     EleicaoModule,
