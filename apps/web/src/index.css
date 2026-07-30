@@ -1600,8 +1600,9 @@ button.botao-primario {
 }
 
 .noticia-detalhe-voltar {
-  display: inline-block;
-  margin-bottom: 1.1rem;
+  display: block;
+  width: fit-content;
+  margin-bottom: 1.25rem;
   font-size: var(--texto-sm);
   font-weight: 600;
   color: rgb(255 255 255 / 0.75);
@@ -1614,6 +1615,7 @@ button.botao-primario {
 }
 
 .noticia-detalhe-eyebrow {
+  display: flex;
   color: rgb(255 255 255 / 0.62);
 }
 
