@@ -18,8 +18,8 @@ export function NoticiaDetalhePage() {
 
   if (isLoading) {
     return (
-      <main className="secao">
-        <div className="secao-inner">
+      <main className="noticia-detalhe-page">
+        <div className="secao-inner noticia-detalhe-estado">
           <EstadoCarregando mensagem="Carregando notícia…" />
         </div>
       </main>
@@ -28,30 +28,61 @@ export function NoticiaDetalhePage() {
 
   if (isError || !noticia) {
     return (
-      <main className="secao">
-        <div className="secao-inner">
+      <main className="noticia-detalhe-page">
+        <div className="secao-inner noticia-detalhe-estado">
+          <p className="eyebrow">Comunicação</p>
           <h1>Notícia não encontrada</h1>
-          <p>
-            <Link to="/noticias">← Voltar para as notícias</Link>
-          </p>
+          <p>O endereço pode estar incorreto ou a publicação foi removida.</p>
+          <Link to="/noticias" className="botao-secundario">
+            Voltar para as notícias
+          </Link>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="secao">
-      <article className="secao-inner noticia-detalhe">
-        <Link to="/noticias" className="link-voltar">
-          ← Todas as notícias
-        </Link>
-        <h1>{noticia.titulo}</h1>
-        {noticia.publicadoEm && <time>{formatarData(noticia.publicadoEm)}</time>}
-        {noticia.capaUrl && (
-          <img className="noticia-capa" src={urlDaApi(noticia.capaUrl)} alt="" />
-        )}
-        {/* Conteúdo produzido pelo editor do admin (fonte confiável). */}
-        <div className="conteudo-texto" dangerouslySetInnerHTML={{ __html: noticia.conteudo }} />
+    <main className="noticia-detalhe-page">
+      <article>
+        <header className="noticia-detalhe-hero">
+          <div className="noticia-detalhe-hero-inner">
+            <Link to="/noticias" className="noticia-detalhe-voltar">
+              ← Todas as notícias
+            </Link>
+            <p className="eyebrow noticia-detalhe-eyebrow">Comunicação</p>
+            <h1>{noticia.titulo}</h1>
+            <span className="noticia-detalhe-faixa" aria-hidden="true" />
+            {noticia.publicadoEm && (
+              <time dateTime={noticia.publicadoEm.toISOString()}>
+                {formatarData(noticia.publicadoEm)}
+              </time>
+            )}
+          </div>
+        </header>
+
+        <div className="secao-inner noticia-detalhe-corpo">
+          {noticia.capaUrl && (
+            <figure className="noticia-capa-wrap">
+              <img
+                className="noticia-capa"
+                src={urlDaApi(noticia.capaUrl)}
+                alt=""
+              />
+            </figure>
+          )}
+
+          <div
+            className="noticia-prose"
+            dangerouslySetInnerHTML={{ __html: noticia.conteudo }}
+          />
+
+          <footer className="noticia-detalhe-rodape">
+            <p>Publicado pelo {marca.nome}</p>
+            <Link to="/noticias" className="botao-secundario">
+              Ver todas as notícias
+            </Link>
+          </footer>
+        </div>
       </article>
     </main>
   );
