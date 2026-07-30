@@ -657,6 +657,299 @@ button.botao-primario {
   margin: 2rem 0 0.5rem;
 }
 
+/* ============ Sobre ============ */
+.sobre-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.sobre-hero {
+  background:
+    linear-gradient(135deg, var(--azul-noite) 0%, var(--azul-placa) 68%, #134a7c 100%);
+  color: #fff;
+  border-bottom: var(--faixa-altura) solid var(--amarelo-faixa);
+  padding: 2.75rem 1rem 2.5rem;
+}
+
+.sobre-hero-inner {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+}
+
+.sobre-hero-eyebrow {
+  color: rgb(255 255 255 / 0.62);
+}
+
+.sobre-hero-eyebrow::before {
+  background: var(--amarelo-faixa);
+}
+
+.sobre-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  letter-spacing: -0.02em;
+}
+
+.sobre-faixa {
+  display: block;
+  width: 5.5rem;
+  height: var(--faixa-altura);
+  background: var(--amarelo-faixa);
+  margin: 1rem 0 0;
+  transform-origin: left center;
+}
+
+.sobre-hero-texto {
+  margin: 0.85rem 0 0;
+  max-width: 48ch;
+  font-size: var(--texto-sm);
+  line-height: 1.55;
+  color: rgb(255 255 255 / 0.8);
+}
+
+.sobre-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem 2.25rem;
+  margin: 1.75rem 0 0;
+  padding: 1.1rem 0 0;
+  border-top: 1px solid rgb(255 255 255 / 0.18);
+}
+
+.sobre-hero-meta div {
+  min-width: 5.5rem;
+}
+
+.sobre-hero-meta dt {
+  margin: 0 0 0.2rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.55);
+}
+
+.sobre-hero-meta dd {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--amarelo-faixa);
+}
+
+.sobre-corpo {
+  padding-top: 2.25rem;
+  padding-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.75rem;
+}
+
+.sobre-missao {
+  max-width: 44rem;
+}
+
+.sobre-missao h2 {
+  margin: 0 0 0.85rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
+}
+
+.sobre-missao-texto {
+  margin: 0;
+  padding: 1.15rem 0 1.15rem 1.25rem;
+  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+  font-family: var(--fonte-display);
+  font-size: clamp(1.15rem, 2.2vw, 1.4rem);
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--cor-primaria);
+}
+
+.sobre-secao-cabecalho {
+  margin-bottom: 1.25rem;
+  max-width: 40rem;
+}
+
+.sobre-secao-cabecalho h2 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
+}
+
+.sobre-secao-cabecalho p {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.sobre-ofertas-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .sobre-ofertas-lista {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+}
+
+.sobre-ofertas-lista li {
+  padding: 1.1rem 1.15rem 1.15rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+  border-radius: var(--raio);
+}
+
+.sobre-ofertas-lista strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-family: var(--fonte-display);
+  font-size: 1.05rem;
+  color: var(--cor-primaria);
+}
+
+.sobre-ofertas-lista p {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+.sobre-institucional {
+  display: grid;
+  gap: 1.25rem;
+}
+
+@media (min-width: 800px) {
+  .sobre-institucional {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: 1.35rem;
+    align-items: stretch;
+  }
+}
+
+.sobre-painel,
+.sobre-sede {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 1.35rem 1.25rem 1.45rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.sobre-painel {
+  border-top: var(--faixa-altura) solid var(--amarelo-faixa);
+}
+
+.sobre-sede {
+  border-left: var(--faixa-altura) solid var(--cor-primaria);
+  background:
+    linear-gradient(135deg, rgb(15 61 107 / 0.04), transparent 55%),
+    var(--cor-superficie);
+}
+
+.sobre-painel h2,
+.sobre-sede h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2vw, 1.35rem);
+}
+
+.sobre-painel .eyebrow,
+.sobre-sede .eyebrow {
+  margin-bottom: 0;
+}
+
+.sobre-painel p,
+.sobre-sede-contato {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+.sobre-painel .botao-primario,
+.sobre-sede .botao-secundario {
+  margin-top: 0.5rem;
+}
+
+.sobre-sede-endereco {
+  margin: 0;
+  font-style: normal;
+  font-size: var(--texto-sm);
+  line-height: 1.55;
+  color: var(--cor-texto);
+}
+
+.sobre-sede-contato a {
+  font-weight: 600;
+}
+
+.sobre-hero-inner > *,
+.sobre-missao,
+.sobre-ofertas-lista li,
+.sobre-painel,
+.sobre-sede {
+  animation: surgir 260ms ease-out both;
+}
+
+.sobre-hero-inner > .sobre-faixa {
+  animation: faixa-pintar 500ms ease-out both;
+  animation-delay: 100ms;
+}
+
+.sobre-hero-inner > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.sobre-hero-inner > *:nth-child(3):not(.sobre-faixa) {
+  animation-delay: 100ms;
+}
+
+.sobre-hero-inner > *:nth-child(4) {
+  animation-delay: 140ms;
+}
+
+.sobre-hero-inner > *:nth-child(5) {
+  animation-delay: 180ms;
+}
+
+.sobre-missao {
+  animation-delay: 160ms;
+}
+
+.sobre-ofertas-lista li:nth-child(1) {
+  animation-delay: 200ms;
+}
+
+.sobre-ofertas-lista li:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.sobre-ofertas-lista li:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+.sobre-ofertas-lista li:nth-child(4) {
+  animation-delay: 320ms;
+}
+
+.sobre-painel {
+  animation-delay: 280ms;
+}
+
+.sobre-sede {
+  animation-delay: 320ms;
+}
+
 /* ============ Diretoria ============ */
 .diretoria-page {
   flex: 1;
