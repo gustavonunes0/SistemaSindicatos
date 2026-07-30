@@ -1467,6 +1467,15 @@ button.botao-primario {
   letter-spacing: -0.02em;
 }
 
+.contato-faixa {
+  display: block;
+  width: 5.5rem;
+  height: var(--faixa-altura);
+  background: var(--amarelo-faixa);
+  margin: 1rem 0 0;
+  transform-origin: left center;
+}
+
 .contato-hero-texto {
   margin: 0.85rem 0 0;
   max-width: 42ch;
@@ -1610,6 +1619,49 @@ button.botao-primario {
 .contato-telefones a:hover,
 .contato-canal a:hover {
   text-decoration: underline;
+}
+
+.contato-hero-inner > *,
+.contato-form-painel,
+.contato-canal {
+  animation: surgir 260ms ease-out both;
+}
+
+.contato-hero-inner > .contato-faixa {
+  animation: faixa-pintar 500ms ease-out both;
+  animation-delay: 100ms;
+}
+
+.contato-hero-inner > *:nth-child(2) {
+  animation-delay: 60ms;
+}
+
+.contato-hero-inner > *:nth-child(3):not(.contato-faixa) {
+  animation-delay: 100ms;
+}
+
+.contato-hero-inner > *:nth-child(4) {
+  animation-delay: 140ms;
+}
+
+.contato-form-painel {
+  animation-delay: 160ms;
+}
+
+.contato-canal:nth-child(1) {
+  animation-delay: 200ms;
+}
+
+.contato-canal:nth-child(2) {
+  animation-delay: 240ms;
+}
+
+.contato-canal:nth-child(3) {
+  animation-delay: 280ms;
+}
+
+.contato-canal:nth-child(4) {
+  animation-delay: 320ms;
 }
 
 /* ============ Footer ============ */

@@ -71,6 +71,7 @@ export function ContatoPage() {
         <div className="contato-hero-inner">
           <p className="eyebrow contato-hero-eyebrow">SINDPRF-CE</p>
           <h1 id="contato-titulo">Contato</h1>
+          <span className="contato-faixa" aria-hidden="true" />
           <p className="contato-hero-texto">
             Fale com a equipe do sindicato. Envie sua mensagem pelo formulário ou use os canais
             oficiais.
