@@ -36,12 +36,12 @@ export function HomePage() {
           </div>
 
           <aside className="hero-quadro" aria-label="Informações do sindicato">
-            <p className="hero-quadro-ano">Desde 1982</p>
+            <p className="hero-quadro-ano">Desde 1992</p>
             <p className="hero-quadro-regiao">Polícia Rodoviária Federal · Ceará</p>
             <dl>
               <div>
                 <dt>Representação</dt>
-                <dd>Nacional</dd>
+                <dd>Estados do Ceará</dd>
               </div>
               <div>
                 <dt>Sede</dt>

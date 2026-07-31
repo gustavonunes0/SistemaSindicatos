@@ -42,7 +42,7 @@ export function SobrePage() {
           <dl className="sobre-hero-meta">
             <div>
               <dt>Desde</dt>
-              <dd>1982</dd>
+              <dd>1992</dd>
             </div>
             <div>
               <dt>Atuação</dt>
