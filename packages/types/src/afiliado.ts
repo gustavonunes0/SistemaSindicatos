@@ -39,5 +39,16 @@ export type AdminAtualizarSenhaAfiliadoInput = z.infer<typeof adminAtualizarSenh
 
 export const filtroAfiliadosSchema = z.object({
   status: statusAfiliadoSchema.optional(),
+  busca: z.string().trim().max(120).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(500).default(20),
 });
 export type FiltroAfiliadosInput = z.infer<typeof filtroAfiliadosSchema>;
+
+export const afiliadosPaginadosSchema = z.object({
+  items: z.array(afiliadoSchema),
+  total: z.number().int(),
+  page: z.number().int(),
+  totalPages: z.number().int(),
+});
+export type AfiliadosPaginados = z.infer<typeof afiliadosPaginadosSchema>;

@@ -86,12 +86,13 @@ export async function cadastrarEAprovarAfiliado(
 
   const lista = await http(app)
     .get('/afiliados')
+    .query({ busca: cpf, limit: 50 })
     .set('Authorization', `Bearer ${tokenAdmin}`)
     .expect(200);
 
-  const afiliado = (lista.body as { id: string; user: { email: string } }[]).find(
-    (item) => item.user.email === email,
-  );
+  const itens = (lista.body as { items: { id: string; user: { email: string }; cpf: string }[] })
+    .items;
+  const afiliado = itens.find((item) => item.cpf === cpf || item.user.email === email);
   if (!afiliado) {
     throw new Error('Afiliado de teste não encontrado após cadastro');
   }

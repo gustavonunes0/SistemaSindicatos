@@ -2573,6 +2573,49 @@ button.botao-primario {
   margin-bottom: 1.25rem;
 }
 
+.afiliados-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 800px) {
+  .afiliados-toolbar {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+}
+
+.afiliados-busca {
+  display: block;
+  flex: 1;
+  max-width: 28rem;
+  margin: 0;
+}
+
+.afiliados-busca input {
+  width: 100%;
+  margin: 0;
+}
+
+.filtros-linha--toolbar {
+  margin-bottom: 0;
+}
+
+.afiliados-meta {
+  margin: 0 0 0.85rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.afiliados-cpf {
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .botao-filtro {
   appearance: none;
   border: 1px solid var(--cor-borda);

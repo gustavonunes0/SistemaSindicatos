@@ -41,7 +41,7 @@ export class AfiliadosController {
   @Roles('ADMIN')
   @Get()
   listar(@Query(new ZodValidationPipe(filtroAfiliadosSchema)) query: FiltroAfiliadosInput) {
-    return this.afiliadosService.listar(query.status);
+    return this.afiliadosService.listar(query);
   }
 
   @Roles('ADMIN')

@@ -1,14 +1,26 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AdminAtualizarSenhaAfiliadoInput,
+  FiltroAfiliadosInput,
   StatusAfiliado,
 } from '@sindprf/types';
 import * as afiliadosApi from './api';
 
-export function useAfiliadosAdmin(status?: StatusAfiliado) {
+export function useAfiliadosAdmin(filtro: Partial<FiltroAfiliadosInput> = {}) {
+  const page = filtro.page ?? 1;
+  const limit = filtro.limit ?? 20;
+  const status = filtro.status;
+  const busca = filtro.busca?.trim() || undefined;
+
   return useQuery({
-    queryKey: ['afiliados', 'admin', status ?? 'todos'],
-    queryFn: () => afiliadosApi.listarAfiliadosAdmin(status),
+    queryKey: ['afiliados', 'admin', { status: status ?? 'todos', busca: busca ?? '', page, limit }],
+    queryFn: () =>
+      afiliadosApi.listarAfiliadosAdmin({
+        status,
+        busca,
+        page,
+        limit,
+      }),
   });
 }
 

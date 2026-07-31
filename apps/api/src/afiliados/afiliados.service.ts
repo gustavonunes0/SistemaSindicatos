@@ -1,6 +1,10 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import type { CadastroAfiliadoInput, StatusAfiliado } from '@sindprf/types';
+import type {
+  CadastroAfiliadoInput,
+  FiltroAfiliadosInput,
+  StatusAfiliado,
+} from '@sindprf/types';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -37,12 +41,40 @@ export class AfiliadosService {
     }
   }
 
-  listar(status?: StatusAfiliado) {
-    return this.prisma.afiliado.findMany({
-      where: status ? { status } : undefined,
-      include: { user: { select: { email: true } } },
-      orderBy: { createdAt: 'desc' },
-    });
+  async listar(filtro: FiltroAfiliadosInput) {
+    const { status, busca, page, limit } = filtro;
+    const termo = busca?.trim() ?? '';
+    const cpfDigitos = termo.replace(/\D/g, '');
+
+    const where: Prisma.AfiliadoWhereInput = {
+      ...(status ? { status } : {}),
+      ...(termo
+        ? {
+            OR: [
+              { nome: { contains: termo, mode: 'insensitive' } },
+              ...(cpfDigitos.length > 0 ? [{ cpf: { contains: cpfDigitos } }] : []),
+            ],
+          }
+        : {}),
+    };
+
+    const [total, items] = await this.prisma.$transaction([
+      this.prisma.afiliado.count({ where }),
+      this.prisma.afiliado.findMany({
+        where,
+        include: { user: { select: { email: true } } },
+        orderBy: [{ nome: 'asc' }, { createdAt: 'desc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      }),
+    ]);
+
+    return {
+      items,
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async atualizarStatus(id: string, status: StatusAfiliado) {

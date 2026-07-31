@@ -17,7 +17,12 @@ type FiltroElegivel = 'todos' | 'votaram' | 'pendentes';
 
 export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
   const { data: elegiveis, isLoading } = useElegiveis(eleicaoId);
-  const { data: afiliados } = useAfiliadosAdmin('APROVADO');
+  const { data: afiliadosPaginados } = useAfiliadosAdmin({
+    status: 'APROVADO',
+    limit: 500,
+    page: 1,
+  });
+  const afiliados = afiliadosPaginados?.items;
   const sincronizar = useSincronizarElegiveis(eleicaoId);
   const incluir = useIncluirElegivel(eleicaoId);
   const remover = useRemoverElegivel(eleicaoId);
