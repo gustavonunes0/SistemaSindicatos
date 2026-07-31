@@ -32,7 +32,7 @@ const TUTORIAIS: Tutorial[] = [
     passos: [
       'Abra Afiliados no menu lateral.',
       'Filtre por status (Pendente, Aprovado ou Inativo) para achar o cadastro.',
-      'Em Pendente, use Aprovar para liberar o acesso do afiliado.',
+      'Em Pendente, use Aprovar para liberar o acesso do sindicalizado.',
       'Se precisar, use Inativar ou Reabrir conforme a situação.',
       'Em Senha, defina uma nova senha quando o afiliado precisar recuperar o acesso.',
     ],

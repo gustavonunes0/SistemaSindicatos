@@ -31,7 +31,7 @@ export function BotaoInstalarPwa() {
       <aside className="pwa-instalar-bar" aria-label="Instalar aplicativo">
         <div className="pwa-instalar-texto">
           <strong>Instalar no celular</strong>
-          <span>Acesso rápido à área do afiliado, offline básico.</span>
+          <span>Acesso rápido à área do sindicalizado, offline básico.</span>
         </div>
         <div className="pwa-instalar-acoes">
           <button type="button" className="botao-primario pwa-instalar-botao" onClick={onAcao}>

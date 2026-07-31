@@ -27,7 +27,7 @@ export function HomePage() {
             </p>
             <div className="hero-acoes">
               <Link to="/login" className="botao-primario">
-                Área do afiliado
+                Área do sindicalizado
               </Link>
               <Link to="/cadastro" className="hero-link">
                 Como me afiliar <span aria-hidden="true">→</span>

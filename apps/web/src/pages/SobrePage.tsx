@@ -9,11 +9,11 @@ const ofertas = [
   },
   {
     titulo: 'Convênios',
-    texto: 'Rede de parceiros com descontos e benefícios exclusivos para afiliados.',
+    texto: 'Rede de parceiros com descontos e benefícios exclusivos para sindicalizados.',
   },
   {
     titulo: 'Imóveis para lazer',
-    texto: 'Espaços disponíveis para aluguel, com reserva pela área do afiliado.',
+    texto: 'Espaços disponíveis para aluguel, com reserva pela área do sindicalizado.',
   },
   {
     titulo: 'Eleições transparentes',

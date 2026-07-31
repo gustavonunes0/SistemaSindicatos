@@ -73,7 +73,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   ];
 
   const grupos = tipo === 'admin' ? gruposAdmin : gruposAfiliado;
-  const rotuloArea = tipo === 'admin' ? 'Administração' : 'Área do afiliado';
+  const rotuloArea = tipo === 'admin' ? 'Administração' : 'Área do sindicalizado';
   const identificacao =
     tipo === 'admin' ? data?.user.email : (data?.afiliado?.nome ?? data?.user.email);
 

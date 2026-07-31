@@ -66,7 +66,7 @@ export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
         <div>
           <h2 id="eleicao-elegiveis-titulo">Elegíveis</h2>
           <p>
-            Quem vota eletronicamente nesta eleição. A sincronização inclui todo afiliado aprovado
+            Quem vota eletronicamente nesta eleição. A sincronização inclui todo sindicalizado aprovado
             — ajuste manualmente para refletir apenas quem manifestou adesão ao voto eletrônico
             (Art. 38 §3º do Estatuto).
           </p>

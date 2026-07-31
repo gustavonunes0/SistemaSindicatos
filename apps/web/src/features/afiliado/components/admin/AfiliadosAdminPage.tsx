@@ -123,12 +123,12 @@ export function AfiliadosAdminPage() {
         </p>
       )}
 
-      {isLoading && <EstadoCarregando mensagem="Carregando afiliados…" />}
-      {isError && <p className="erro">Erro ao carregar afiliados.</p>}
+      {isLoading && <EstadoCarregando mensagem="Carregando sindicalizados…" />}
+      {isError && <p className="erro">Erro ao carregar sindicalizados.</p>}
 
       {!isLoading && afiliados.length === 0 && (
         <div className="estado-vazio">
-          <p>Nenhum afiliado neste filtro.</p>
+          <p>Nenhum sindicalizado neste filtro.</p>
         </div>
       )}
 
@@ -177,8 +177,8 @@ export function AfiliadosAdminPage() {
                           disabled={atualizarStatus.isPending}
                           onClick={() =>
                             onMudarStatus(afiliado, 'APROVADO', {
-                              titulo: 'Aprovar afiliado?',
-                              descricao: `${afiliado.nome} passará a ter acesso à área do afiliado.`,
+                              titulo: 'Aprovar sindicalizado?',
+                              descricao: `${afiliado.nome} passará a ter acesso à área do sindicalizado.`,
                               confirmarRotulo: 'Aprovar',
                               tom: 'primario',
                             })
@@ -194,8 +194,8 @@ export function AfiliadosAdminPage() {
                           disabled={atualizarStatus.isPending}
                           onClick={() =>
                             onMudarStatus(afiliado, 'INATIVO', {
-                              titulo: 'Inativar afiliado?',
-                              descricao: `${afiliado.nome} perderá o acesso à área do afiliado.`,
+                              titulo: 'Inativar sindicalizado?',
+                              descricao: `${afiliado.nome} perderá o acesso à área do sindicalizado.`,
                               confirmarRotulo: 'Inativar',
                             })
                           }
