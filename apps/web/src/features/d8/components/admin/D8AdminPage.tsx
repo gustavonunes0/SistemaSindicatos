@@ -48,7 +48,7 @@ export function D8AdminPage() {
             `${rotuloTipo[resultado.importacao.tipo]} ${formatarCompetencia(
               resultado.importacao.competenciaMes,
               resultado.importacao.competenciaAno,
-            )}: ${resultado.resumo.totalLinhas} linhas · ${formatarMoeda(resultado.resumo.totalValor)} · ${resultado.resumo.criados} criados · ${resultado.resumo.inativados} inativados. Senha temporária dos novos: D8_SENHA_TEMP (padrão Sindprf@D8).`,
+            )}: ${resultado.resumo.totalLinhas} linhas · ${formatarMoeda(resultado.resumo.totalValor)} · ${resultado.resumo.criados} criados · ${resultado.resumo.inativados} inativados. Novos afiliados entram com CPF e matrícula.`,
           );
           setArquivo(null);
         },

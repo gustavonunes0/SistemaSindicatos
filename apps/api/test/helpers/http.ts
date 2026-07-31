@@ -14,7 +14,7 @@ export async function loginAdmin(app: INestApplication): Promise<string> {
   const senha = process.env.SEED_ADMIN_SENHA ?? 'Admin@123';
   const res = await http(app)
     .post('/auth/login')
-    .send({ email: 'admin@sindprf.local', senha })
+    .send({ login: 'admin@sindprf.local', senha })
     .expect(200);
 
   return res.body.accessToken as string;
@@ -104,7 +104,7 @@ export async function cadastrarEAprovarAfiliado(
 
   const login = await http(app)
     .post('/auth/login')
-    .send({ email, senha: 'Senha@1234' })
+    .send({ login: cpf, senha: 'Senha@1234' })
     .expect(200);
 
   return {

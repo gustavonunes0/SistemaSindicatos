@@ -1,0 +1,243 @@
+{
+  "contatosPdf": 811,
+  "afiliados": 801,
+  "matches": 792,
+  "telAtualizados": 750,
+  "emailAtualizados": 671,
+  "emailConflito": 52,
+  "emailIgual": 0,
+  "erros": [],
+  "exemplosMatch": [
+    {
+      "afiliadoId": "cms0qebr700392296wyapfm7r",
+      "userId": "cms0qea8j000h2296kp0vlmze",
+      "nomeDb": "AIRTON CARNEIRO MARINHO",
+      "nomePdf": "AIRTON CARNEIRO MARINHO",
+      "score": 1,
+      "emailAtual": "pinheiroabraao1@gmail.com",
+      "emailNovo": null,
+      "telefoneAtual": "(85) 99191-0623",
+      "telefoneNovo": "(85) 99157-8087"
+    },
+    {
+      "afiliadoId": "cms0qebr6002t22968ttggrwf",
+      "userId": "cms0qea8j00012296xtc22lw3",
+      "nomeDb": "ABRAÃO LINCOLN SOARES B. PINHEIRO",
+      "nomePdf": "ABRAÃO LINCOLN SOARES B. PINHEIRO",
+      "score": 1,
+      "emailAtual": "d8.32133464387@sindprf.local",
+      "emailNovo": "pinheiroabraao1@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99191-0623"
+    },
+    {
+      "afiliadoId": "cms0qebr6002u229670frx262",
+      "userId": "cms0qea8j00022296rrtbksfw",
+      "nomeDb": "ACÁCIO VASCONCELOS NUNES",
+      "nomePdf": "ACÁCIO VASCONCELOS NUNES",
+      "score": 1,
+      "emailAtual": "d8.24144975304@sindprf.local",
+      "emailNovo": "acacio.nunes07@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98887-0104"
+    },
+    {
+      "afiliadoId": "cms0qebr6002v2296odffeynt",
+      "userId": "cms0qea8j00032296wweu7nht",
+      "nomeDb": "ADALGIMAR MAIA FERNANDES",
+      "nomePdf": "ADALGIMAR MAIA FERNANDES",
+      "score": 1,
+      "emailAtual": "d8.61453870334@sindprf.local",
+      "emailNovo": "adalgimar.maia@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98822-4706"
+    },
+    {
+      "afiliadoId": "cms0qebr6002w22966ohq4ddb",
+      "userId": "cms0qea8j00042296zvynj3i8",
+      "nomeDb": "ADAUTO BEZERRA GOIS",
+      "nomePdf": "ADAUTO BEZERRA GOIS",
+      "score": 1,
+      "emailAtual": "d8.01567357334@sindprf.local",
+      "emailNovo": "abg1941@yahoo.com.br",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99987-9968"
+    },
+    {
+      "afiliadoId": "cms0qebr6002x2296n01rl49m",
+      "userId": "cms0qea8j000522967hgqx02s",
+      "nomeDb": "ADAUTO SOARES DA SILVA",
+      "nomePdf": "ADAUTO SOARES DA SILVA",
+      "score": 1,
+      "emailAtual": "d8.05314372304@sindprf.local",
+      "emailNovo": "adautosoaresdasilvasoares@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98626-0012"
+    },
+    {
+      "afiliadoId": "cms0qebr6002y2296586wlldc",
+      "userId": "cms0qea8j00062296lnrmf9p9",
+      "nomeDb": "ADILIO ARRAIS GOMES DA SILVA",
+      "nomePdf": "ADILIO ARRAIS GOMES DA SILVA",
+      "score": 1,
+      "emailAtual": "d8.02835390464@sindprf.local",
+      "emailNovo": "adilioarrais@hotmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(84) 98102-0612"
+    },
+    {
+      "afiliadoId": "cms0qebr7002z2296x60upx2l",
+      "userId": "cms0qea8j00072296dblp56kg",
+      "nomeDb": "ADRIANA DA SILVA",
+      "nomePdf": "ADRIANA DA SILVA",
+      "score": 1,
+      "emailAtual": "d8.36093980359@sindprf.local",
+      "emailNovo": "adrianadasilva679@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99986-5206"
+    },
+    {
+      "afiliadoId": "cms0qebr700302296qhmd7zx2",
+      "userId": "cms0qea8j00082296wvq37edk",
+      "nomeDb": "ADRIANA MAIA DA SILVA",
+      "nomePdf": "ADRIANA MAIA DA SILVA",
+      "score": 1,
+      "emailAtual": "d8.31883737320@sindprf.local",
+      "emailNovo": "adrianamaia0372@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98891-1972"
+    },
+    {
+      "afiliadoId": "cms0qebr700312296a8erqjog",
+      "userId": "cms0qea8j00092296a3fglp9b",
+      "nomeDb": "ADRIANA MARA DE SOUZA",
+      "nomePdf": "ADRIANA MARA DE SOUZA",
+      "score": 1,
+      "emailAtual": "d8.78964938372@sindprf.local",
+      "emailNovo": "ams782012@hotmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99981-7273"
+    },
+    {
+      "afiliadoId": "cms0qebr700322296y6nttvn9",
+      "userId": "cms0qea8j000a2296gpo5th91",
+      "nomeDb": "ADRIANA MARIA APOLONIO M. DO CARMO",
+      "nomePdf": "ADRIANA MARIA APOLONIO M. DO CARMO",
+      "score": 1,
+      "emailAtual": "d8.52524418391@sindprf.local",
+      "emailNovo": "adriana.apolonio@prf.gov.br",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99704-1597"
+    },
+    {
+      "afiliadoId": "cms0qebr7003322963v52u2t5",
+      "userId": "cms0qea8j000b2296w1my9ohq",
+      "nomeDb": "ADRIANO AGUIAR CAVALCANTE",
+      "nomePdf": "ADRIANO AGUIAR CAVALCANTE",
+      "score": 1,
+      "emailAtual": "d8.64816613315@sindprf.local",
+      "emailNovo": "adriano.cavalcante81@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99900-2426"
+    },
+    {
+      "afiliadoId": "cms0qebr700352296zld7fj3h",
+      "userId": "cms0qea8j000d2296wnz8keif",
+      "nomeDb": "AFRÂNIO ARARIPE DE ALENCAR",
+      "nomePdf": "AFRÂNIO ARARIPE DE ALENCAR",
+      "score": 1,
+      "emailAtual": "d8.03380718300@sindprf.local",
+      "emailNovo": "afranioalencar22@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98907-3341"
+    },
+    {
+      "afiliadoId": "cms0qebr700362296c6lvhm4y",
+      "userId": "cms0qea8j000e2296zp4a6awo",
+      "nomeDb": "AFRÂNIO PINTO BASTOS",
+      "nomePdf": "AFRÂNIO PINTO BASTOS",
+      "score": 1,
+      "emailAtual": "d8.29967945320@sindprf.local",
+      "emailNovo": "afpbast@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99671-8666"
+    },
+    {
+      "afiliadoId": "cms0qebr700372296dw3qwgzm",
+      "userId": "cms0qea8j000f22961vjv8vvc",
+      "nomeDb": "AGAMENON CAVALCANTE DE MELO",
+      "nomePdf": "AGAMENON CAVALCANTE DE MELO",
+      "score": 1,
+      "emailAtual": "d8.01364413353@sindprf.local",
+      "emailNovo": "agamenon7171@gmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99662-2231"
+    },
+    {
+      "afiliadoId": "cms0qebr700382296965gqr9h",
+      "userId": "cms0qea8j000g2296lwtcd7uh",
+      "nomeDb": "AGOSTINHO LEANDRO COSTA",
+      "nomePdf": "AGOSTINHO LEANDRO COSTA",
+      "score": 1,
+      "emailAtual": "d8.04104625353@sindprf.local",
+      "emailNovo": "ag.leandro@hotmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 99984-8690"
+    },
+    {
+      "afiliadoId": "cms0qebr7003a2296nrg8v9db",
+      "userId": "cms0qea8j000i2296wd2vsyhe",
+      "nomeDb": "AIRTON LIBÓRIO VIANA ALENCAR",
+      "nomePdf": "AIRTON LIBÓRIO VIANA ALENCAR",
+      "score": 1,
+      "emailAtual": "d8.21096856387@sindprf.local",
+      "emailNovo": "airtonliborioce@yahoo.com.br",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98855-9143"
+    },
+    {
+      "afiliadoId": "cms0qebr7003b2296a3lf2vy7",
+      "userId": "cms0qea8j000j229616beslvg",
+      "nomeDb": "ALDEMIR CHAVES COLARES",
+      "nomePdf": "ALDEMIR CHAVES COLARES",
+      "score": 1,
+      "emailAtual": "d8.02443830306@sindprf.local",
+      "emailNovo": "aldemirprfcolares@hotmail.com",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98892-9700"
+    },
+    {
+      "afiliadoId": "cms0qebr7003c2296z7s9jujf",
+      "userId": "cms0qea8j000k2296qxe6vaz0",
+      "nomeDb": "ALDENIR DE OLIVEIRA CAMARA",
+      "nomePdf": "ALDENIR DE OLIVEIRA CAMARA",
+      "score": 1,
+      "emailAtual": "d8.45870306353@sindprf.local",
+      "emailNovo": "aldenirpro@yahoo.com.br",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98886-9470"
+    },
+    {
+      "afiliadoId": "cms0qebr7003d2296vhux1zvz",
+      "userId": "cms0qea8j000l2296husxkygu",
+      "nomeDb": "ALECSANDRO DA SILVA DUARTE",
+      "nomePdf": "ALECSANDRO DA SILVA DUARTE",
+      "score": 1,
+      "emailAtual": "d8.54744679315@sindprf.local",
+      "emailNovo": "alecsandroduarte@yahoo.com.br",
+      "telefoneAtual": null,
+      "telefoneNovo": "(85) 98854-7408"
+    }
+  ],
+  "semMatch": [
+    "ADRIANO ANDRADE HOLANDA MONTEIRO",
+    "ALEXSANDRO LUIS MENEZES BATISTA",
+    "CLEYTON GRAÇA DE SOUSA",
+    "FELIPE DE MELO SILVEIRA",
+    "MARCELO ANTUNES GERMANO",
+    "MARTA MARIA SABOYA DE QUEIROZ",
+    "PEDRO SOARES DE SOUZA",
+    "WERMESSON PEROTE SOUSA",
+    "MARIA PEREIRA LIMA DE SOUZA"
+  ]
+}

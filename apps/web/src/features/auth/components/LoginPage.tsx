@@ -17,23 +17,39 @@ export function LoginPage() {
   const mensagemErro =
     login.isError &&
     (isAxiosError(login.error) && login.error.response?.status === 401
-      ? 'Email ou senha incorretos'
+      ? 'CPF/e-mail ou senha incorretos'
       : 'Erro ao entrar. Tente novamente.');
 
   return (
     <AuthLayout titulo="Entrar">
       <form onSubmit={handleSubmit((dados) => login.mutate(dados))} noValidate>
         <label>
-          Email
-          <input type="email" autoComplete="email" {...register('email')} />
-          {errors.email && <span className="erro">{errors.email.message}</span>}
+          CPF
+          <input
+            type="text"
+            inputMode="numeric"
+            autoComplete="username"
+            placeholder="Somente números"
+            {...register('login')}
+          />
+          {errors.login && <span className="erro">{errors.login.message}</span>}
         </label>
 
         <label>
-          Senha
-          <input type="password" autoComplete="current-password" {...register('senha')} />
+          Matrícula
+          <input
+            type="password"
+            autoComplete="current-password"
+            placeholder="Sua matrícula SIAPE"
+            {...register('senha')}
+          />
           {errors.senha && <span className="erro">{errors.senha.message}</span>}
         </label>
+
+        <p className="auth-dica">
+          Afiliado: CPF e matrícula. Administrador: informe o e-mail no campo CPF e a senha no
+          campo matrícula.
+        </p>
 
         {mensagemErro && <p className="erro">{mensagemErro}</p>}
 

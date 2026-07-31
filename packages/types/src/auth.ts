@@ -2,9 +2,10 @@ import { z } from 'zod';
 import { afiliadoSchema } from './afiliado';
 import { userSchema } from './user';
 
+/** Afiliado: CPF + matrícula. Admin: e-mail + senha. */
 export const loginSchema = z.object({
-  email: z.string().email('Email inválido'),
-  senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
+  login: z.string().trim().min(1, 'Informe o CPF ou e-mail'),
+  senha: z.string().min(1, 'Informe a senha'),
 });
 export type LoginInput = z.infer<typeof loginSchema>;
 

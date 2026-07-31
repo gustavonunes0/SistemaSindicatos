@@ -28,7 +28,7 @@ export class AuthController {
   @Post('login')
   @HttpCode(HttpStatus.OK)
   login(@Body(new ZodValidationPipe(loginSchema)) body: LoginInput): Promise<AuthResponse> {
-    return this.authService.login(body.email, body.senha);
+    return this.authService.login(body.login, body.senha);
   }
 
   @Public()

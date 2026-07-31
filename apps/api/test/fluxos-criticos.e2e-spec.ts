@@ -28,7 +28,7 @@ describe('Fluxos críticos (e2e)', () => {
       const senha = process.env.SEED_ADMIN_SENHA ?? 'Admin@123';
       const res = await http(app)
         .post('/auth/login')
-        .send({ email: 'admin@sindprf.local', senha })
+        .send({ login: 'admin@sindprf.local', senha })
         .expect(200);
 
       expect(res.body.accessToken).toEqual(expect.any(String));
@@ -39,7 +39,7 @@ describe('Fluxos críticos (e2e)', () => {
     it('credenciais inválidas retornam 401', async () => {
       await http(app)
         .post('/auth/login')
-        .send({ email: 'admin@sindprf.local', senha: 'senha-errada' })
+        .send({ login: 'admin@sindprf.local', senha: 'senha-errada' })
         .expect(401);
     });
   });
@@ -309,7 +309,7 @@ describe('Fluxos críticos (e2e)', () => {
 
       const login = await http(app)
         .post('/auth/login')
-        .send({ email, senha: 'Senha@1234' })
+        .send({ login: cpf, senha: 'Senha@1234' })
         .expect(200);
       const tokenPendente = login.body.accessToken as string;
 

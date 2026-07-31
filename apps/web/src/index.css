@@ -2121,6 +2121,13 @@ button.botao-primario {
   text-align: center;
 }
 
+.auth-dica {
+  margin: 0 0 1rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.45;
+}
+
 /* ============ Cadastro de afiliado ============ */
 .cadastro-page {
   min-height: 100vh;

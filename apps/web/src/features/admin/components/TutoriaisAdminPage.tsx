@@ -76,7 +76,7 @@ const TUTORIAIS: Tutorial[] = [
     ],
     dicas: [
       'Quem aparece no D8 fica aprovado; aprovados/inativos ausentes na competência podem ser inativados.',
-      'Novos CPF geram usuário com senha temporária (padrão Sindprf@D8 / variável D8_SENHA_TEMP).',
+      'Novos CPF geram usuário com login = CPF e senha = matrícula SIAPE.',
     ],
   },
   {

@@ -3,7 +3,6 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import type {
   FiltroLinhasD8,
   ImportacaoD8Detalhe,
@@ -15,7 +14,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { parseTextoD8, type D8Parseado, type LinhaD8Parseada } from './d8-parser';
 
 const BCRYPT_ROUNDS = 10;
-const SENHA_TEMP_PADRAO = 'Sindprf@D8';
 const LOTE = 100;
 
 type ResumoImport = {
@@ -30,6 +28,7 @@ type ResumoImport = {
 
 type AfiliadoMatch = {
   id: string;
+  userId: string;
   cpf: string;
   matricula: string;
   nome: string;
@@ -49,10 +48,7 @@ function paraNumero(valor: unknown): number {
 
 @Injectable()
 export class D8Service {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly config: ConfigService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   listar() {
     return this.prisma.importacaoD8.findMany({
@@ -138,8 +134,6 @@ export class D8Service {
       throw new BadRequestException(mensagem);
     }
 
-    const senhaTemporaria = this.config.get<string>('D8_SENHA_TEMP') ?? SENHA_TEMP_PADRAO;
-    const senhaHash = await bcrypt.hash(senhaTemporaria, BCRYPT_ROUNDS);
     const { tipo, substituirBase, arquivoNome } = input;
 
     if (substituirBase) {
@@ -172,11 +166,7 @@ export class D8Service {
       },
     });
 
-    const { criados, vinculados } = await this.sincronizarAfiliados(
-      parseado.linhas,
-      tipo,
-      senhaHash,
-    );
+    const { criados, vinculados } = await this.sincronizarAfiliados(parseado.linhas, tipo);
 
     const afiliadosCpf = await this.prisma.afiliado.findMany({
       where: { cpf: { in: parseado.linhas.map((l: LinhaD8Parseada) => l.cpf) } },
@@ -225,7 +215,8 @@ export class D8Service {
     return {
       importacao: this.serializarImportacao(importacao),
       resumo,
-      senhaTemporariaUsada: true,
+      // Login do afiliado: CPF + matrícula (senha = matrícula).
+      senhaTemporariaUsada: false,
     };
   }
 
@@ -272,7 +263,6 @@ export class D8Service {
   private async sincronizarAfiliados(
     linhas: LinhaD8Parseada[],
     tipo: TipoD8,
-    senhaHash: string,
   ): Promise<{ criados: number; vinculados: number }> {
     const cpfs = linhas.map((l) => l.cpf);
     const matriculas = linhas.map((l) => l.matricula);
@@ -281,7 +271,7 @@ export class D8Service {
       where: {
         OR: [{ cpf: { in: cpfs } }, { matricula: { in: matriculas } }],
       },
-      select: { id: true, cpf: true, matricula: true, nome: true },
+      select: { id: true, userId: true, cpf: true, matricula: true, nome: true },
     });
 
     const porCpf = new Map<string, AfiliadoMatch>(
@@ -320,10 +310,12 @@ export class D8Service {
 
     for (const lote of emLotes(paraAtualizar, LOTE)) {
       await Promise.all(
-        lote.map((linha) => {
+        lote.map(async (linha) => {
           const afiliado = porCpf.get(linha.cpf) ?? porMatricula.get(linha.matricula);
-          if (!afiliado) return Promise.resolve();
-          return this.prisma.afiliado.update({
+          if (!afiliado) return;
+
+          const matriculaMudou = afiliado.matricula !== linha.matricula;
+          await this.prisma.afiliado.update({
             where: { id: afiliado.id },
             data: {
               nome: linha.nome,
@@ -333,17 +325,29 @@ export class D8Service {
               status: 'APROVADO',
             },
           });
+
+          if (matriculaMudou) {
+            const senhaHash = await bcrypt.hash(linha.matricula, BCRYPT_ROUNDS);
+            await this.prisma.user.update({
+              where: { id: afiliado.userId },
+              data: { senhaHash },
+            });
+          }
         }),
       );
     }
 
     for (const lote of emLotes(paraCriar, LOTE)) {
-      await this.prisma.user.createMany({
-        data: lote.map((linha) => ({
+      const usersData = await Promise.all(
+        lote.map(async (linha) => ({
           email: `d8.${linha.cpf}@sindprf.local`,
-          senhaHash,
+          senhaHash: await bcrypt.hash(linha.matricula, BCRYPT_ROUNDS),
           role: 'AFILIADO' as const,
         })),
+      );
+
+      await this.prisma.user.createMany({
+        data: usersData,
         skipDuplicates: true,
       });
 

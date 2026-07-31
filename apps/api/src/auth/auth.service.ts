@@ -1,7 +1,7 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import type { User } from '@prisma/client';
-import type { AuthResponse, MeResponse } from '@sindprf/types';
+import { validarCpf, type AuthResponse, type MeResponse } from '@sindprf/types';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'node:crypto';
 import type { JwtPayload } from '../common/request-user';
@@ -25,13 +25,31 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(email: string, senha: string): Promise<AuthResponse> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+  async login(login: string, senha: string): Promise<AuthResponse> {
+    const user = await this.encontrarUsuarioPorLogin(login);
     const senhaConfere = user && (await bcrypt.compare(senha, user.senhaHash));
     if (!user || !senhaConfere) {
       throw new UnauthorizedException('Credenciais inválidas');
     }
     return this.gerarSessao(user);
+  }
+
+  /** CPF (afiliado) ou e-mail (admin / legado). */
+  private async encontrarUsuarioPorLogin(login: string): Promise<User | null> {
+    const bruto = login.trim();
+    const cpf = bruto.replace(/\D/g, '');
+
+    if (cpf.length === 11 && validarCpf(cpf)) {
+      const afiliado = await this.prisma.afiliado.findUnique({
+        where: { cpf },
+        include: { user: true },
+      });
+      return afiliado?.user ?? null;
+    }
+
+    return this.prisma.user.findUnique({
+      where: { email: bruto.toLowerCase() },
+    });
   }
 
   async refresh(refreshToken: string): Promise<AuthResponse> {
