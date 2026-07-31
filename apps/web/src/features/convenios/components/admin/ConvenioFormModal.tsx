@@ -1,5 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { criarConvenioSchema, type CriarConvenioInput } from '@sindprf/types';
+import {
+  criarConvenioSchema,
+  MODELO_DECLARACAO_ROTULO,
+  modeloDeclaracaoSchema,
+  type CriarConvenioInput,
+} from '@sindprf/types';
 import { useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
@@ -13,6 +18,8 @@ import {
   useConvenioAdmin,
   useCriarConvenio,
 } from '../../hooks';
+
+const modelosDeclaracao = modeloDeclaracaoSchema.options;
 
 type ConvenioFormValues = z.input<typeof criarConvenioSchema>;
 
@@ -49,6 +56,10 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
       vigenciaInicio: null,
       vigenciaFim: null,
       ativo: true,
+      emiteDeclaracao: false,
+      modeloDeclaracao: null,
+      destinoDeclaracao: null,
+      textoComplementar: null,
     },
   });
 
@@ -65,6 +76,10 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         vigenciaInicio: paraInputData(convenioExistente.vigenciaInicio),
         vigenciaFim: paraInputData(convenioExistente.vigenciaFim),
         ativo: convenioExistente.ativo,
+        emiteDeclaracao: convenioExistente.emiteDeclaracao,
+        modeloDeclaracao: convenioExistente.modeloDeclaracao,
+        destinoDeclaracao: convenioExistente.destinoDeclaracao ?? '',
+        textoComplementar: convenioExistente.textoComplementar ?? '',
       });
       return;
     }
@@ -79,11 +94,16 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         vigenciaInicio: null,
         vigenciaFim: null,
         ativo: true,
+        emiteDeclaracao: false,
+        modeloDeclaracao: null,
+        destinoDeclaracao: null,
+        textoComplementar: null,
       });
     }
   }, [aberto, id, convenioExistente, reset]);
 
   const logoUrl = watch('logoUrl');
+  const emiteDeclaracao = watch('emiteDeclaracao');
   const logoUrlValida = typeof logoUrl === 'string' ? logoUrl : null;
   const salvando = criar.isPending || atualizar.isPending;
 
@@ -202,6 +222,58 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
             <input type="checkbox" {...register('ativo')} />
             Convênio ativo (visível para afiliados aprovados)
           </label>
+
+          <fieldset className="convenio-declaracao-fieldset">
+            <legend>Declaração para afiliados</legend>
+            <label className="campo-checkbox">
+              <input type="checkbox" {...register('emiteDeclaracao')} />
+              Permitir emissão de declaração/autorização em PDF
+            </label>
+
+            {emiteDeclaracao && (
+              <>
+                <label>
+                  Modelo do documento
+                  <select {...register('modeloDeclaracao')}>
+                    <option value="">Selecione…</option>
+                    {modelosDeclaracao.map((modelo) => (
+                      <option key={modelo} value={modelo}>
+                        {MODELO_DECLARACAO_ROTULO[modelo]}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.modeloDeclaracao && (
+                    <span className="erro">{errors.modeloDeclaracao.message}</span>
+                  )}
+                </label>
+
+                <label>
+                  Destino (nome do parceiro no texto)
+                  <input
+                    type="text"
+                    {...register('destinoDeclaracao')}
+                    placeholder="Ex.: Unimed Ceará, Sistema FECOMÉRCIO (SESC/SENAC)"
+                    autoComplete="off"
+                  />
+                  {errors.destinoDeclaracao && (
+                    <span className="erro">{errors.destinoDeclaracao.message}</span>
+                  )}
+                </label>
+
+                <label>
+                  Texto complementar (opcional)
+                  <textarea
+                    rows={3}
+                    {...register('textoComplementar')}
+                    placeholder="Ex.: isenção de taxa de credencial para dependentes…"
+                  />
+                  {errors.textoComplementar && (
+                    <span className="erro">{errors.textoComplementar.message}</span>
+                  )}
+                </label>
+              </>
+            )}
+          </fieldset>
 
           {(criar.isError || atualizar.isError) && (
             <p className="erro">Erro ao salvar o convênio. Tente novamente.</p>

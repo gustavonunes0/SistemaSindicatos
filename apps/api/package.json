@@ -9,7 +9,8 @@
     "start": "node dist/main.js",
     "lint": "eslint src prisma test",
     "test": "jest --config ./test/jest-e2e.json --runInBand",
-    "d8:importar-inicial": "node --env-file=.env scripts/importar-d8-host.mjs"
+    "d8:importar-inicial": "node --env-file=.env scripts/importar-d8-host.mjs",
+    "seed:convenios-declaracao": "tsx scripts/seed-convenios-declaracao.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
@@ -27,6 +28,7 @@
     "bcrypt": "^6.0.0",
     "helmet": "^8.2.0",
     "nodemailer": "^9.0.3",
+    "pdfkit": "^0.19.1",
     "prisma": "^6.19.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -42,6 +44,7 @@
     "@types/multer": "^2.2.0",
     "@types/node": "^22.10.5",
     "@types/nodemailer": "^8.0.1",
+    "@types/pdfkit": "^0.17.6",
     "@types/supertest": "^7.2.0",
     "@types/web-push": "^3.6.4",
     "eslint": "^9.17.0",

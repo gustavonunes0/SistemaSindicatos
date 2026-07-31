@@ -1,15 +1,26 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
   AtualizarConvenioInput,
   CriarConvenioInput,
+  EmitirDeclaracaoInput,
   FiltroConveniosInput,
 } from '@sindprf/types';
+import type { RequestUser } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
+import { DeclaracaoPdfService } from './declaracao-pdf.service';
 
 @Injectable()
 export class ConveniosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly declaracaoPdf: DeclaracaoPdfService,
+  ) {}
 
   criar(input: CriarConvenioInput) {
     return this.prisma.convenio.create({ data: this.montarDados(input) });
@@ -79,6 +90,60 @@ export class ConveniosService {
     return registros.map((registro) => registro.categoria);
   }
 
+  async emitirDeclaracao(
+    user: RequestUser,
+    convenioId: string,
+    input: EmitirDeclaracaoInput,
+  ): Promise<{ buffer: Buffer; nomeArquivo: string }> {
+    const afiliado = await this.prisma.afiliado.findUnique({
+      where: { userId: user.id },
+      select: { nome: true, cpf: true, status: true },
+    });
+    if (!afiliado || afiliado.status !== 'APROVADO') {
+      throw new ForbiddenException('Afiliação ainda não aprovada');
+    }
+
+    const convenio = await this.buscarPublico(convenioId);
+    if (!convenio.emiteDeclaracao || !convenio.modeloDeclaracao || !convenio.destinoDeclaracao) {
+      throw new BadRequestException('Este convênio não emite declaração');
+    }
+
+    if (convenio.modeloDeclaracao === 'DEPENDENTE') {
+      if (!input.dependenteNome?.trim() || !input.dependenteCpf) {
+        throw new BadRequestException('Informe o nome e o CPF do dependente');
+      }
+    }
+
+    if (convenio.modeloDeclaracao === 'AUTORIZACAO_HOSPEDAGEM') {
+      if (!input.periodoInicio || !input.periodoFim) {
+        throw new BadRequestException('Informe o período de hospedagem');
+      }
+    }
+
+    const buffer = await this.declaracaoPdf.gerar({
+      modelo: convenio.modeloDeclaracao,
+      destino: convenio.destinoDeclaracao,
+      textoComplementar: convenio.textoComplementar,
+      afiliadoNome: afiliado.nome,
+      afiliadoCpf: afiliado.cpf,
+      dependenteNome: input.dependenteNome,
+      dependenteCpf: input.dependenteCpf,
+      periodoInicio: input.periodoInicio,
+      periodoFim: input.periodoFim,
+    });
+
+    const slug = convenio.nome
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .toLowerCase()
+      .slice(0, 40);
+    const nomeArquivo = `declaracao-${slug || 'convenio'}.pdf`;
+
+    return { buffer, nomeArquivo };
+  }
+
   private montarDados(input: AtualizarConvenioInput): Prisma.ConvenioUncheckedCreateInput {
     // Só inclui as chaves presentes para não sobrescrever com undefined em update parcial.
     const dados: Prisma.ConvenioUncheckedCreateInput = {} as Prisma.ConvenioUncheckedCreateInput;
@@ -91,6 +156,10 @@ export class ConveniosService {
     if (input.vigenciaInicio !== undefined) dados.vigenciaInicio = input.vigenciaInicio;
     if (input.vigenciaFim !== undefined) dados.vigenciaFim = input.vigenciaFim;
     if (input.ativo !== undefined) dados.ativo = input.ativo;
+    if (input.emiteDeclaracao !== undefined) dados.emiteDeclaracao = input.emiteDeclaracao;
+    if (input.modeloDeclaracao !== undefined) dados.modeloDeclaracao = input.modeloDeclaracao;
+    if (input.destinoDeclaracao !== undefined) dados.destinoDeclaracao = input.destinoDeclaracao;
+    if (input.textoComplementar !== undefined) dados.textoComplementar = input.textoComplementar;
     return dados;
   }
 

@@ -2,6 +2,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tansta
 import type {
   AtualizarConvenioInput,
   CriarConvenioInput,
+  EmitirDeclaracaoInput,
   FiltroConveniosInput,
 } from '@sindprf/types';
 import * as conveniosApi from './api';
@@ -73,5 +74,12 @@ export function useRemoverConvenio() {
   return useMutation({
     mutationFn: conveniosApi.removerConvenio,
     onSuccess: invalidar,
+  });
+}
+
+export function useEmitirDeclaracao() {
+  return useMutation({
+    mutationFn: ({ id, ...input }: EmitirDeclaracaoInput & { id: string }) =>
+      conveniosApi.emitirDeclaracao(id, input),
   });
 }

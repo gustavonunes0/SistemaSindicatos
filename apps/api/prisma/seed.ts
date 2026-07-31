@@ -66,67 +66,9 @@ async function main(): Promise<void> {
   }
   console.log(`Notícias: ${noticias.length}`);
 
-  const convenios = [
-    {
-      nome: 'Clínica Saúde Total',
-      categoria: 'Saúde',
-      descricao:
-        'Consultas e exames com desconto exclusivo para afiliados do SINDPRF-CE e dependentes.',
-      contato: '(85) 3200-1000',
-      link: 'https://example.com/saude-total',
-    },
-    {
-      nome: 'Auto Escola Rodovia',
-      categoria: 'Educação',
-      descricao: 'Desconto em cursos de direção defensiva e reciclagem para a categoria.',
-      contato: '(85) 3200-2000',
-      link: 'https://example.com/auto-escola',
-    },
-    {
-      nome: 'Ótica Horizonte',
-      categoria: 'Comércio',
-      descricao: 'Descontos em armações e lentes para afiliados mediante apresentação de carteirinha.',
-      contato: '(85) 3200-3000',
-      link: null,
-    },
-    {
-      nome: 'Farmácia Popular CE',
-      categoria: 'Saúde',
-      descricao: 'Percentual de desconto em medicamentos genéricos e de marca nas lojas conveniadas.',
-      contato: '(85) 3200-4000',
-      link: null,
-    },
-  ];
-
-  for (const convenio of convenios) {
-    const existente = await prisma.convenio.findFirst({ where: { nome: convenio.nome } });
-    if (existente) {
-      await prisma.convenio.update({
-        where: { id: existente.id },
-        data: {
-          categoria: convenio.categoria,
-          descricao: convenio.descricao,
-          contato: convenio.contato,
-          link: convenio.link,
-          ativo: true,
-          vigenciaInicio: agora,
-        },
-      });
-    } else {
-      await prisma.convenio.create({
-        data: {
-          nome: convenio.nome,
-          categoria: convenio.categoria,
-          descricao: convenio.descricao,
-          contato: convenio.contato,
-          link: convenio.link,
-          ativo: true,
-          vigenciaInicio: agora,
-        },
-      });
-    }
-  }
-  console.log(`Convênios: ${convenios.length}`);
+  // Convênios com declaração: use `npx tsx scripts/seed-convenios-declaracao.ts`
+  // para cadastrar/atualizar Unimed, SESC, Remanso, UNI7, UNIFOR etc.
+  console.log('Convênios: pule o seed fictício (script seed-convenios-declaracao.ts)');
 
   const imoveis = [
     {

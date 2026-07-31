@@ -16,6 +16,9 @@ export function ConvenioCard({ convenio }: { convenio: Convenio }) {
         <span className="convenio-categoria">{convenio.categoria}</span>
         <h3>{convenio.nome}</h3>
         <p>{convenio.descricao}</p>
+        {convenio.emiteDeclaracao && (
+          <span className="convenio-card-declaracao">Emite declaração</span>
+        )}
       </div>
     </Link>
   );

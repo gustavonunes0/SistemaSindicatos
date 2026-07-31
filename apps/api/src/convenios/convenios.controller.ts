@@ -1,14 +1,29 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  Param,
+  Patch,
+  Post,
+  Query,
+  StreamableFile,
+  UseGuards,
+} from '@nestjs/common';
 import {
   atualizarConvenioSchema,
   criarConvenioSchema,
+  emitirDeclaracaoSchema,
   filtroConveniosSchema,
   type AtualizarConvenioInput,
   type CriarConvenioInput,
+  type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
 } from '@sindprf/types';
-import { Roles } from '../common/decorators';
+import { CurrentUser, Roles } from '../common/decorators';
 import { AfiliadoAprovadoGuard } from '../common/guards/afiliado-aprovado.guard';
+import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { ConveniosService } from './convenios.service';
 
@@ -61,6 +76,21 @@ export class ConveniosController {
   @Get()
   listar(@Query(new ZodValidationPipe(filtroConveniosSchema)) query: FiltroConveniosInput) {
     return this.conveniosService.listarPublico(query);
+  }
+
+  @UseGuards(AfiliadoAprovadoGuard)
+  @Post(':id/declaracao')
+  @Header('Content-Type', 'application/pdf')
+  async emitirDeclaracao(
+    @CurrentUser() user: RequestUser,
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(emitirDeclaracaoSchema)) body: EmitirDeclaracaoInput,
+  ): Promise<StreamableFile> {
+    const { buffer, nomeArquivo } = await this.conveniosService.emitirDeclaracao(user, id, body);
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${nomeArquivo}"`,
+    });
   }
 
   @UseGuards(AfiliadoAprovadoGuard)

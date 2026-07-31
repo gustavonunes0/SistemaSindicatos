@@ -64,6 +64,7 @@ export function ConveniosAdminPage() {
                 <th>Parceiro</th>
                 <th>Categoria</th>
                 <th>Status</th>
+                <th>Declaração</th>
                 <th aria-label="Ações" />
               </tr>
             </thead>
@@ -76,6 +77,13 @@ export function ConveniosAdminPage() {
                     <span className={`badge ${convenio.ativo ? 'badge-ativo' : 'badge-inativo'}`}>
                       {convenio.ativo ? 'Ativo' : 'Inativo'}
                     </span>
+                  </td>
+                  <td>
+                    {convenio.emiteDeclaracao ? (
+                      <span className="badge badge-publicado">Sim</span>
+                    ) : (
+                      <span className="badge badge-rascunho">Não</span>
+                    )}
                   </td>
                   <td className="tabela-acoes">
                     <button

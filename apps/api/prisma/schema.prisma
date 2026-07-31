@@ -209,19 +209,32 @@ model InstagramPost {
 // FASE 3 — CONVÊNIOS
 // =====================================================================
 
+enum ModeloDeclaracao {
+  FILIADO
+  DEPENDENTE
+  AUTORIZACAO_HOSPEDAGEM
+}
+
 model Convenio {
-  id             String    @id @default(cuid())
-  nome           String
-  categoria      String
-  descricao      String    @db.Text
-  logoUrl        String?
-  link           String?
-  contato        String?
-  vigenciaInicio DateTime? @db.Timestamptz
-  vigenciaFim    DateTime? @db.Timestamptz
-  ativo          Boolean   @default(true)
-  createdAt      DateTime  @default(now()) @db.Timestamptz
-  updatedAt      DateTime  @updatedAt @db.Timestamptz
+  id                 String             @id @default(cuid())
+  nome               String
+  categoria          String
+  descricao          String             @db.Text
+  logoUrl            String?
+  link               String?
+  contato            String?
+  vigenciaInicio     DateTime?          @db.Timestamptz
+  vigenciaFim        DateTime?          @db.Timestamptz
+  ativo              Boolean            @default(true)
+  /// Permite ao afiliado emitir declaração/autorização em PDF.
+  emiteDeclaracao    Boolean            @default(false)
+  modeloDeclaracao   ModeloDeclaracao?
+  /// Ex.: "Unimed Ceará", "Sistema FECOMÉRCIO (SESC/SENAC)".
+  destinoDeclaracao  String?
+  /// Trecho opcional extra no corpo (ex.: isenção de dependentes no SESC).
+  textoComplementar  String?            @db.Text
+  createdAt          DateTime           @default(now()) @db.Timestamptz
+  updatedAt          DateTime           @updatedAt @db.Timestamptz
 
   @@index([categoria])
   @@map("convenios")

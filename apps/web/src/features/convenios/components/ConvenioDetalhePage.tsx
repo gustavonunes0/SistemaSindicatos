@@ -1,13 +1,16 @@
+import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../lib/datas';
 import { urlDaApi } from '../../../lib/urls';
 import { useConvenio } from '../hooks';
+import { EmitirDeclaracaoModal } from './EmitirDeclaracaoModal';
 
 export function ConvenioDetalhePage() {
   const { id = '' } = useParams();
   const { data: convenio, isLoading, isError } = useConvenio(id);
+  const [modalDeclaracao, setModalDeclaracao] = useState(false);
 
   if (isLoading) {
     return (
@@ -66,12 +69,36 @@ export function ConvenioDetalhePage() {
           )}
         </dl>
 
-        {convenio.link && (
-          <a className="botao-primario" href={convenio.link} target="_blank" rel="noreferrer">
-            Acessar o parceiro
-          </a>
-        )}
+        <div className="convenio-detalhe-acoes">
+          {convenio.emiteDeclaracao && (
+            <button
+              type="button"
+              className="botao-primario"
+              onClick={() => setModalDeclaracao(true)}
+            >
+              Emitir declaração
+            </button>
+          )}
+          {convenio.link && (
+            <a
+              className={convenio.emiteDeclaracao ? 'botao-secundario' : 'botao-primario'}
+              href={convenio.link}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Acessar o parceiro
+            </a>
+          )}
+        </div>
       </article>
+
+      {convenio.emiteDeclaracao && (
+        <EmitirDeclaracaoModal
+          aberto={modalDeclaracao}
+          convenio={convenio}
+          onFechar={() => setModalDeclaracao(false)}
+        />
+      )}
     </AreaLayout>
   );
 }

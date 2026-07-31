@@ -4011,6 +4011,16 @@ textarea {
   overflow: hidden;
 }
 
+.convenio-card-declaracao {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cor-primaria);
+}
+
 /* ---- Detalhe do convênio ---- */
 .convenio-detalhe {
   max-width: 640px;
@@ -4049,6 +4059,38 @@ textarea {
 .convenio-dados div {
   border-top: var(--borda-fina);
   padding-top: 0.75rem;
+}
+
+.convenio-detalhe-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.convenio-declaracao-resumo {
+  margin: 0 0 1rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+.convenio-declaracao-fieldset {
+  margin: 1rem 0 0;
+  padding: 1rem 1.1rem 1.1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio-md);
+  display: grid;
+  gap: 0.85rem;
+}
+
+.convenio-declaracao-fieldset legend {
+  padding: 0 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
 }
 
 .convenio-dados dt {

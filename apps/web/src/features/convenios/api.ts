@@ -3,6 +3,7 @@ import {
   type AtualizarConvenioInput,
   type Convenio,
   type CriarConvenioInput,
+  type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
 } from '@sindprf/types';
 import { z } from 'zod';
@@ -48,4 +49,30 @@ export async function atualizarConvenio(
 
 export async function removerConvenio(id: string): Promise<void> {
   await api.delete(`/convenios/${id}`);
+}
+
+export async function emitirDeclaracao(
+  id: string,
+  input: EmitirDeclaracaoInput,
+): Promise<void> {
+  const resposta = await api.post(`/convenios/${id}/declaracao`, input, {
+    responseType: 'blob',
+  });
+
+  const disposition = String(resposta.headers['content-disposition'] ?? '');
+  const nomeMatch = /filename="([^"]+)"/i.exec(disposition);
+  const nomeArquivo = nomeMatch?.[1] ?? `declaracao-${id}.pdf`;
+
+  const blob =
+    resposta.data instanceof Blob
+      ? resposta.data
+      : new Blob([resposta.data], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
