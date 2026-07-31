@@ -8,7 +8,6 @@ const CNPJ = '41.410.325/0001-20';
 const PRESIDENTE = 'Tatiane Vasques Monteiro';
 const NOME_COMPLETO =
   'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará — SINDPRF-CE';
-const EMAIL = 'sindprfce@sindprfce.com.br';
 
 const dataFmt = new Intl.DateTimeFormat('pt-BR', {
   day: 'numeric',
@@ -41,10 +40,12 @@ function formatarCpf(cpf: string): string {
   return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 }
 
-function caminhoAssinatura(): string | null {
+function caminhoAsset(nome: string): string | null {
   const candidatos = [
-    join(process.cwd(), 'assets', 'assinatura-presidente.png'),
-    join(process.cwd(), 'apps', 'api', 'assets', 'assinatura-presidente.png'),
+    join(process.cwd(), 'assets', nome),
+    join(process.cwd(), 'apps', 'api', 'assets', nome),
+    join(process.cwd(), '..', 'web', 'public', nome),
+    join(process.cwd(), 'apps', 'web', 'public', nome),
   ];
   return candidatos.find((c) => existsSync(c)) ?? null;
 }
@@ -54,9 +55,9 @@ export class DeclaracaoPdfService {
   async gerar(dados: DadosDeclaracaoPdf): Promise<Buffer> {
     const doc = new PDFDocument({
       size: 'A4',
-      margins: { top: 64, bottom: 64, left: 64, right: 64 },
+      margins: { top: 72, bottom: 72, left: 72, right: 72 },
       info: {
-        Title: 'Declaração SINDPRF-CE',
+        Title: dados.modelo === 'AUTORIZACAO_HOSPEDAGEM' ? 'Autorização SINDPRF-CE' : 'Declaração SINDPRF-CE',
         Author: NOME_COMPLETO,
       },
     });
@@ -69,7 +70,8 @@ export class DeclaracaoPdfService {
       doc.on('error', reject);
     });
 
-    this.desenharCabecalho(doc);
+    this.desenharLogo(doc);
+    this.desenharTitulo(doc, dados);
     this.desenharCorpo(doc, dados);
     this.desenharDataLocal(doc);
     this.desenharAssinatura(doc);
@@ -78,50 +80,49 @@ export class DeclaracaoPdfService {
     return pronto;
   }
 
-  private desenharCabecalho(doc: PDFKit.PDFDocument): void {
-    doc
-      .fillColor('#0f3d6b')
-      .font('Helvetica-Bold')
-      .fontSize(11)
-      .text(NOME_COMPLETO.toUpperCase(), { align: 'center' });
+  private desenharLogo(doc: PDFKit.PDFDocument): void {
+    const logoPath = caminhoAsset('logo-sindicato.png');
+    if (!logoPath) return;
 
-    doc
-      .moveDown(0.3)
-      .font('Helvetica')
-      .fontSize(9)
-      .fillColor('#334155')
-      .text(`CNPJ ${CNPJ}`, { align: 'center' });
-
-    doc
-      .moveDown(0.8)
-      .strokeColor('#e8b923')
-      .lineWidth(3)
-      .moveTo(doc.page.margins.left, doc.y)
-      .lineTo(doc.page.width - doc.page.margins.right, doc.y)
-      .stroke();
-
-    doc.moveDown(1.4);
+    try {
+      const img = readFileSync(logoPath);
+      const tamanho = 90;
+      const x = doc.page.width / 2 - tamanho / 2;
+      const y = doc.y;
+      doc.image(img, x, y, { fit: [tamanho, tamanho] });
+      doc.y = y + tamanho + 28;
+    } catch {
+      // segue sem logo
+    }
   }
 
-  private desenharCorpo(doc: PDFKit.PDFDocument, dados: DadosDeclaracaoPdf): void {
+  private desenharTitulo(doc: PDFKit.PDFDocument, dados: DadosDeclaracaoPdf): void {
     const titulo =
       dados.modelo === 'AUTORIZACAO_HOSPEDAGEM' ? 'AUTORIZAÇÃO' : 'DECLARAÇÃO';
 
     doc
-      .fillColor('#0f3d6b')
-      .font('Helvetica-Bold')
-      .fontSize(16)
+      .font('Times-Bold')
+      .fontSize(18)
+      .fillColor('#000000')
       .text(titulo, { align: 'center' });
 
-    doc.moveDown(1.2).fillColor('#1e293b').font('Helvetica').fontSize(11);
+    doc.moveDown(2);
+  }
+
+  private desenharCorpo(doc: PDFKit.PDFDocument, dados: DadosDeclaracaoPdf): void {
+    doc.font('Times-Roman').fontSize(12).fillColor('#000000');
 
     const corpo = this.montarTexto(dados);
-    doc.text(corpo, { align: 'justify', lineGap: 4 });
+    doc.text(corpo, {
+      align: 'justify',
+      lineGap: 6,
+      paragraphGap: 8,
+    });
 
     if (dados.textoComplementar?.trim()) {
       doc.moveDown(0.8).text(dados.textoComplementar.trim(), {
         align: 'justify',
-        lineGap: 4,
+        lineGap: 6,
       });
     }
   }
@@ -136,8 +137,8 @@ export class DeclaracaoPdfService {
       const depCpf = formatarCpf(dados.dependenteCpf ?? '');
       return (
         `Declaro, para fins de comprovação junto a ${destino}, nos termos do convênio ` +
-        `firmado entre as partes, que ${depNome}, portador(a) do CPF nº ${depCpf}, ` +
-        `é dependente do associado do SINDPRF-CE, ${nome}, portador(a) do CPF nº ${cpf}.`
+        `firmado entre as partes, que ${depNome}, portador(a) do CPF Nº ${depCpf}, ` +
+        `é dependente do associado do SINDPRF-CE, ${nome}, portador(a) do CPF Nº ${cpf}.`
       );
     }
 
@@ -146,30 +147,29 @@ export class DeclaracaoPdfService {
       const fim = dados.periodoFim ? dataCurta.format(dados.periodoFim) : '____/____/______';
       return (
         `O ${NOME_COMPLETO}, sócio proprietário do ${destino}, neste ato representado pela ` +
-        `sua presidente, ${PRESIDENTE}, autoriza o(a) Sr(a). ${nome}, CPF nº ${cpf}, ` +
+        `sua presidente, ${PRESIDENTE}, autoriza o(a) Sr(a). ${nome}, CPF Nº ${cpf}, ` +
         `associado(a) do SINDPRF-CE, a usufruir de 01 (uma) acomodação no período de ` +
         `${inicio} a ${fim}, o(a) qual se responsabilizará por quaisquer danos, prejuízos ` +
         `ou contas não pagas no Hotel/Restaurante que por ventura venha a ocorrer.`
       );
     }
 
+    // Layout padrão das declarações tipo UNI7 / Unidental.
     return (
-      `O ${NOME_COMPLETO}, CNPJ ${CNPJ}, representado pela sua Presidente ${PRESIDENTE}, ` +
-      `DECLARA, para fins de comprovação junto a ${destino}, nos termos do convênio ` +
-      `firmado entre as partes, que ${nome}, portador(a) do CPF nº ${cpf}, ` +
-      `é associado(a)/filiado(a) a esta entidade sindical.`
+      `DECLARO, para fins de comprovação junto ${destino}, nos Termos do Convênio ` +
+      `firmado entre as partes, que ${nome}, CPF Nº ${cpf}, é associado(a) do SINDPRF-CE.`
     );
   }
 
   private desenharDataLocal(doc: PDFKit.PDFDocument): void {
     const hoje = dataFmt.format(new Date());
-    doc.moveDown(1.4).font('Helvetica').fontSize(11).fillColor('#1e293b');
-    doc.text(`Fortaleza, ${hoje}.`, { align: 'right' });
+    doc.moveDown(2).font('Times-Roman').fontSize(12).fillColor('#000000');
+    doc.text(`Fortaleza, ${hoje}.`, { align: 'left' });
   }
 
   private desenharAssinatura(doc: PDFKit.PDFDocument): void {
-    doc.moveDown(2.2);
-    const assinaturaPath = caminhoAssinatura();
+    doc.moveDown(3);
+    const assinaturaPath = caminhoAsset('assinatura-presidente.png');
     const centroX = doc.page.width / 2;
 
     if (assinaturaPath) {
@@ -177,35 +177,24 @@ export class DeclaracaoPdfService {
         const img = readFileSync(assinaturaPath);
         const largura = 160;
         const x = centroX - largura / 2;
-        doc.image(img, x, doc.y, { width: largura });
-        doc.moveDown(0.2);
-        doc.y += 48;
+        const y = doc.y;
+        doc.image(img, x, y, { width: largura });
+        doc.y = y + 55;
       } catch {
-        // segue com linha de assinatura
+        // segue só com o bloco de texto
       }
     }
 
-    const linhaY = doc.y + 8;
     doc
-      .strokeColor('#0f3d6b')
-      .lineWidth(1)
-      .moveTo(centroX - 110, linhaY)
-      .lineTo(centroX + 110, linhaY)
-      .stroke();
+      .font('Times-Bold')
+      .fontSize(12)
+      .fillColor('#000000')
+      .text(PRESIDENTE, { align: 'center' });
 
     doc
-      .moveDown(1)
-      .fillColor('#0f3d6b')
-      .font('Helvetica-Bold')
+      .font('Times-Roman')
       .fontSize(11)
-      .text(PRESIDENTE.toUpperCase(), { align: 'center' });
-
-    doc
-      .font('Helvetica')
-      .fontSize(10)
-      .fillColor('#334155')
       .text('Presidente do SINDPRF-CE', { align: 'center' })
-      .text(`CNPJ ${CNPJ}`, { align: 'center' })
-      .text(EMAIL, { align: 'center' });
+      .text(`CNPJ ${CNPJ}`, { align: 'center' });
   }
 }

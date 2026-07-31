@@ -29,7 +29,7 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.unimed.coop.br/',
     contato: null,
     modeloDeclaracao: ModeloDeclaracao.FILIADO,
-    destinoDeclaracao: 'Unimed Ceará',
+    destinoDeclaracao: 'à Unimed Ceará',
     textoComplementar: null,
     logoUrls: [
       'https://commons.wikimedia.org/wiki/Special:FilePath/Unimed_institucional.png',
@@ -45,7 +45,7 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.unimed.coop.br/',
     contato: null,
     modeloDeclaracao: ModeloDeclaracao.FILIADO,
-    destinoDeclaracao: 'Unimed / Sintrajufe',
+    destinoDeclaracao: 'à Unimed / Sintrajufe',
     textoComplementar: null,
     logoUrls: [
       'https://commons.wikimedia.org/wiki/Special:FilePath/Unimed_institucional.png',
@@ -61,7 +61,7 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.uniodonto.coop.br/',
     contato: null,
     modeloDeclaracao: ModeloDeclaracao.FILIADO,
-    destinoDeclaracao: 'Uniodonto',
+    destinoDeclaracao: 'à Uniodonto Fortaleza',
     textoComplementar: null,
     logoUrls: [
       'https://uniodonto-metropolitana.com.br/wp-content/uploads/2026/04/LOGO-UNIODONTO-VETOR.png',
@@ -76,7 +76,7 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.unidental.com.br/',
     contato: null,
     modeloDeclaracao: ModeloDeclaracao.FILIADO,
-    destinoDeclaracao: 'Unidental',
+    destinoDeclaracao: 'à UNIDENTAL',
     textoComplementar: null,
     logoUrls: [
       'https://t1.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=https://www.unidental.com.br&size=256',
@@ -91,7 +91,7 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.uni7.edu.br/',
     contato: '(85) 4006-7676',
     modeloDeclaracao: ModeloDeclaracao.FILIADO,
-    destinoDeclaracao: 'Centro Universitário 7 de Setembro — UNI7',
+    destinoDeclaracao: 'ao Centro Universitário 7 de Setembro - UNI7',
     textoComplementar: null,
     logoUrls: [
       'https://pages.greatpages.com.br/conheca.uni7.edu.br-home/1775757492/imagens/desktop/7461-78f688b9726a9fa995251bdedeed6f9b.png',
@@ -106,7 +106,7 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.unifor.br/',
     contato: null,
     modeloDeclaracao: ModeloDeclaracao.DEPENDENTE,
-    destinoDeclaracao: 'Universidade de Fortaleza — UNIFOR',
+    destinoDeclaracao: 'Universidade de Fortaleza – UNIFOR',
     textoComplementar: null,
     logoUrls: [
       'https://www.unifor.br/o/unifor-theme/images/unifor-logo-horizontal.svg',
@@ -122,9 +122,9 @@ const CONVENIOS: ConvenioSeed[] = [
     link: 'https://www.sesc-ce.com.br/',
     contato: null,
     modeloDeclaracao: ModeloDeclaracao.FILIADO,
-    destinoDeclaracao: 'Sistema FECOMÉRCIO (SESC/SENAC)',
+    destinoDeclaracao: 'ao Sistema FECOMÉRCIO (SESC/SENAC)',
     textoComplementar:
-      'Declara, ainda, que o(a) associado(a) e seus dependentes fazem jus aos benefícios do convênio, inclusive quanto à isenção/condições da taxa de credencial, nos termos acordados entre as partes.',
+      'E, junto com seu(s) dependente(s), será(ão) isento(s) do pagamento da credencial Sesc/Senac.',
     logoUrls: [
       'https://www.google.com/s2/favicons?domain=sesc.com.br&sz=256',
       'https://upload.wikimedia.org/wikipedia/commons/d/da/SESC_TV_logo.png',

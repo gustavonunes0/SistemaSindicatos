@@ -248,11 +248,11 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
                 </label>
 
                 <label>
-                  Destino (nome do parceiro no texto)
+                  Destino (com artigo: ao / à)
                   <input
                     type="text"
                     {...register('destinoDeclaracao')}
-                    placeholder="Ex.: Unimed Ceará, Sistema FECOMÉRCIO (SESC/SENAC)"
+                    placeholder="Ex.: ao Centro Universitário 7 de Setembro - UNI7"
                     autoComplete="off"
                   />
                   {errors.destinoDeclaracao && (
