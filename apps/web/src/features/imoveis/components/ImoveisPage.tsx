@@ -1,29 +1,17 @@
-import { useState } from 'react';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
-import { useDebounce } from '../../../lib/useDebounce';
+import { marca } from '../../../lib/marca';
 import { AguardandoAprovacao } from '../../afiliado/components/AguardandoAprovacao';
 import { useMe } from '../../auth/hooks';
-import { useImoveis } from '../hooks';
-import { ImovelCard } from './ImovelCard';
 
 export function ImoveisPage() {
   const { data: me, isLoading: carregandoMe } = useMe();
   const aprovado = me?.afiliado?.status === 'APROVADO';
-  const [busca, setBusca] = useState('');
-  const buscaDebounced = useDebounce(busca.trim(), 350);
-
-  const { data: imoveis, isLoading, isError } = useImoveis(
-    {
-      busca: buscaDebounced || undefined,
-    },
-    aprovado,
-  );
 
   return (
     <AreaLayout tipo="afiliado" titulo="Apartamentos">
       <p className="area-subtitulo">
-        Imóveis disponíveis para afiliados — consulte fotos e disponibilidade.
+        Consulte o regulamento e reserve os imóveis de lazer pelo sistema oficial.
       </p>
 
       {carregandoMe && <EstadoCarregando mensagem="Carregando…" />}
@@ -31,42 +19,42 @@ export function ImoveisPage() {
       {!carregandoMe && !aprovado && <AguardandoAprovacao recurso="Os apartamentos" />}
 
       {!carregandoMe && aprovado && (
-        <>
-          <div className="imoveis-filtros">
-            <label className="campo-busca">
-              <span className="sr-only">Buscar imóvel</span>
-              <input
-                type="search"
-                placeholder="Buscar por título, endereço ou descrição"
-                value={busca}
-                onChange={(evento) => setBusca(evento.target.value)}
-              />
-            </label>
-          </div>
+        <div className="reserva-externa-lista">
+          <section className="reserva-externa">
+            <h2 className="reserva-externa-titulo">Regulamento</h2>
+            <p className="reserva-externa-texto">
+              Leia o regulamento dos apartamentos e espaços de convivência do SINDPRF-CE antes de
+              solicitar a reserva.
+            </p>
+            <a
+              className="botao-secundario"
+              href={marca.regulamentoApartamentosUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Abrir regulamento (PDF)
+            </a>
+          </section>
 
-          {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
-          {isError && (
-            <p className="erro">Não foi possível carregar os imóveis. Tente novamente em instantes.</p>
-          )}
-
-          {imoveis && imoveis.length === 0 && (
-            <div className="estado-vazio">
-              {buscaDebounced ? (
-                <p>Nenhum imóvel corresponde à sua busca. Ajuste o termo e tente de novo.</p>
-              ) : (
-                <p>Ainda não há imóveis cadastrados. Volte em breve.</p>
-              )}
-            </div>
-          )}
-
-          {imoveis && imoveis.length > 0 && (
-            <div className="imoveis-grid">
-              {imoveis.map((imovel) => (
-                <ImovelCard key={imovel.id} imovel={imovel} />
-              ))}
-            </div>
-          )}
-        </>
+          <section className="reserva-externa">
+            <h2 className="reserva-externa-titulo">Como reservar</h2>
+            <p className="reserva-externa-texto">
+              O cadastro e a reserva de apartamentos são feitos pelo link oficial do SINDPRF-CE.
+              Clique no botão abaixo para abrir o sistema de reservas.
+            </p>
+            <a
+              className="botao-primario"
+              href={marca.reservaApartamentosUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Fazer reserva
+            </a>
+            <p className="reserva-externa-ajuda">
+              O link abre em uma nova aba: {marca.reservaApartamentosUrl}
+            </p>
+          </section>
+        </div>
       )}
     </AreaLayout>
   );

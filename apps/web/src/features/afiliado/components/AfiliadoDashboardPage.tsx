@@ -26,12 +26,7 @@ const beneficios = [
   {
     to: '/afiliado/imoveis',
     titulo: 'Apartamentos',
-    descricao: 'Imóveis para locação — fotos e calendário de disponibilidade.',
-  },
-  {
-    to: '/afiliado/solicitacoes',
-    titulo: 'Solicitações',
-    descricao: 'Acompanhe suas conversas com o sindicato sobre locação.',
+    descricao: 'Reserve imóveis de lazer pelo sistema oficial do sindicato.',
   },
   {
     to: '/afiliado/eleicoes',

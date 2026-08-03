@@ -13,7 +13,7 @@ const ofertas = [
   },
   {
     titulo: 'Imóveis para lazer',
-    texto: 'Espaços disponíveis para aluguel, com reserva pela área do sindicalizado.',
+    texto: 'Espaços disponíveis para aluguel, com reserva pelo link oficial do sindicato.',
   },
   {
     titulo: 'Eleições transparentes',

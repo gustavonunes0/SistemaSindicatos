@@ -83,7 +83,7 @@ const TUTORIAIS: Tutorial[] = [
     id: 'solicitacoes',
     titulo: 'Atender solicitações de locação',
     grupo: 'Operação',
-    resumo: 'O afiliado pede o apartamento. Você acompanha a fila, muda o status e responde no chat.',
+    resumo: 'Fluxo legado de chat de locação. A reserva dos afiliados agora é feita pelo link externo abre.ai/sindprfcereserva.',
     rota: '/admin/solicitacoes',
     acao: 'Abrir solicitações',
     passos: [
@@ -213,7 +213,7 @@ const TUTORIAIS: Tutorial[] = [
     id: 'imoveis',
     titulo: 'Cadastrar um apartamento',
     grupo: 'Conteúdo',
-    resumo: 'Cadastre imóveis para locação, com fotos, valor e períodos indisponíveis.',
+    resumo: 'Cadastro interno de imóveis (legado). Afiliados reservam pelo link oficial abre.ai/sindprfcereserva.',
     rota: '/admin/imoveis',
     acao: 'Abrir apartamentos',
     passos: [

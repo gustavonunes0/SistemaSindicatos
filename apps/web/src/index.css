@@ -4106,6 +4106,41 @@ textarea {
 }
 
 /* ============ Imóveis (área do afiliado) ============ */
+.reserva-externa-lista {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  max-width: 36rem;
+}
+
+.reserva-externa {
+  margin-top: 0;
+  max-width: none;
+  padding: 1.5rem 1.6rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.reserva-externa-titulo {
+  margin: 0 0 0.6rem;
+  font-size: var(--texto-lg);
+  color: var(--cor-primaria);
+}
+
+.reserva-externa-texto {
+  margin: 0 0 1.25rem;
+  line-height: 1.55;
+  color: var(--cor-texto);
+}
+
+.reserva-externa-ajuda {
+  margin: 1rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  word-break: break-all;
+}
+
 .imoveis-filtros {
   margin-top: 1.25rem;
 }
