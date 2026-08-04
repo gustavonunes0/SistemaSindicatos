@@ -34,7 +34,7 @@ export class AuthService {
     return this.gerarSessao(user);
   }
 
-  /** CPF (afiliado) ou e-mail (admin / legado). */
+  /** CPF (afiliado) ou e-mail (admin / legado). Aceita CPF com ou sem . e -. */
   private async encontrarUsuarioPorLogin(login: string): Promise<User | null> {
     const bruto = login.trim();
     const cpf = bruto.replace(/\D/g, '');

@@ -1,18 +1,30 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { loginSchema, type LoginInput } from '@sindprf/types';
+import { loginSchema, type LoginFormValues, type LoginInput } from '@sindprf/types';
 import { isAxiosError } from 'axios';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
 import { useLogin } from '../hooks';
 import { AuthLayout } from './AuthLayout';
 
+function normalizarCampoLogin(valor: string): string {
+  if (valor.includes('@') || /[a-zA-Z]/.test(valor)) {
+    return valor;
+  }
+  return valor.replace(/\D/g, '').slice(0, 11);
+}
+
 export function LoginPage() {
   const login = useLogin();
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
-  } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+  } = useForm<LoginFormValues, unknown, LoginInput>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const campoLogin = register('login');
 
   const mensagemErro =
     login.isError &&
@@ -29,8 +41,16 @@ export function LoginPage() {
             type="text"
             inputMode="numeric"
             autoComplete="username"
-            placeholder="Somente números"
-            {...register('login')}
+            placeholder="00000000000"
+            name={campoLogin.name}
+            ref={campoLogin.ref}
+            onBlur={campoLogin.onBlur}
+            onChange={(evento) => {
+              const normalizado = normalizarCampoLogin(evento.target.value);
+              evento.target.value = normalizado;
+              void campoLogin.onChange(evento);
+              setValue('login', normalizado, { shouldDirty: true });
+            }}
           />
           {errors.login && <span className="erro">{errors.login.message}</span>}
         </label>
@@ -47,8 +67,8 @@ export function LoginPage() {
         </label>
 
         <p className="auth-dica">
-          Afiliado: CPF e matrícula. Administrador: informe o e-mail no campo CPF e a senha no
-          campo matrícula.
+          Afiliado: CPF só com números (sem pontos ou traço) e matrícula. Administrador: informe o
+          e-mail no campo CPF e a senha no campo matrícula.
         </p>
 
         {mensagemErro && <p className="erro">{mensagemErro}</p>}
