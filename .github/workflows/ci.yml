@@ -46,6 +46,9 @@ jobs:
       - name: Compilar types
         run: npm run build -w packages/types
 
+      - name: Prisma generate
+        run: npm run prisma:generate
+
       - name: Prisma migrate + seed
         working-directory: apps/api
         run: |
