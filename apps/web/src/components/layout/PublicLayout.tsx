@@ -85,7 +85,7 @@ export function PublicLayout() {
         <div className="site-footer-copy">
           <span>© {new Date().getFullYear()} {marca.nome}. Todos os direitos reservados.</span>
           <span>
-            Desenvolvido por <a href="https://stellar.dev">Stellar</a>
+            Desenvolvido por <a href="https://stellarsolucoes.com.br">Stellar</a>
           </span>
         </div>
       </footer>
