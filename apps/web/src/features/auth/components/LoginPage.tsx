@@ -3,6 +3,7 @@ import { loginSchema, type LoginFormValues, type LoginInput } from '@sindprf/typ
 import { isAxiosError } from 'axios';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { useTenantStore } from '../../tenant/store';
 import { useLogin } from '../hooks';
 import { AuthLayout } from './AuthLayout';
 
@@ -14,6 +15,8 @@ function normalizarCampoLogin(valor: string): string {
 }
 
 export function LoginPage() {
+  const tipo = useTenantStore((s) => s.tenant?.tipo);
+  const ehPlataforma = tipo === 'PLATAFORMA';
   const login = useLogin();
   const {
     register,
@@ -29,24 +32,26 @@ export function LoginPage() {
   const mensagemErro =
     login.isError &&
     (isAxiosError(login.error) && login.error.response?.status === 401
-      ? 'CPF/e-mail ou senha incorretos'
+      ? 'E-mail/CPF ou senha incorretos'
       : 'Erro ao entrar. Tente novamente.');
 
   return (
-    <AuthLayout titulo="Entrar">
+    <AuthLayout titulo={ehPlataforma ? 'Entrar na plataforma' : 'Entrar'}>
       <form onSubmit={handleSubmit((dados) => login.mutate(dados))} noValidate>
         <label>
-          CPF
+          {ehPlataforma ? 'E-mail' : 'CPF'}
           <input
-            type="text"
-            inputMode="numeric"
+            type={ehPlataforma ? 'email' : 'text'}
+            inputMode={ehPlataforma ? 'email' : 'numeric'}
             autoComplete="username"
-            placeholder="00000000000"
+            placeholder={ehPlataforma ? 'superadmin@sindigest.local' : '00000000000'}
             name={campoLogin.name}
             ref={campoLogin.ref}
             onBlur={campoLogin.onBlur}
             onChange={(evento) => {
-              const normalizado = normalizarCampoLogin(evento.target.value);
+              const normalizado = ehPlataforma
+                ? evento.target.value.trim()
+                : normalizarCampoLogin(evento.target.value);
               evento.target.value = normalizado;
               void campoLogin.onChange(evento);
               setValue('login', normalizado, { shouldDirty: true });
@@ -56,19 +61,20 @@ export function LoginPage() {
         </label>
 
         <label>
-          Matrícula
+          Senha
           <input
             type="password"
             autoComplete="current-password"
-            placeholder="Sua matrícula SIAPE"
+            placeholder={ehPlataforma ? 'Senha do SUPERADMIN' : 'Matrícula SIAPE ou senha'}
             {...register('senha')}
           />
           {errors.senha && <span className="erro">{errors.senha.message}</span>}
         </label>
 
         <p className="auth-dica">
-          Afiliado: CPF só com números (sem pontos ou traço) e matrícula. Administrador: informe o
-          e-mail no campo CPF e a senha no campo matrícula.
+          {ehPlataforma
+            ? 'Acesso exclusivo Stellar (SUPERADMIN). Use o e-mail e a senha definidos no seed.'
+            : 'Afiliado: CPF só com números e matrícula. Admin do sindicato: e-mail no campo CPF e senha no campo abaixo.'}
         </p>
 
         {mensagemErro && <p className="erro">{mensagemErro}</p>}
@@ -78,12 +84,16 @@ export function LoginPage() {
         </button>
       </form>
 
-      <p>
-        <Link to="/esqueci-senha">Esqueci minha senha</Link>
-      </p>
-      <p>
-        Ainda não é afiliado? <Link to="/cadastro">Veja como se filiar</Link>
-      </p>
+      {!ehPlataforma && (
+        <>
+          <p>
+            <Link to="/esqueci-senha">Esqueci minha senha</Link>
+          </p>
+          <p>
+            Ainda não é afiliado? <Link to="/cadastro">Veja como se filiar</Link>
+          </p>
+        </>
+      )}
     </AuthLayout>
   );
 }

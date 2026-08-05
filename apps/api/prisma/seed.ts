@@ -184,7 +184,7 @@ async function main(): Promise<void> {
   const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
   const superadmin = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: plataforma.id, email: SUPERADMIN_EMAIL } },
-    update: { role: Role.SUPERADMIN },
+    update: { role: Role.SUPERADMIN, senhaHash },
     create: {
       tenantId: plataforma.id,
       email: SUPERADMIN_EMAIL,
@@ -192,7 +192,7 @@ async function main(): Promise<void> {
       role: Role.SUPERADMIN,
     },
   });
-  console.log(`SUPERADMIN: ${superadmin.email}`);
+  console.log(`SUPERADMIN: ${superadmin.email} (senha = SEED_ADMIN_SENHA)`);
 
   const tenant = await prisma.tenant.upsert({
     where: { slug: TENANT_SLUG },
@@ -251,7 +251,7 @@ async function main(): Promise<void> {
 
   const admin = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: tenant.id, email: ADMIN_EMAIL } },
-    update: {},
+    update: { senhaHash, role: Role.ADMIN },
     create: {
       tenantId: tenant.id,
       email: ADMIN_EMAIL,
@@ -259,7 +259,7 @@ async function main(): Promise<void> {
       role: Role.ADMIN,
     },
   });
-  console.log(`Admin sindicato: ${admin.email}`);
+  console.log(`Admin sindicato: ${admin.email} (senha = SEED_ADMIN_SENHA)`);
 
   const agora = new Date();
   const noticias = [
