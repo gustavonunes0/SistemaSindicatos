@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import type { InstagramPost } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { runWithTenantAsync, requireTenantId } from '../tenant/tenant-context';
 import { FEED_MOCK } from './instagram.mock';
 
 const GRAPH_URL = 'https://graph.instagram.com';
@@ -72,6 +73,24 @@ export class InstagramService implements OnModuleInit {
       return;
     }
 
+    // Cron sem request HTTP: roda no contexto de cada tenant ativo.
+    // Fase A: credenciais Instagram ainda são globais (mesmo feed para todos).
+    const tenants = await this.prisma.tenant.findMany({ where: { ativo: true } });
+    for (const tenant of tenants) {
+      await runWithTenantAsync(
+        {
+          tenantId: tenant.id,
+          slug: tenant.slug,
+          host: '',
+          timezone: tenant.timezone,
+          nome: tenant.nome,
+        },
+        () => this.sincronizarNoTenant(),
+      );
+    }
+  }
+
+  private async sincronizarNoTenant(): Promise<void> {
     try {
       const campos = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp';
       const url = `${GRAPH_URL}/${this.userId}/media?fields=${campos}&limit=${FEED_LIMITE}&access_token=${this.accessToken}`;
@@ -81,6 +100,7 @@ export class InstagramService implements OnModuleInit {
       }
 
       const { data } = (await resposta.json()) as { data: GraphMediaItem[] };
+      const tenantId = requireTenantId();
       for (const item of data) {
         // Vídeos usam a thumbnail como imagem do grid.
         const mediaUrl = (item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url) ?? '';
@@ -88,7 +108,7 @@ export class InstagramService implements OnModuleInit {
           continue;
         }
         await this.prisma.instagramPost.upsert({
-          where: { externalId: item.id },
+          where: { tenantId_externalId: { tenantId, externalId: item.id } },
           update: {
             mediaUrl,
             permalink: item.permalink,
@@ -97,6 +117,7 @@ export class InstagramService implements OnModuleInit {
             sincronizado: new Date(),
           },
           create: {
+            tenantId,
             externalId: item.id,
             mediaUrl,
             permalink: item.permalink,

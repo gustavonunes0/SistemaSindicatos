@@ -20,6 +20,7 @@ import { PushModule } from './push/push.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
+import { TenantModule } from './tenant/tenant.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { StorageModule } from './storage/storage.module';
     ]),
     ScheduleModule.forRoot(),
     PrismaModule,
+    TenantModule,
     StorageModule,
     AuthModule,
     AfiliadosModule,

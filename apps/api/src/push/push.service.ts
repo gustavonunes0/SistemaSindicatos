@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import type { PushSubscriptionInput } from '@sindprf/types';
 import webpush from 'web-push';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 type PayloadNoticia = {
   titulo: string;
@@ -27,14 +28,16 @@ export class PushService {
   }
 
   async salvarInscricao(input: PushSubscriptionInput, userAgent?: string): Promise<void> {
+    const tenantId = requireTenantId();
     await this.prisma.pushSubscription.upsert({
-      where: { endpoint: input.endpoint },
+      where: { tenantId_endpoint: { tenantId, endpoint: input.endpoint } },
       update: {
         p256dh: input.keys.p256dh,
         auth: input.keys.auth,
         userAgent: userAgent ?? null,
       },
       create: {
+        tenantId,
         endpoint: input.endpoint,
         p256dh: input.keys.p256dh,
         auth: input.keys.auth,

@@ -1,13 +1,14 @@
-# Produção — VPS (Hostinger etc.)
-# Uso com Supabase (recomendado):
-#   1. cp .env.example .env   # preencha DATABASE_URL do Supabase
+# Produção — VPS + Supabase + Nginx Proxy Manager
+# Guia: docs/deploy-vps.md
+#
+#   1. cp .env.example .env   # DATABASE_URL do Supabase + WEB_URL/VITE_API_URL https
 #   2. docker compose up --build -d
+#   3. Configure Proxy Hosts no NPM → WEB_PORT / API_PORT
 #
-# Uso com Postgres local do Compose:
+# Postgres local (sem Supabase):
 #   docker compose --profile local-db up --build -d
-#   (e DATABASE_URL apontando para postgres:5432)
 #
-# Desenvolvimento local com hot reload:
+# Dev com hot reload:
 #   docker compose -f docker-compose.dev.yml up --build
 
 services:
@@ -40,21 +41,29 @@ services:
     container_name: sindprf-api
     restart: unless-stopped
     ports:
-      - "${API_PORT:-3000}:3000"
+      - "${API_PORT:-3001}:3000"
     environment:
       DATABASE_URL: ${DATABASE_URL:?Defina DATABASE_URL no .env (Supabase ou Postgres)}
       DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL:?Defina DATABASE_URL no .env (Supabase ou Postgres)}}
       PORT: "3000"
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
       WEB_URL: ${WEB_URL:?Defina WEB_URL no .env}
+      TENANT_SEED_HOSTS: ${TENANT_SEED_HOSTS:-}
       INSTAGRAM_MOCK: ${INSTAGRAM_MOCK:-false}
       INSTAGRAM_USER_ID: ${INSTAGRAM_USER_ID:-}
       INSTAGRAM_ACCESS_TOKEN: ${INSTAGRAM_ACCESS_TOKEN:-}
       SEED_ON_START: ${SEED_ON_START:-false}
       SEED_ADMIN_SENHA: ${SEED_ADMIN_SENHA:-}
+      D8_SENHA_TEMP: ${D8_SENHA_TEMP:-}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
       VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:sindprfce@sindprfce.com.br}
+      CONTATO_DESTINO_EMAIL: ${CONTATO_DESTINO_EMAIL:-}
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-}
     volumes:
       - api_uploads:/app/apps/api/uploads
     depends_on:
@@ -81,7 +90,7 @@ services:
     container_name: sindprf-web
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-80}:80"
+      - "${WEB_PORT:-8081}:80"
     depends_on:
       api:
         condition: service_healthy

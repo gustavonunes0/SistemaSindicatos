@@ -11,6 +11,7 @@ import type {
 } from '@sindprf/types';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { parseTextoD8, type D8Parseado, type LinhaD8Parseada } from './d8-parser';
 
 const BCRYPT_ROUNDS = 10;
@@ -142,7 +143,8 @@ export class D8Service {
 
     const existente = await this.prisma.importacaoD8.findUnique({
       where: {
-        competenciaAno_competenciaMes_tipo: {
+        tenantId_competenciaAno_competenciaMes_tipo: {
+          tenantId: requireTenantId(),
           competenciaAno: parseado.competenciaAno,
           competenciaMes: parseado.competenciaMes,
           tipo,
@@ -155,8 +157,10 @@ export class D8Service {
       await this.prisma.importacaoD8.delete({ where: { id: existente.id } });
     }
 
+    const tenantId = requireTenantId();
     const importacao = await this.prisma.importacaoD8.create({
       data: {
+        tenantId,
         competenciaAno: parseado.competenciaAno,
         competenciaMes: parseado.competenciaMes,
         tipo,
@@ -179,6 +183,7 @@ export class D8Service {
     for (const lote of emLotes(parseado.linhas, LOTE)) {
       await this.prisma.linhaD8.createMany({
         data: lote.map((linha) => ({
+          tenantId,
           importacaoId: importacao.id,
           sequencia: linha.sequencia,
           matricula: linha.matricula,
@@ -337,9 +342,11 @@ export class D8Service {
       );
     }
 
+    const tenantId = requireTenantId();
     for (const lote of emLotes(paraCriar, LOTE)) {
       const usersData = await Promise.all(
         lote.map(async (linha) => ({
+          tenantId,
           email: `d8.${linha.cpf}@sindprf.local`,
           senhaHash: await bcrypt.hash(linha.matricula, BCRYPT_ROUNDS),
           role: 'AFILIADO' as const,
@@ -367,6 +374,7 @@ export class D8Service {
             throw new BadRequestException(`Falha ao criar usuário para CPF ${linha.cpf}`);
           }
           return {
+            tenantId,
             userId,
             nome: linha.nome,
             cpf: linha.cpf,

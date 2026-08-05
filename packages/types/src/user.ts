@@ -7,6 +7,7 @@ export const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   role: roleSchema,
+  tenantId: z.string(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

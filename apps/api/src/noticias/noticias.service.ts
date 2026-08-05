@@ -7,6 +7,7 @@ import type {
 } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../push/push.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { gerarSlug } from './slug';
 
 @Injectable()
@@ -19,6 +20,7 @@ export class NoticiasService {
   async criar(autorId: string, input: CriarNoticiaInput) {
     const noticia = await this.prisma.noticia.create({
       data: {
+        tenantId: requireTenantId(),
         titulo: input.titulo,
         slug: await this.slugDisponivel(gerarSlug(input.titulo)),
         conteudo: input.conteudo,
@@ -111,7 +113,10 @@ export class NoticiasService {
   }
 
   async buscarPublicadaPorSlug(slug: string) {
-    const noticia = await this.prisma.noticia.findUnique({ where: { slug } });
+    const tenantId = requireTenantId();
+    const noticia = await this.prisma.noticia.findUnique({
+      where: { tenantId_slug: { tenantId, slug } },
+    });
     if (!noticia || noticia.status !== 'PUBLICADO') {
       throw new NotFoundException('Notícia não encontrada');
     }
@@ -119,9 +124,12 @@ export class NoticiasService {
   }
 
   private async slugDisponivel(slugBase: string, ignorarId?: string): Promise<string> {
+    const tenantId = requireTenantId();
     let slug = slugBase || 'noticia';
     for (let sufixo = 2; ; sufixo++) {
-      const existente = await this.prisma.noticia.findUnique({ where: { slug } });
+      const existente = await this.prisma.noticia.findUnique({
+        where: { tenantId_slug: { tenantId, slug } },
+      });
       if (!existente || existente.id === ignorarId) {
         return slug;
       }

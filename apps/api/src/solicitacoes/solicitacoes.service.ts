@@ -14,6 +14,7 @@ import type {
 import { PrismaService } from '../prisma/prisma.service';
 import { whereSobreposicao } from '../imoveis/imoveis.util';
 import type { RequestUser } from '../common/request-user';
+import { requireTenantId } from '../tenant/tenant-context';
 import {
   serializarMensagem,
   serializarSolicitacao,
@@ -64,8 +65,10 @@ export class SolicitacoesService {
     }
 
     const solicitacao = await this.prisma.$transaction(async (tx) => {
+      const tenantId = requireTenantId();
       const criada = await tx.solicitacaoAluguel.create({
         data: {
+          tenantId,
           imovelId: input.imovelId,
           afiliadoId: afiliado.id,
           inicioDesejado: input.inicioDesejado,
@@ -79,6 +82,7 @@ export class SolicitacoesService {
 
       await tx.mensagem.create({
         data: {
+          tenantId,
           solicitacaoId: criada.id,
           autorId: user.id,
           texto: textoInicial,
@@ -178,6 +182,7 @@ export class SolicitacoesService {
     const mensagem = await this.prisma.$transaction(async (tx) => {
       const criada = await tx.mensagem.create({
         data: {
+          tenantId: requireTenantId(),
           solicitacaoId,
           autorId: user.id,
           texto: input.texto.trim(),

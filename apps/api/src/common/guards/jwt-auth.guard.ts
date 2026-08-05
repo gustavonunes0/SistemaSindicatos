@@ -1,7 +1,14 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import type { Request } from 'express';
+import type { RequestComTenant } from '../../tenant/tenant.middleware';
 import { IS_PUBLIC_KEY } from '../decorators';
 import type { JwtPayload, RequestUser } from '../request-user';
 
@@ -17,23 +24,49 @@ export class JwtAuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+
+    const request = context.switchToHttp().getRequest<RequestComTenant & { user?: RequestUser }>();
+    const token = this.extrairToken(request);
+
     if (isPublic) {
+      if (token) {
+        try {
+          await this.aplicarPayload(request, token);
+        } catch {
+          // Token inválido em rota pública: segue anônimo.
+        }
+      }
       return true;
     }
 
-    const request = context.switchToHttp().getRequest<Request & { user?: RequestUser }>();
-    const token = this.extrairToken(request);
     if (!token) {
       throw new UnauthorizedException('Token não informado');
     }
 
+    await this.aplicarPayload(request, token);
+    return true;
+  }
+
+  private async aplicarPayload(
+    request: RequestComTenant & { user?: RequestUser },
+    token: string,
+  ): Promise<void> {
+    let payload: JwtPayload;
     try {
-      const payload = await this.jwtService.verifyAsync<JwtPayload>(token);
-      request.user = { id: payload.sub, role: payload.role };
-      return true;
+      payload = await this.jwtService.verifyAsync<JwtPayload>(token);
     } catch {
       throw new UnauthorizedException('Token inválido ou expirado');
     }
+
+    if (request.tenant && payload.tenantId !== request.tenant.tenantId) {
+      throw new ForbiddenException('Token não pertence a este sindicato');
+    }
+
+    request.user = {
+      id: payload.sub,
+      role: payload.role,
+      tenantId: payload.tenantId,
+    };
   }
 
   private extrairToken(request: Request): string | undefined {

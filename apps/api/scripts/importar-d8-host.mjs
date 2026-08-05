@@ -17,6 +17,7 @@ const raiz = path.resolve(__dirname, '../../..');
 const prisma = new PrismaClient();
 const LOTE = 100;
 const SENHA = process.env.D8_SENHA_TEMP ?? 'Sindprf@D8';
+const TENANT_ID = process.env.TENANT_ID ?? 'tenant_sindprf_ce';
 
 const COMPETENCIA_RE = /M[eê]s\/Ano:\s*(\d{2})\/(\d{4})/i;
 const LINHA_RE =
@@ -117,6 +118,7 @@ async function sincronizar(linhas, tipo, senhaHash) {
   for (const lote of emLotes(paraCriar, LOTE)) {
     await prisma.user.createMany({
       data: lote.map((linha) => ({
+        tenantId: TENANT_ID,
         email: `d8.${linha.cpf}@sindprf.local`,
         senhaHash,
         role: 'AFILIADO',
@@ -128,6 +130,7 @@ async function sincronizar(linhas, tipo, senhaHash) {
     const userPorEmail = new Map(users.map((u) => [u.email, u.id]));
     await prisma.afiliado.createMany({
       data: lote.map((linha) => ({
+        tenantId: TENANT_ID,
         userId: userPorEmail.get(`d8.${linha.cpf}@sindprf.local`),
         nome: linha.nome,
         cpf: linha.cpf,
@@ -153,7 +156,8 @@ async function importarArquivo({ caminho, tipo, substituirBase }) {
 
   const existente = await prisma.importacaoD8.findUnique({
     where: {
-      competenciaAno_competenciaMes_tipo: {
+      tenantId_competenciaAno_competenciaMes_tipo: {
+        tenantId: TENANT_ID,
         competenciaAno: parseado.competenciaAno,
         competenciaMes: parseado.competenciaMes,
         tipo,
@@ -167,6 +171,7 @@ async function importarArquivo({ caminho, tipo, substituirBase }) {
 
   const importacao = await prisma.importacaoD8.create({
     data: {
+      tenantId: TENANT_ID,
       competenciaAno: parseado.competenciaAno,
       competenciaMes: parseado.competenciaMes,
       tipo,
@@ -188,6 +193,7 @@ async function importarArquivo({ caminho, tipo, substituirBase }) {
   for (const lote of emLotes(parseado.linhas, LOTE)) {
     await prisma.linhaD8.createMany({
       data: lote.map((linha) => ({
+        tenantId: TENANT_ID,
         importacaoId: importacao.id,
         sequencia: linha.sequencia,
         matricula: linha.matricula,

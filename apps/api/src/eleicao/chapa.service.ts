@@ -8,6 +8,7 @@ import type {
   HomologarChapaInput,
 } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { serializarChapa } from './eleicao.util';
 import { adicionarDiasUteis } from './prazo.util';
 
@@ -22,6 +23,7 @@ export class ChapaService {
     try {
       const chapa = await this.prisma.chapa.create({
         data: {
+          tenantId: requireTenantId(),
           eleicaoId,
           numero: input.numero,
           nome: input.nome,
@@ -84,7 +86,13 @@ export class ChapaService {
     await this.buscarChapaDaEleicao(eleicaoId, chapaId);
 
     await this.prisma.candidato.create({
-      data: { chapaId, nome: input.nome, cargo: input.cargo, fotoUrl: input.fotoUrl ?? null },
+      data: {
+        tenantId: requireTenantId(),
+        chapaId,
+        nome: input.nome,
+        cargo: input.cargo,
+        fotoUrl: input.fotoUrl ?? null,
+      },
     });
     return this.buscarChapaComCandidatos(chapaId);
   }

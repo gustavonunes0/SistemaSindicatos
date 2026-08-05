@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import type { Eleicao } from '@prisma/client';
 import type { ResultadoEleicao } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 @Injectable()
 export class ApuracaoService {
@@ -38,6 +39,7 @@ export class ApuracaoService {
         const votos = votosPorChapa.get(chapa.id) ?? 0;
         await tx.resultadoApuracao.create({
           data: {
+            tenantId: requireTenantId(),
             eleicaoId,
             chapaId: chapa.id,
             totalVotos: votos,
@@ -94,7 +96,14 @@ export class ApuracaoService {
 
     await this.prisma.$transaction(async (tx) => {
       await tx.resultadoApuracao.create({
-        data: { eleicaoId, chapaId, totalVotos: 0, percentual: 100, porAclamacao: true },
+        data: {
+          tenantId: requireTenantId(),
+          eleicaoId,
+          chapaId,
+          totalVotos: 0,
+          percentual: 100,
+          porAclamacao: true,
+        },
       });
       await tx.eleicao.update({
         where: { id: eleicaoId },

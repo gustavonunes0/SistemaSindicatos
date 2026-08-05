@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Prisma } from '@prisma/client';
 import type { ElegivelResumo, IncluirElegivelInput } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 @Injectable()
 export class ElegibilidadeService {
@@ -13,8 +14,9 @@ export class ElegibilidadeService {
       where: { status: 'APROVADO' },
       select: { id: true },
     });
+    const tenantId = requireTenantId();
     const resultado = await this.prisma.elegivel.createMany({
-      data: aprovados.map((afiliado) => ({ eleicaoId, afiliadoId: afiliado.id })),
+      data: aprovados.map((afiliado) => ({ tenantId, eleicaoId, afiliadoId: afiliado.id })),
       skipDuplicates: true,
     });
     return { incluidos: resultado.count };
@@ -50,7 +52,9 @@ export class ElegibilidadeService {
       throw new NotFoundException('Afiliado não encontrado');
     }
     try {
-      await this.prisma.elegivel.create({ data: { eleicaoId, afiliadoId: input.afiliadoId } });
+      await this.prisma.elegivel.create({
+        data: { tenantId: requireTenantId(), eleicaoId, afiliadoId: input.afiliadoId },
+      });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ConflictException('Afiliado já está na lista de elegíveis');

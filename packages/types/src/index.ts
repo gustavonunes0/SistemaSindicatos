@@ -1,5 +1,6 @@
 export * from './enums';
 export * from './user';
+export * from './tenant';
 export * from './afiliado';
 export * from './auth';
 export * from './convenio';

@@ -179,6 +179,7 @@ async function primeiraLogoValida(urls: string[]): Promise<string | null> {
 }
 
 async function upsertConvenio(item: ConvenioSeed, logoUrl: string | null): Promise<void> {
+  const tenant = await prisma.tenant.findUniqueOrThrow({ where: { slug: 'sindprf-ce' } });
   const dados = {
     categoria: item.categoria,
     descricao: item.descricao,
@@ -193,7 +194,9 @@ async function upsertConvenio(item: ConvenioSeed, logoUrl: string | null): Promi
     vigenciaInicio: new Date('2026-01-01T00:00:00.000Z'),
   };
 
-  const existente = await prisma.convenio.findFirst({ where: { nome: item.nome } });
+  const existente = await prisma.convenio.findFirst({
+    where: { tenantId: tenant.id, nome: item.nome },
+  });
   if (existente) {
     await prisma.convenio.update({ where: { id: existente.id }, data: dados });
     console.log(`atualizado: ${item.nome}`);
@@ -201,7 +204,7 @@ async function upsertConvenio(item: ConvenioSeed, logoUrl: string | null): Promi
   }
 
   await prisma.convenio.create({
-    data: { nome: item.nome, ...dados },
+    data: { tenantId: tenant.id, nome: item.nome, ...dados },
   });
   console.log(`criado: ${item.nome}`);
 }

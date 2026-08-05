@@ -12,6 +12,7 @@ import type {
   FiltroImoveisInput,
 } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import {
   intervalosSobrepostos,
   serializarImovel,
@@ -28,6 +29,7 @@ export class ImoveisService {
   async criar(input: CriarImovelInput) {
     const imovel = await this.prisma.imovel.create({
       data: {
+        tenantId: requireTenantId(),
         titulo: input.titulo,
         descricao: input.descricao,
         endereco: input.endereco,
@@ -106,8 +108,10 @@ export class ImoveisService {
   async adicionarFotos(id: string, urls: string[]) {
     await this.buscarAdmin(id);
     const ordemBase = await this.prisma.fotoImovel.count({ where: { imovelId: id } });
+    const tenantId = requireTenantId();
     await this.prisma.fotoImovel.createMany({
       data: urls.map((url, indice) => ({
+        tenantId,
         imovelId: id,
         url,
         ordem: ordemBase + indice,
@@ -148,6 +152,7 @@ export class ImoveisService {
     }
     const periodo = await this.prisma.periodo.create({
       data: {
+        tenantId: requireTenantId(),
         imovelId,
         inicio: input.inicio,
         fim: input.fim,

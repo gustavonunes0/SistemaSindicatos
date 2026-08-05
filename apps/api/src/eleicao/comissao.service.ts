@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Prisma } from '@prisma/client';
 import type { AdicionarMembroComissaoInput, MembroComissao } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 @Injectable()
 export class ComissaoService {
@@ -28,7 +29,12 @@ export class ComissaoService {
 
     try {
       await this.prisma.membroComissaoEleitoral.create({
-        data: { eleicaoId, userId: input.userId, titular: input.titular },
+        data: {
+          tenantId: requireTenantId(),
+          eleicaoId,
+          userId: input.userId,
+          titular: input.titular,
+        },
       });
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {

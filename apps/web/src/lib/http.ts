@@ -6,11 +6,19 @@ export const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
 });
 
+function tenantHostHeader(): string {
+  if (typeof window === 'undefined') {
+    return 'localhost';
+  }
+  return window.location.hostname;
+}
+
 api.interceptors.request.use((config) => {
   const { accessToken } = useAuthStore.getState();
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
+  config.headers['X-Tenant-Host'] = tenantHostHeader();
   return config;
 });
 
@@ -27,7 +35,12 @@ async function renovarSessao(): Promise<string> {
   const { data } = await axios.post(
     `${api.defaults.baseURL}/auth/refresh`,
     { refreshToken },
-    { headers: { 'Content-Type': 'application/json' } },
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Tenant-Host': tenantHostHeader(),
+      },
+    },
   );
   const sessao = authResponseSchema.parse(data);
   useAuthStore.getState().setSession(sessao);

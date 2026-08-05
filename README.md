@@ -62,85 +62,32 @@ Se mesmo assim quiser tentar a API na Vercel:
 
 O erro `Cannot find module '@sindprf/types'` acontece quando o Nest builda sem compilar o pacote compartilhado antes. Use sempre `npm run build:api` / `build:web` (ou o `vercel.json` acima).
 
-## Deploy na VPS (Hostinger) — Docker + Supabase
+## Deploy na VPS — Docker + Supabase + Nginx Proxy Manager
 
-Sobe **API + Frontend (nginx)** na VPS. O banco fica no **Supabase** (já migrado).
+Guia completo: **[`docs/deploy-vps.md`](docs/deploy-vps.md)**.
 
-### 1. Na VPS
+Hosts Stellar (portas **8081** / **3001** — fora do Baturité em 8080/3000):
 
-```bash
-sudo apt update && sudo apt install -y docker.io docker-compose-v2 git
-sudo usermod -aG docker $USER   # saia e entre de novo na sessão
-
-git clone <seu-repositorio> sindprf
-cd sindprf
-cp .env.example .env
-nano .env
-```
-
-### 2. Variáveis obrigatórias (`.env` na raiz)
-
-| Variável | Exemplo | Notas |
-|----------|---------|--------|
-| `DATABASE_URL` | connection string Supabase | Session pooler ou Direct (`:5432`) |
-| `JWT_SECRET` | `openssl rand -hex 32` | Segredo dos tokens |
-| `WEB_URL` | `http://SEU_IP` ou `https://seudominio.com` | CORS do front (**sem** `/` no final) |
-| `VITE_API_URL` | `http://SEU_IP:3000` | URL da API no navegador |
-| `SEED_ON_START` | `false` | Banco Supabase já tem admin; use `true` só se estiver vazio |
-
-No Supabase → **Connect** → copie a URI **Session** (ou Direct). Na VPS não precisa do pooler `6543` da Vercel.
-
-Portas: front `80`, API `3000` — abra no firewall da Hostinger.
-
-### 3. Subir (só api + web)
+| Host | Destino |
+|------|---------|
+| `sindprf.stellarsolucoes.com.br` | web `:8081` |
+| `sindigest.stellarsolucoes.com.br` | web `:8081` |
+| `apisindigest.stellarsolucoes.com.br` | api `:3001` |
 
 ```bash
+cp .env.example .env   # Supabase + URLs acima
 docker compose up --build -d
-docker compose ps
-curl http://127.0.0.1:3000/    # deve responder {"status":"ok",...}
 ```
 
-- Front: `http://SEU_IP`
-- API: `http://SEU_IP:3000/`
-- Login: `admin@sindprf.local` (mesmo usuário do Supabase)
-
-Migrations rodam no start da API (`prisma migrate deploy`). Como o banco já foi migrado, isso só confirma.
-
-Se mudar `VITE_API_URL` ou `WEB_URL`:
-
-```bash
-# WEB_URL: só reiniciar a api
-docker compose up -d api
-
-# VITE_API_URL: rebuild do front
-docker compose up --build -d web
-```
-
-### 4. Postgres local (opcional)
+### Postgres local (opcional)
 
 Só se **não** for usar Supabase:
 
 ```bash
-# no .env:
-# DATABASE_URL=postgresql://sindprf:SENHA@postgres:5432/sindprf?schema=public
+# no .env: DATABASE_URL=postgresql://sindprf:SENHA@postgres:5432/sindprf?schema=public
 docker compose --profile local-db up --build -d
 ```
 
-### 5. Domínio + HTTPS
-
-1. DNS A do domínio → IP da VPS.
-2. `WEB_URL` / `VITE_API_URL` com `https://...`.
-3. Proxy SSL da Hostinger, Cloudflare ou Caddy na frente das portas 80/3000.
-
-### 6. Comandos úteis
-
-```bash
-docker compose logs -f api
-docker compose exec api npx prisma db seed
-docker compose down
-```
-
-Uploads ficam no volume `api_uploads`. O banco continua no Supabase.
 
 ## Scripts da raiz
 

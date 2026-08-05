@@ -1,6 +1,7 @@
 import { ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import type { CriarContestacaoInput, ResolverContestacaoInput } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { serializarContestacao } from './eleicao.util';
 
 @Injectable()
@@ -30,7 +31,13 @@ export class ContestacaoService {
     const tipo = chapa.status === 'HOMOLOGADA' ? 'IMPUGNACAO' : 'RECURSO';
 
     const contestacao = await this.prisma.contestacaoChapa.create({
-      data: { chapaId, tipo, afiliadoId: afiliado.id, motivo: input.motivo },
+      data: {
+        tenantId: requireTenantId(),
+        chapaId,
+        tipo,
+        afiliadoId: afiliado.id,
+        motivo: input.motivo,
+      },
     });
     return serializarContestacao(contestacao);
   }

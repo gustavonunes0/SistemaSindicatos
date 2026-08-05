@@ -6,6 +6,7 @@ import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'node:crypto';
 import type { JwtPayload } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
@@ -36,19 +37,20 @@ export class AuthService {
 
   /** CPF (afiliado) ou e-mail (admin / legado). Aceita CPF com ou sem . e -. */
   private async encontrarUsuarioPorLogin(login: string): Promise<User | null> {
+    const tenantId = requireTenantId();
     const bruto = login.trim();
     const cpf = bruto.replace(/\D/g, '');
 
     if (cpf.length === 11 && validarCpf(cpf)) {
       const afiliado = await this.prisma.afiliado.findUnique({
-        where: { cpf },
+        where: { tenantId_cpf: { tenantId, cpf } },
         include: { user: true },
       });
       return afiliado?.user ?? null;
     }
 
     return this.prisma.user.findUnique({
-      where: { email: bruto.toLowerCase() },
+      where: { tenantId_email: { tenantId, email: bruto.toLowerCase() } },
     });
   }
 
@@ -58,12 +60,17 @@ export class AuthService {
       include: { user: true },
     });
 
-    const valido = tokenSalvo && !tokenSalvo.revogado && tokenSalvo.expiraEm > new Date();
+    const tenantId = requireTenantId();
+    const valido =
+      tokenSalvo &&
+      !tokenSalvo.revogado &&
+      tokenSalvo.expiraEm > new Date() &&
+      tokenSalvo.tenantId === tenantId &&
+      tokenSalvo.user.tenantId === tenantId;
     if (!tokenSalvo || !valido) {
       throw new UnauthorizedException('Refresh token inválido ou expirado');
     }
 
-    // Rotação: o token usado é revogado e um novo é emitido.
     await this.prisma.refreshToken.update({
       where: { id: tokenSalvo.id },
       data: { revogado: true },
@@ -90,22 +97,24 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const tenantId = requireTenantId();
+    const user = await this.prisma.user.findUnique({
+      where: { tenantId_email: { tenantId, email } },
+    });
     if (!user) {
-      // Resposta idêntica para email inexistente — não revelar quem está cadastrado.
       return;
     }
 
     const token = randomBytes(32).toString('hex');
     await this.prisma.passwordResetToken.create({
       data: {
+        tenantId,
         userId: user.id,
         tokenHash: sha256(token),
         expiraEm: new Date(Date.now() + RESET_TOKEN_TTL_MS),
       },
     });
 
-    // Sem serviço de email ainda: o token é logado para uso em desenvolvimento.
     this.logger.log(`Token de reset para ${email}: ${token}`);
   }
 
@@ -114,7 +123,12 @@ export class AuthService {
       where: { tokenHash: sha256(token) },
     });
 
-    const valido = tokenSalvo && !tokenSalvo.usado && tokenSalvo.expiraEm > new Date();
+    const tenantId = requireTenantId();
+    const valido =
+      tokenSalvo &&
+      !tokenSalvo.usado &&
+      tokenSalvo.expiraEm > new Date() &&
+      tokenSalvo.tenantId === tenantId;
     if (!tokenSalvo || !valido) {
       throw new UnauthorizedException('Token de recuperação inválido ou expirado');
     }
@@ -129,7 +143,6 @@ export class AuthService {
         where: { id: tokenSalvo.id },
         data: { usado: true },
       }),
-      // Derruba todas as sessões ativas após troca de senha.
       this.prisma.refreshToken.updateMany({
         where: { userId: tokenSalvo.userId, revogado: false },
         data: { revogado: true },
@@ -138,12 +151,13 @@ export class AuthService {
   }
 
   private async gerarSessao(user: User): Promise<AuthResponse> {
-    const payload: JwtPayload = { sub: user.id, role: user.role };
+    const payload: JwtPayload = { sub: user.id, role: user.role, tenantId: user.tenantId };
     const accessToken = await this.jwtService.signAsync(payload, { expiresIn: ACCESS_TOKEN_TTL });
 
     const refreshToken = randomBytes(48).toString('hex');
     await this.prisma.refreshToken.create({
       data: {
+        tenantId: user.tenantId,
         userId: user.id,
         tokenHash: sha256(refreshToken),
         expiraEm: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
@@ -158,6 +172,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
       role: user.role,
+      tenantId: user.tenantId,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };

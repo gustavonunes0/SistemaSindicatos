@@ -7,6 +7,7 @@ import type {
 } from '@sindprf/types';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -16,14 +17,16 @@ export class AfiliadosService {
 
   async cadastrar(input: CadastroAfiliadoInput) {
     const senhaHash = await bcrypt.hash(input.senha, BCRYPT_ROUNDS);
+    const tenantId = requireTenantId();
 
     try {
       return await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
-          data: { email: input.email, senhaHash, role: 'AFILIADO' },
+          data: { tenantId, email: input.email, senhaHash, role: 'AFILIADO' },
         });
         return tx.afiliado.create({
           data: {
+            tenantId,
             userId: user.id,
             nome: input.nome,
             cpf: input.cpf,

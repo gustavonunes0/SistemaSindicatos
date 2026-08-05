@@ -13,6 +13,7 @@ import type {
 } from '@sindprf/types';
 import type { RequestUser } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { DeclaracaoPdfService } from './declaracao-pdf.service';
 
 @Injectable()
@@ -23,7 +24,9 @@ export class ConveniosService {
   ) {}
 
   criar(input: CriarConvenioInput) {
-    return this.prisma.convenio.create({ data: this.montarDados(input) });
+    return this.prisma.convenio.create({
+      data: { ...this.montarDados(input), tenantId: requireTenantId() },
+    });
   }
 
   async atualizar(id: string, input: AtualizarConvenioInput) {

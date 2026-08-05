@@ -3,23 +3,76 @@ import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
+const TENANT_ID = 'tenant_sindprf_ce';
+const TENANT_SLUG = 'sindprf-ce';
 const ADMIN_EMAIL = 'admin@sindprf.local';
-// Senha temporária de desenvolvimento — trocar no primeiro login em produção.
 const ADMIN_SENHA = process.env.SEED_ADMIN_SENHA ?? 'Admin@123';
 
-async function main(): Promise<void> {
-  const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
+function hostsDoSeed(): { host: string; primario: boolean }[] {
+  const hosts = new Map<string, boolean>();
+  hosts.set('localhost', true);
+  hosts.set('127.0.0.1', false);
 
+  const webUrl = process.env.WEB_URL?.trim();
+  if (webUrl) {
+    try {
+      const host = new URL(webUrl).hostname.toLowerCase();
+      if (host && !hosts.has(host)) {
+        hosts.set(host, false);
+      }
+    } catch {
+      /* ignore */
+    }
+  }
+
+  const extra = process.env.TENANT_SEED_HOSTS?.split(',') ?? [];
+  for (const h of extra) {
+    const host = h.trim().toLowerCase();
+    if (host && !hosts.has(host)) {
+      hosts.set(host, false);
+    }
+  }
+
+  return [...hosts.entries()].map(([host, primario]) => ({ host, primario }));
+}
+
+async function main(): Promise<void> {
+  const tenant = await prisma.tenant.upsert({
+    where: { slug: TENANT_SLUG },
+    update: {
+      nome: 'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará',
+      timezone: 'America/Fortaleza',
+      ativo: true,
+    },
+    create: {
+      id: TENANT_ID,
+      slug: TENANT_SLUG,
+      nome: 'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará',
+      timezone: 'America/Fortaleza',
+      ativo: true,
+    },
+  });
+
+  for (const { host, primario } of hostsDoSeed()) {
+    await prisma.tenantDomain.upsert({
+      where: { host },
+      update: { tenantId: tenant.id, primario },
+      create: { tenantId: tenant.id, host, primario },
+    });
+  }
+  console.log(`Tenant: ${tenant.slug} (${tenant.id})`);
+
+  const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
   const admin = await prisma.user.upsert({
-    where: { email: ADMIN_EMAIL },
+    where: { tenantId_email: { tenantId: tenant.id, email: ADMIN_EMAIL } },
     update: {},
     create: {
+      tenantId: tenant.id,
       email: ADMIN_EMAIL,
       senhaHash,
       role: Role.ADMIN,
     },
   });
-
   console.log(`Admin: ${admin.email}`);
 
   const agora = new Date();
@@ -46,7 +99,7 @@ async function main(): Promise<void> {
 
   for (const noticia of noticias) {
     await prisma.noticia.upsert({
-      where: { slug: noticia.slug },
+      where: { tenantId_slug: { tenantId: tenant.id, slug: noticia.slug } },
       update: {
         titulo: noticia.titulo,
         conteudo: noticia.conteudo,
@@ -55,6 +108,7 @@ async function main(): Promise<void> {
         autorId: admin.id,
       },
       create: {
+        tenantId: tenant.id,
         titulo: noticia.titulo,
         slug: noticia.slug,
         conteudo: noticia.conteudo,
@@ -66,8 +120,6 @@ async function main(): Promise<void> {
   }
   console.log(`Notícias: ${noticias.length}`);
 
-  // Convênios com declaração: use `npx tsx scripts/seed-convenios-declaracao.ts`
-  // para cadastrar/atualizar Unimed, SESC, Remanso, UNI7, UNIFOR etc.
   console.log('Convênios: pule o seed fictício (script seed-convenios-declaracao.ts)');
 
   const imoveis = [
@@ -90,7 +142,9 @@ async function main(): Promise<void> {
   ];
 
   for (const imovel of imoveis) {
-    const existente = await prisma.imovel.findFirst({ where: { titulo: imovel.titulo } });
+    const existente = await prisma.imovel.findFirst({
+      where: { tenantId: tenant.id, titulo: imovel.titulo },
+    });
     if (existente) {
       await prisma.imovel.update({
         where: { id: existente.id },
@@ -105,6 +159,7 @@ async function main(): Promise<void> {
     } else {
       await prisma.imovel.create({
         data: {
+          tenantId: tenant.id,
           titulo: imovel.titulo,
           descricao: imovel.descricao,
           endereco: imovel.endereco,

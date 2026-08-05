@@ -9,6 +9,7 @@ import { randomBytes } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import type { ComprovanteVoto, MeuStatusVotacao } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 
 @Injectable()
 export class VotacaoService {
@@ -77,10 +78,11 @@ export class VotacaoService {
 
     try {
       const comparecimento = await this.prisma.$transaction(async (tx) => {
+        const tenantId = requireTenantId();
         const registro = await tx.comparecimento.create({
-          data: { eleicaoId, afiliadoId: afiliado.id, protocolo },
+          data: { tenantId, eleicaoId, afiliadoId: afiliado.id, protocolo },
         });
-        await tx.voto.create({ data: { eleicaoId, chapaId } });
+        await tx.voto.create({ data: { tenantId, eleicaoId, chapaId } });
         return registro;
       });
 

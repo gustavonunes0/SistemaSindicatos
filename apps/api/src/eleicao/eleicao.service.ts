@@ -2,6 +2,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Prisma } from '@prisma/client';
 import type { AtualizarEleicaoInput, CriarEleicaoInput } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { serializarEleicaoDetalhe, serializarEleicaoResumo } from './eleicao.util';
 
 const includeChapasComCandidatos = {
@@ -15,6 +16,7 @@ export class EleicaoService {
   async criar(input: CriarEleicaoInput) {
     const eleicao = await this.prisma.eleicao.create({
       data: {
+        tenantId: requireTenantId(),
         titulo: input.titulo,
         descricao: input.descricao ?? null,
         inicio: input.inicio,

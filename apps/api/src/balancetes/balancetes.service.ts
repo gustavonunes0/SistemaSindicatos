@@ -12,6 +12,7 @@ import type {
 } from '@sindprf/types';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
+import { requireTenantId } from '../tenant/tenant-context';
 import { parseTextoBalancete } from './balancete-parser';
 
 const LOTE = 100;
@@ -111,7 +112,11 @@ export class BalancetesService {
 
     const existente = await this.prisma.importacaoBalancete.findUnique({
       where: {
-        competenciaAno_competenciaMes: { competenciaAno, competenciaMes },
+        tenantId_competenciaAno_competenciaMes: {
+          tenantId: requireTenantId(),
+          competenciaAno,
+          competenciaMes,
+        },
       },
     });
 
@@ -119,8 +124,10 @@ export class BalancetesService {
       await this.prisma.importacaoBalancete.delete({ where: { id: existente.id } });
     }
 
+    const tenantId = requireTenantId();
     const importacao = await this.prisma.importacaoBalancete.create({
       data: {
+        tenantId,
         competenciaAno,
         competenciaMes,
         arquivoNome: input.arquivoNome,
@@ -132,6 +139,7 @@ export class BalancetesService {
     });
 
     const registros = parseado.linhas.map((linha, indice) => ({
+      tenantId,
       importacaoId: importacao.id,
       sequencia: indice + 1,
       codigoConta: linha.codigoConta,
