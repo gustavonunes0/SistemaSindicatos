@@ -6,6 +6,7 @@ import { useLogout } from '../auth/hooks';
 import { useAuthStore } from '../auth/store';
 import { api } from '../../lib/http';
 import { useMarca } from '../../lib/marca';
+import { useSeo } from '../../lib/seo';
 
 type TenantLista = {
   id: string;
@@ -24,6 +25,11 @@ export function PlataformaHomePage() {
   const marca = useMarca();
   const logout = useLogout();
   const user = useAuthStore((s) => s.user);
+
+  useSeo({
+    title: `${marca.nome} — plataforma`,
+    description: marca.nomeCompleto,
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ['plataforma', 'tenants'],

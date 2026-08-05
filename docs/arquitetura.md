@@ -473,7 +473,8 @@ Dev local: mapear hosts em `/etc/hosts` (`sindprf.local` → tenant seed) ou hea
 ## 14. Próximo passo de engenharia
 
 **Fase A:** feita (tenantId, Host, JWT).  
-**Fase B (em curso):** branding no `Tenant.branding`, host `sindigest` = tenant `PLATAFORMA` + role `SUPERADMIN`, site do cliente só em `sindprf…`.
+**Fase B:** branding no `Tenant.branding` (marca, diretoria, filiação), host `sindigest` = tenant `PLATAFORMA` + role `SUPERADMIN`, site do cliente só em `sindprf…`, uploads em `uploads/{tenantId}/`, e-mail de contato lido do branding.
 
-Ainda aberto na B: uploads `{tenantId}/`, SMTP/VAPID lidos do branding em runtime, diretoria/filiação no JSON.  
+Ainda aberto / parcial: SMTP host ainda global (destino por tenant ok); VAPID keys ainda globais (subject/nome no push usam o tenant); PWA manifest estático no build.
+
 **Fase C:** CRUD completo de tenants/domínios no painel Stellar.

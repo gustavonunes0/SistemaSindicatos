@@ -1,33 +1,37 @@
 import { Link } from 'react-router-dom';
 import { Logo } from '../../../components/ui/Logo';
-import { filiacao } from '../../../lib/filiacao';
-import { marca } from '../../../lib/marca';
+import { useMarca } from '../../../lib/marca';
 import { useSeo } from '../../../lib/seo';
 
-const etapas = [
-  {
-    titulo: 'Baixe os formulários',
-    texto: 'Faça o download dos PDFs de filiação disponíveis nesta página.',
-  },
-  {
-    titulo: 'Reúna os documentos',
-    texto: 'Separe as cópias listadas no checklist (identidade, endereço, contracheque e foto).',
-  },
-  {
-    titulo: 'Compareça à secretaria',
-    texto: `Leve tudo preenchido à sede: ${filiacao.sede.endereco}.`,
-  },
-  {
-    titulo: 'Aguarde a liberação',
-    texto: 'Após a análise e a averbação, o sindicato libera seu acesso ao sistema.',
-  },
-] as const;
-
 export function CadastroAfiliadoPage() {
+  const marca = useMarca();
+  const filiacao = marca.filiacao;
+  const formularios = filiacao?.formularios ?? [];
+  const documentos = filiacao?.documentos ?? [];
+
   useSeo({
     title: `Filiação | ${marca.nome}`,
     description: `Como se filiar ao ${marca.nomeCompleto}: formulários e documentos para entregar na secretaria.`,
   });
+
+  const etapas = [
+    {
+      titulo: 'Baixe os formulários',
+      texto: 'Faça o download dos PDFs de filiação disponíveis nesta página.',
+    },
+    {
+      titulo: 'Reúna os documentos',
+      texto: 'Separe as cópias listadas no checklist (identidade, endereço, contracheque e foto).',
+    },
+    {
+      titulo: 'Compareça à secretaria',
+      texto: `Leve tudo preenchido à sede: ${marca.sede.endereco}.`,
+    },
+    {
+      titulo: 'Aguarde a liberação',
+      texto: 'Após a análise e a averbação, o sindicato libera seu acesso ao sistema.',
+    },
+  ] as const;
 
   return (
     <main className="cadastro-page">
@@ -73,15 +77,15 @@ export function CadastroAfiliadoPage() {
         <section className="cadastro-docs cadastro-docs--conteudo" aria-label="Documentos necessários">
           <h2 className="cadastro-docs-titulo">Documentos necessários</h2>
           <p className="cadastro-docs-intro">
-            Baixe os formulários e compareça à secretaria ({filiacao.sede.endereco}) com as cópias
-            abaixo. CEP {filiacao.sede.cep}.
+            Baixe os formulários e compareça à secretaria ({marca.sede.endereco}) com as cópias
+            abaixo. CEP {marca.sede.cep}.
           </p>
 
           <div className="cadastro-docs-colunas">
             <div>
               <p className="cadastro-docs-subtitulo">Formulários para baixar</p>
               <ul className="cadastro-docs-lista">
-                {filiacao.formularios.map((item) => (
+                {formularios.map((item) => (
                   <li key={item.url}>
                     <a href={item.url} download>
                       {item.rotulo}
@@ -94,7 +98,7 @@ export function CadastroAfiliadoPage() {
             <div>
               <p className="cadastro-docs-subtitulo">Levar na secretaria</p>
               <ul className="cadastro-docs-lista">
-                {filiacao.documentos.map((item) => (
+                {documentos.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
@@ -102,8 +106,8 @@ export function CadastroAfiliadoPage() {
           </div>
 
           <p className="cadastro-docs-contato">
-            Dúvidas: {filiacao.contato.telefones.join(' / ')} ·{' '}
-            <a href={`mailto:${filiacao.contato.email}`}>{filiacao.contato.email}</a>
+            Dúvidas: {marca.contato.telefones.join(' / ')} ·{' '}
+            <a href={`mailto:${marca.contato.email}`}>{marca.contato.email}</a>
           </p>
         </section>
 

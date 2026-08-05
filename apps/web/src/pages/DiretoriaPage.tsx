@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
-import { diretoria, type BlocoDiretoria, type MembroDiretoria } from '../lib/diretoria';
-import { marca } from '../lib/marca';
+import type { BlocoDiretoria, MembroDiretoria } from '@sindprf/types';
+import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 const CARGOS_DESTAQUE = new Set(['Presidente', 'Vice-presidente']);
@@ -15,10 +15,28 @@ function separarExecutiva(bloco: BlocoDiretoria): {
 }
 
 export function DiretoriaPage() {
+  const marca = useMarca();
+  const diretoria = marca.diretoria;
+
   useSeo({
     title: `Diretoria — ${marca.nome}`,
-    description: `Diretoria do ${marca.nomeCompleto} — mandato ${diretoria.mandato} (${diretoria.chapa}).`,
+    description: diretoria
+      ? `Diretoria do ${marca.nomeCompleto} — mandato ${diretoria.mandato} (${diretoria.chapa}).`
+      : `Diretoria do ${marca.nomeCompleto}.`,
   });
+
+  if (!diretoria) {
+    return (
+      <main className="diretoria-page">
+        <section className="diretoria-hero" aria-labelledby="diretoria-titulo">
+          <div className="diretoria-hero-inner">
+            <h1 id="diretoria-titulo">Diretoria</h1>
+            <p className="diretoria-hero-texto">Composição da diretoria ainda não publicada.</p>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   const executiva = diretoria.blocos[0];
   const conselhos = diretoria.blocos.slice(1);
@@ -97,9 +115,7 @@ export function DiretoriaPage() {
         <aside className="diretoria-rodape" aria-label="Documentos e links">
           <div className="diretoria-rodape-texto">
             <p className="diretoria-rodape-titulo">Histórico das diretorias</p>
-            <p>
-              Consulte as composições anteriores do {marca.nome} em PDF.
-            </p>
+            <p>Consulte as composições anteriores do {marca.nome} em PDF.</p>
           </div>
           <div className="diretoria-rodape-acoes">
             <a href={diretoria.historicoUrl} download className="botao-primario">

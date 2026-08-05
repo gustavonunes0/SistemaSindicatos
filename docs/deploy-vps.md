@@ -22,13 +22,16 @@ Referência visual do que já ocupa a VPS (`187.127.42.128`):
 
 ## Hosts deste produto
 
-| Host | Papel | Aponta para |
-|------|--------|-------------|
-| `sindprf.stellarsolucoes.com.br` | Site do cliente SINDPRF-CE (tenant) | web `:8081` |
-| `sindigest.stellarsolucoes.com.br` | Marca/produto SindiGest (mesmo front por enquanto) | web `:8081` |
-| `apisindigest.stellarsolucoes.com.br` | API compartilhada | api `:3001` |
+| Host | Papel | Tenant | Aponta para |
+|------|--------|--------|-------------|
+| `sindprf.stellarsolucoes.com.br` | Site do cliente SINDPRF-CE | `sindprf-ce` (`SINDICATO`) | web `:8081` |
+| `sindigest.stellarsolucoes.com.br` | Painel Stellar (SUPERADMIN) | `sindigest` (`PLATAFORMA`) | web `:8081` |
+| `apisindigest.stellarsolucoes.com.br` | API compartilhada | — | api `:3001` |
 
-> Por enquanto os dois fronts usam o **mesmo** container web. O tenant é resolvido pelo hostname (`X-Tenant-Host`). Cadastre **os dois** hosts em `tenant_domains` do `sindprf-ce` até existir um tenant “plataforma” separado.
+O **mesmo** container web serve os dois hosts. O tenant é resolvido pelo hostname (`X-Tenant-Host` / Host).  
+`tipo === PLATAFORMA` → router do painel; `SINDICATO` → site público + áreas do sindicato.
+
+> **Não** cadastre `sindigest…` no tenant do sindicato. Use `PLATFORM_SEED_HOSTS` / seed Fase B.
 
 ---
 
@@ -52,57 +55,64 @@ DIRECT_URL=...   # sem pgbouncer, para migrations
 WEB_PORT=8081
 API_PORT=3001
 
-# CORS = origem do browser (um dos fronts; o principal do tenant)
 WEB_URL=https://sindprf.stellarsolucoes.com.br
-
-# Embutida no build do Vite — rebuild se mudar
 VITE_API_URL=https://apisindigest.stellarsolucoes.com.br
 
-# Bootstrap multi-tenant (hosts do front, sem https://)
-TENANT_SEED_HOSTS=sindprf.stellarsolucoes.com.br,sindigest.stellarsolucoes.com.br
+# Hosts do front (sem https://) — separados!
+TENANT_SEED_HOSTS=sindprf.stellarsolucoes.com.br
+PLATFORM_SEED_HOSTS=sindigest.stellarsolucoes.com.br
 
-# Origins CORS extras (vírgula), se WEB_URL for só um dos fronts
 CORS_ORIGINS=https://sindigest.stellarsolucoes.com.br,https://sindprf.stellarsolucoes.com.br
 
 JWT_SECRET=<openssl rand -hex 32>
 SEED_ON_START=false
+SEED_ADMIN_SENHA=<senha>
+SEED_SUPERADMIN_EMAIL=superadmin@sindigest.local
 ```
 
-`WEB_URL` precisa ser uma origem válida no CORS. O front também envia `X-Tenant-Host`; o bootstrap da API libera origins cujo host está em `tenant_domains`. Por isso cadastre **sindprf** e **sindigest** nos domains. Use também `CORS_ORIGINS` com os dois fronts.
+Alinhe com `.env.example` da raiz. Se `TENANT_SEED_HOSTS` ainda tiver `sindigest…`, remova — o seed ignora, mas o env antigo confunde.
+
 ---
 
 ## 3. Subir na VPS
 
 ```bash
-cd /caminho/sindprf   # ou sindigest — pasta do repo
-cp .env.example .env  # se ainda não tiver
-# edite .env com os valores acima + Supabase
+cd /opt/SistemaSindicatos   # ou caminho do repo
+git pull
+# confira .env (PLATFORM_SEED_HOSTS, TENANT_SEED_HOSTS separados)
 
 docker compose up --build -d
-docker compose ps
-
-curl -s http://127.0.0.1:3001/
-curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8081/
+docker compose exec api npx prisma migrate deploy
+docker compose exec api npx prisma db seed
 ```
 
-Cadastrar hosts do tenant:
-
-```bash
-docker compose exec \
-  -e TENANT_SEED_HOSTS=sindprf.stellarsolucoes.com.br,sindigest.stellarsolucoes.com.br \
-  api npx prisma db seed
-```
-
-Ou no SQL Editor do Supabase:
+Validar mapeamento no Supabase (SQL Editor):
 
 ```sql
-INSERT INTO tenant_domains (id, "tenantId", host, primario, "createdAt")
-VALUES
-  ('td_sindprf_stellar', 'tenant_sindprf_ce', 'sindprf.stellarsolucoes.com.br', true, NOW()),
-  ('td_sindigest_stellar', 'tenant_sindprf_ce', 'sindigest.stellarsolucoes.com.br', false, NOW())
-ON CONFLICT (host) DO UPDATE
-SET "tenantId" = EXCLUDED."tenantId";
+SELECT d.host, t.slug, t.tipo
+FROM tenant_domains d
+JOIN tenants t ON t.id = d."tenantId"
+WHERE d.host LIKE '%sindigest%' OR d.host LIKE '%sindprf%'
+ORDER BY d.host;
 ```
+
+Esperado:
+
+| host | slug | tipo |
+|------|------|------|
+| `sindigest.stellarsolucoes.com.br` | `sindigest` | `PLATAFORMA` |
+| `sindprf.stellarsolucoes.com.br` | `sindprf-ce` | `SINDICATO` |
+
+Correção manual (se ainda estiver errado):
+
+```sql
+UPDATE tenant_domains
+SET "tenantId" = (SELECT id FROM tenants WHERE slug = 'sindigest'),
+    primario = true
+WHERE host = 'sindigest.stellarsolucoes.com.br';
+```
+
+Depois reinicie a API (cache de host ~60s): `docker compose restart api`.
 
 ---
 
@@ -120,7 +130,7 @@ Mesmo padrão do Baturité (`http://187.127.42.128:PORTA`).
 | Forward Port | `8081` |
 | SSL | Let’s Encrypt + Force SSL |
 
-### B) Front SindiGest
+### B) Front SindiGest (plataforma)
 
 | Campo | Valor |
 |-------|--------|
@@ -155,10 +165,11 @@ proxy_set_header X-Tenant-Host $http_x_tenant_host;
 ## 5. Validar
 
 1. `https://apisindigest.stellarsolucoes.com.br/` → `{"status":"ok",...}`
-2. `https://sindprf.stellarsolucoes.com.br/` → site (não “Sindicato não encontrado”)
-3. `https://sindigest.stellarsolucoes.com.br/` → mesmo app
-4. Login `admin@sindprf.local`
-5. Network: API em `apisindigest...` + header `X-Tenant-Host: sindprf.stellarsolucoes.com.br` (ou `sindigest...`)
+2. `https://sindprf.stellarsolucoes.com.br/` → site do sindicato
+3. `https://sindigest.stellarsolucoes.com.br/` → **login / painel plataforma** (não o site do PRF)
+4. Network: `GET …/tenants/current` com `X-Tenant-Host: sindigest…` → `"tipo":"PLATAFORMA"`
+5. Login plataforma: `superadmin@sindigest.local` + `SEED_ADMIN_SENHA`
+6. Login sindicato: `admin@sindprf.local`
 
 ---
 
@@ -166,7 +177,7 @@ proxy_set_header X-Tenant-Host $http_x_tenant_host;
 
 1. DNS do cliente → `187.127.42.128`
 2. NPM: novo Proxy Host → `187.127.42.128:8081`
-3. `INSERT` em `tenant_domains` daquele tenant
+3. `INSERT` em `tenant_domains` **do tenant do sindicato** (não da plataforma)
 4. API continua em `apisindigest...` (o front manda `X-Tenant-Host`)
 
 ---
@@ -176,6 +187,8 @@ proxy_set_header X-Tenant-Host $http_x_tenant_host;
 ```bash
 docker compose logs -f api
 docker compose up -d api                    # mudou WEB_URL / env
-docker compose up --build -d web            # mudou VITE_API_URL
+docker compose up --build -d                # código + front
+docker compose exec api npx prisma migrate deploy
+docker compose exec api npx prisma db seed
 docker compose down
 ```

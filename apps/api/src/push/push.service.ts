@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import type { PushSubscriptionInput } from '@sindprf/types';
 import webpush from 'web-push';
 import { PrismaService } from '../prisma/prisma.service';
-import { requireTenantId } from '../tenant/tenant-context';
+import { getTenantContext, requireTenantId } from '../tenant/tenant-context';
 
 type PayloadNoticia = {
   titulo: string;
@@ -64,8 +64,9 @@ export class PushService {
       return;
     }
 
+    const marca = getTenantContext()?.nome ?? 'Sindicato';
     const payload: PayloadNoticia = {
-      titulo: 'Nova notícia — SINDPRF-CE',
+      titulo: `Nova notícia — ${marca}`,
       corpo: noticia.titulo,
       url: `/noticias/${noticia.slug}`,
     };

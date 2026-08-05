@@ -29,6 +29,76 @@ const BRANDING_SINDPRF = {
   themeColor: '#0b3d6b',
   contatoDestinoEmail: 'sindprfce@sindprfce.com.br',
   vapidSubject: 'mailto:sindprfce@sindprfce.com.br',
+  diretoria: {
+    mandato: '2025/2027',
+    chapa: 'Sindicato em Ação',
+    historicoUrl: '/diretoria/historico-diretorias.pdf',
+    blocos: [
+      {
+        titulo: 'Diretoria executiva',
+        membros: [
+          { cargo: 'Presidente', nome: 'Tatiane Vasques' },
+          { cargo: 'Vice-presidente', nome: 'Gilberto Conrado' },
+          { cargo: 'Diretor secretário', nome: 'Júlio Dutra' },
+          { cargo: 'Diretor secretário suplente', nome: 'Marta Sabóia' },
+          { cargo: 'Diretor financeiro e de patrimônio', nome: 'Almir Alves' },
+          { cargo: 'Diretor financeiro e de patrimônio suplente', nome: 'Nara Regina' },
+          { cargo: 'Diretora social', nome: 'Edney Glauce' },
+          { cargo: 'Diretora social suplente', nome: 'Telma Gurgel' },
+          { cargo: 'Diretor jurídico', nome: 'Fábio Oliveira' },
+          { cargo: 'Diretor jurídico suplente', nome: 'Sidney' },
+          { cargo: 'Diretor de divulgação', nome: 'Leonardo César' },
+          { cargo: 'Diretor de divulgação suplente', nome: 'Adriana Apolônio' },
+        ],
+      },
+      {
+        titulo: 'Conselho fiscal',
+        membros: [
+          { nome: 'Pádua Portela' },
+          { nome: 'Rômulo Braga' },
+          { nome: 'Jefferson Oliveira' },
+        ],
+      },
+      {
+        titulo: 'Suplentes do conselho fiscal',
+        membros: [
+          { nome: 'Aretusa Sá' },
+          { nome: 'Lúcia Benício' },
+          { nome: 'Ana Rosângela' },
+        ],
+      },
+      {
+        titulo: 'Conselho de representantes junto à FENAPRF',
+        membros: [{ nome: 'Jairmerson Moreira' }, { nome: 'Lorena Morel' }],
+      },
+    ],
+  },
+  filiacao: {
+    formularios: [
+      {
+        rotulo: 'Solicitação de averbação do PRF',
+        url: '/filiacao/solicitacao-averbacao-prf.pdf',
+      },
+      {
+        rotulo: 'Cadastro de filiação (proposta do PRF)',
+        url: '/filiacao/cadastro-filiacao-prf.pdf',
+      },
+      {
+        rotulo: 'Solicitação de averbação da pensionista',
+        url: '/filiacao/solicitacao-averbacao-pensionista.pdf',
+      },
+      {
+        rotulo: 'Cadastro de filiação (proposta da pensionista)',
+        url: '/filiacao/cadastro-filiacao-pensionista.pdf',
+      },
+    ],
+    documentos: [
+      'Cópia da carteira funcional ou RG e CPF',
+      'Cópia do comprovante de endereço',
+      'Cópia do último contracheque',
+      'Uma foto 3×4',
+    ],
+  },
 };
 
 const BRANDING_PLATAFORMA = {
@@ -37,7 +107,7 @@ const BRANDING_PLATAFORMA = {
   logoUrl: '/logo-sindicato.png',
   sede: { endereco: 'Stellar Soluções', cep: '—' },
   contato: {
-    telefones: [],
+    telefones: [] as string[],
     email: 'contato@stellarsolucoes.com.br',
   },
   themeColor: '#0b3d6b',
@@ -111,19 +181,6 @@ async function main(): Promise<void> {
   });
   console.log(`Plataforma: ${plataforma.slug}`);
 
-  for (const host of hostsPlataforma()) {
-    await prisma.tenantDomain.upsert({
-      where: { host },
-      update: { tenantId: plataforma.id, primario: host.startsWith('sindigest.') },
-      create: {
-        tenantId: plataforma.id,
-        host,
-        primario: host.startsWith('sindigest.'),
-      },
-    });
-    console.log(`  platform domain: ${host}`);
-  }
-
   const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
   const superadmin = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: plataforma.id, email: SUPERADMIN_EMAIL } },
@@ -166,6 +223,31 @@ async function main(): Promise<void> {
     console.log(`  sindicato domain: ${host}`);
   }
   console.log(`Tenant: ${tenant.slug} (${tenant.id})`);
+
+  // Domínios da plataforma por último — nunca deixar sindigest.* no tenant do sindicato.
+  for (const host of hostsPlataforma()) {
+    await prisma.tenantDomain.upsert({
+      where: { host },
+      update: { tenantId: plataforma.id, primario: host.startsWith('sindigest.') },
+      create: {
+        tenantId: plataforma.id,
+        host,
+        primario: host.startsWith('sindigest.'),
+      },
+    });
+    console.log(`  platform domain: ${host}`);
+  }
+
+  const corrigidos = await prisma.tenantDomain.updateMany({
+    where: {
+      host: { startsWith: 'sindigest.' },
+      NOT: { tenantId: plataforma.id },
+    },
+    data: { tenantId: plataforma.id, primario: true },
+  });
+  if (corrigidos.count > 0) {
+    console.log(`  corrigidos ${corrigidos.count} host(s) sindigest.* → plataforma`);
+  }
 
   const admin = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: tenant.id, email: ADMIN_EMAIL } },

@@ -2,21 +2,26 @@ import { Injectable, Logger, ServiceUnavailableException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config';
 import {
   CONTATO_ASSUNTO_ROTULO,
+  tenantBrandingSchema,
   type EnviarContatoInput,
   type EnviarContatoResultado,
 } from '@sindprf/types';
 import nodemailer from 'nodemailer';
+import { PrismaService } from '../prisma/prisma.service';
+import { getTenantContext, requireTenantId } from '../tenant/tenant-context';
 
 @Injectable()
 export class ContatoService {
   private readonly logger = new Logger(ContatoService.name);
 
-  constructor(private readonly config: ConfigService) {}
+  constructor(
+    private readonly config: ConfigService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async enviar(input: EnviarContatoInput): Promise<EnviarContatoResultado> {
-    const destino =
-      this.config.get<string>('CONTATO_DESTINO_EMAIL')?.trim() ||
-      'sindprfce@sindprfce.com.br';
+    const destino = await this.resolverDestino();
+    const marcaNome = getTenantContext()?.nome ?? 'Site';
     const assuntoRotulo = CONTATO_ASSUNTO_ROTULO[input.assunto];
     const assuntoEmail = `[Site] ${assuntoRotulo} — ${input.nome}`;
     const corpoTexto = [
@@ -58,7 +63,7 @@ export class ContatoService {
       });
 
       await transporter.sendMail({
-        from: `"SINDPRF-CE Site" <${remetente}>`,
+        from: `"${marcaNome}" <${remetente}>`,
         to: destino,
         replyTo: `"${input.nome}" <${input.email}>`,
         subject: assuntoEmail,
@@ -84,6 +89,21 @@ export class ContatoService {
         'Não foi possível enviar o e-mail agora. Tente pelos canais ao lado ou mais tarde.',
       );
     }
+  }
+
+  private async resolverDestino(): Promise<string> {
+    const tenantId = requireTenantId();
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { branding: true },
+    });
+    const branding = tenantBrandingSchema.safeParse(tenant?.branding);
+    if (branding.success) {
+      return branding.data.contatoDestinoEmail ?? branding.data.contato.email;
+    }
+    return (
+      this.config.get<string>('CONTATO_DESTINO_EMAIL')?.trim() || 'sindprfce@sindprfce.com.br'
+    );
   }
 }
 

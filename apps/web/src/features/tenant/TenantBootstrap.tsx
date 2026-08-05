@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import { aplicarBrandingNoDocumento, resolverMarca } from '../../lib/marca';
 import { useTenantStore } from './store';
 
 /** Carrega o tenant do Host atual (bootstrap). */
-export function TenantBootstrap({ children }: { children: React.ReactNode }) {
+export function TenantBootstrap({ children }: { children: ReactNode }) {
   const carregar = useTenantStore((s) => s.carregar);
   const carregando = useTenantStore((s) => s.carregando);
   const erro = useTenantStore((s) => s.erro);
@@ -11,6 +12,11 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     void carregar();
   }, [carregar]);
+
+  useEffect(() => {
+    if (!tenant) return;
+    aplicarBrandingNoDocumento(resolverMarca());
+  }, [tenant]);
 
   if (carregando) {
     return (
