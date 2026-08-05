@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -20,6 +20,7 @@ import { PushModule } from './push/push.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
+import { TenantMiddleware } from './tenant/tenant.middleware';
 import { TenantModule } from './tenant/tenant.module';
 
 @Module({
@@ -52,4 +53,15 @@ import { TenantModule } from './tenant/tenant.module';
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    // Registrado no AppModule para valer em todas as rotas (não só TenantModule).
+    consumer
+      .apply(TenantMiddleware)
+      .exclude(
+        { path: '/', method: RequestMethod.GET },
+        { path: 'health', method: RequestMethod.GET },
+      )
+      .forRoutes('*');
+  }
+}

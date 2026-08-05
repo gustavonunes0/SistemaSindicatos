@@ -22,7 +22,17 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
         return;
       }
       try {
-        if (origin.replace(/\/+$/, '') === webUrl) {
+        const normalizado = origin.replace(/\/+$/, '');
+        if (normalizado === webUrl) {
+          callback(null, true);
+          return;
+        }
+        // Origins extras (vírgula), ex.: segundo front sindigest + sindprf
+        const extras = (process.env.CORS_ORIGINS ?? '')
+          .split(',')
+          .map((o) => o.trim().replace(/\/+$/, ''))
+          .filter(Boolean);
+        if (extras.includes(normalizado)) {
           callback(null, true);
           return;
         }

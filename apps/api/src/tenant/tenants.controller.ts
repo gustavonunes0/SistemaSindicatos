@@ -11,10 +11,12 @@ export class TenantsController {
   @Public()
   @Get('current')
   async current(@Req() req: RequestComTenant) {
-    if (!req.tenant) {
-      return null;
-    }
-    const tenant = await this.tenants.resolverPorHost(req.tenant.host);
-    return this.tenants.toPublicDto(tenant, req.tenant.host);
+    const host =
+      req.tenant?.host ??
+      this.tenants.extrairHostDoRequest(
+        req.headers as Record<string, string | string[] | undefined>,
+      );
+    const tenant = await this.tenants.resolverPorHost(host);
+    return this.tenants.toPublicDto(tenant, host);
   }
 }

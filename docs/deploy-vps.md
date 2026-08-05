@@ -61,20 +61,14 @@ VITE_API_URL=https://apisindigest.stellarsolucoes.com.br
 # Bootstrap multi-tenant (hosts do front, sem https://)
 TENANT_SEED_HOSTS=sindprf.stellarsolucoes.com.br,sindigest.stellarsolucoes.com.br
 
+# Origins CORS extras (vírgula), se WEB_URL for só um dos fronts
+CORS_ORIGINS=https://sindigest.stellarsolucoes.com.br,https://sindprf.stellarsolucoes.com.br
+
 JWT_SECRET=<openssl rand -hex 32>
 SEED_ON_START=false
 ```
 
-`WEB_URL` precisa ser uma origem válida no CORS. O front também envia `X-Tenant-Host`; o bootstrap da API libera origins cujo host está em `tenant_domains`. Por isso cadastre **sindprf** e **sindigest** nos domains.
-
-Se for abrir só por `sindigest` no dia a dia, pode usar:
-
-```env
-WEB_URL=https://sindigest.stellarsolucoes.com.br
-```
-
-desde que `sindigest` esteja em `tenant_domains`.
-
+`WEB_URL` precisa ser uma origem válida no CORS. O front também envia `X-Tenant-Host`; o bootstrap da API libera origins cujo host está em `tenant_domains`. Por isso cadastre **sindprf** e **sindigest** nos domains. Use também `CORS_ORIGINS` com os dois fronts.
 ---
 
 ## 3. Subir na VPS
