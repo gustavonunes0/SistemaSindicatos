@@ -1205,6 +1205,70 @@ button.botao-primario {
   line-height: 1.3;
 }
 
+.diretoria-historico {
+  margin-top: 0.5rem;
+}
+
+.diretoria-historico-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.diretoria-historico-item {
+  border: var(--borda-fina);
+  border-radius: var(--raio-md);
+  background: var(--cor-superficie);
+  overflow: hidden;
+}
+
+.diretoria-historico-toggle {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.diretoria-historico-toggle:hover {
+  background: color-mix(in srgb, var(--cor-primaria) 6%, transparent);
+}
+
+.diretoria-historico-periodo {
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  color: var(--cor-primaria);
+  white-space: nowrap;
+}
+
+.diretoria-historico-resumo {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.diretoria-historico-chevron {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+  line-height: 1;
+}
+
+.diretoria-historico-membros {
+  margin: 0;
+  padding: 0 1rem 1rem;
+  border-top: var(--borda-fina);
+}
+
 .diretoria-rodape {
   display: flex;
   flex-direction: column;

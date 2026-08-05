@@ -1,9 +1,11 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { BlocoDiretoria, MembroDiretoria } from '@sindprf/types';
+import { HISTORICO_URL, historicoDiretorias } from '../lib/historico-diretorias';
 import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
-const CARGOS_DESTAQUE = new Set(['Presidente', 'Vice-presidente']);
+const CARGOS_DESTAQUE = new Set(['Presidente', 'Vice-presidente', 'Vice-Presidente']);
 
 function separarExecutiva(bloco: BlocoDiretoria): {
   destaques: MembroDiretoria[];
@@ -17,6 +19,7 @@ function separarExecutiva(bloco: BlocoDiretoria): {
 export function DiretoriaPage() {
   const marca = useMarca();
   const diretoria = marca.diretoria;
+  const [mandatoAberto, setMandatoAberto] = useState<string | null>(null);
 
   useSeo({
     title: `Diretoria — ${marca.nome}`,
@@ -44,6 +47,7 @@ export function DiretoriaPage() {
     return null;
   }
   const { destaques, demais } = separarExecutiva(executiva);
+  const historicoUrl = diretoria.historicoUrl || HISTORICO_URL;
 
   return (
     <main className="diretoria-page">
@@ -112,14 +116,58 @@ export function DiretoriaPage() {
           ))}
         </div>
 
+        <section className="diretoria-historico" aria-labelledby="historico-titulo">
+          <header className="diretoria-secao-cabecalho">
+            <h2 id="historico-titulo">Histórico das diretorias</h2>
+            <p>Mandatos anteriores do {marca.nome}, a partir do documento oficial (1992–2018).</p>
+          </header>
+
+          <ul className="diretoria-historico-lista">
+            {historicoDiretorias.map((mandato) => {
+              const aberto = mandatoAberto === mandato.periodo;
+              const presidente = mandato.membros.find((m) => m.cargo === 'Presidente');
+              return (
+                <li key={mandato.periodo} className="diretoria-historico-item">
+                  <button
+                    type="button"
+                    className="diretoria-historico-toggle"
+                    aria-expanded={aberto}
+                    onClick={() =>
+                      setMandatoAberto(aberto ? null : mandato.periodo)
+                    }
+                  >
+                    <span className="diretoria-historico-periodo">{mandato.periodo}</span>
+                    <span className="diretoria-historico-resumo">
+                      {presidente ? `Presidência: ${presidente.nome}` : `${mandato.membros.length} membros`}
+                    </span>
+                    <span className="diretoria-historico-chevron" aria-hidden="true">
+                      {aberto ? '−' : '+'}
+                    </span>
+                  </button>
+                  {aberto ? (
+                    <ul className="diretoria-lista diretoria-historico-membros">
+                      {mandato.membros.map((membro) => (
+                        <li key={`${mandato.periodo}-${membro.cargo}-${membro.nome}`}>
+                          <span className="diretoria-cargo">{membro.cargo}</span>
+                          <span className="diretoria-nome">{membro.nome}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+
         <aside className="diretoria-rodape" aria-label="Documentos e links">
           <div className="diretoria-rodape-texto">
-            <p className="diretoria-rodape-titulo">Histórico das diretorias</p>
-            <p>Consulte as composições anteriores do {marca.nome} em PDF.</p>
+            <p className="diretoria-rodape-titulo">Documento oficial</p>
+            <p>Baixe o PDF com o histórico completo das diretorias.</p>
           </div>
           <div className="diretoria-rodape-acoes">
-            <a href={diretoria.historicoUrl} download className="botao-primario">
-              Baixar histórico
+            <a href={historicoUrl} download className="botao-primario">
+              Baixar histórico (PDF)
             </a>
             <Link to="/sobre" className="botao-secundario">
               Sobre o sindicato

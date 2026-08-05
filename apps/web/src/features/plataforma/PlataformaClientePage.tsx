@@ -82,6 +82,13 @@ export function PlataformaClientePage() {
         timezone: timezone.trim(),
         branding: {
           ...branding,
+          // Preserva conteúdo institucional se o formulário não editar esses campos
+          diretoria: branding.diretoria ?? data?.branding?.diretoria,
+          filiacao: branding.filiacao ?? data?.branding?.filiacao,
+          reservaApartamentosUrl:
+            branding.reservaApartamentosUrl ?? data?.branding?.reservaApartamentosUrl,
+          regulamentoApartamentosUrl:
+            branding.regulamentoApartamentosUrl ?? data?.branding?.regulamentoApartamentosUrl,
           nome: branding.nome.trim(),
           nomeCompleto: branding.nomeCompleto.trim(),
           logoUrl: branding.logoUrl.trim() || '/logo-sindicato.png',

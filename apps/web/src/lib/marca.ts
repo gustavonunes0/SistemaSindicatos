@@ -123,26 +123,57 @@ export function telefonePrincipalTel(branding: TenantBranding = marcaFallback): 
   return `+55${tel.replace(/\D/g, '')}`;
 }
 
+/** Completa campos institucionais ausentes no branding do tenant (ex.: diretoria). */
+function completarBrandingSindicato(parcial: TenantBranding): TenantBranding {
+  return {
+    ...marcaFallback,
+    ...parcial,
+    sede: parcial.sede ?? marcaFallback.sede,
+    contato: {
+      ...marcaFallback.contato,
+      ...parcial.contato,
+      telefones:
+        parcial.contato.telefones.length > 0
+          ? parcial.contato.telefones
+          : marcaFallback.contato.telefones,
+    },
+    cores: parcial.cores
+      ? { ...marcaFallback.cores, ...parcial.cores }
+      : marcaFallback.cores,
+    diretoria: parcial.diretoria ?? marcaFallback.diretoria,
+    filiacao: parcial.filiacao ?? marcaFallback.filiacao,
+    reservaApartamentosUrl:
+      parcial.reservaApartamentosUrl ?? marcaFallback.reservaApartamentosUrl,
+    regulamentoApartamentosUrl:
+      parcial.regulamentoApartamentosUrl ?? marcaFallback.regulamentoApartamentosUrl,
+  };
+}
+
+function completarBrandingPlataforma(parcial: TenantBranding): TenantBranding {
+  return {
+    ...marcaPlataformaFallback,
+    ...parcial,
+    cores: {
+      ...marcaPlataformaFallback.cores!,
+      ...parcial.cores,
+      primaria: parcial.cores?.primaria ?? marcaPlataformaFallback.cores!.primaria,
+    },
+    logoUrl: parcial.logoUrl.startsWith('/marca/')
+      ? parcial.logoUrl
+      : marcaPlataformaFallback.logoUrl,
+    logoHeaderUrl: parcial.logoHeaderUrl ?? marcaPlataformaFallback.logoHeaderUrl,
+  };
+}
+
 function resolverBrandingDoStore(): TenantBranding {
   const tenant = useTenantStore.getState().tenant;
   const parsed = tenantBrandingSchema.safeParse(tenant?.branding);
   if (tenant?.tipo === 'PLATAFORMA') {
-    if (!parsed.success) return marcaPlataformaFallback;
-    return {
-      ...marcaPlataformaFallback,
-      ...parsed.data,
-      cores: {
-        ...marcaPlataformaFallback.cores!,
-        ...parsed.data.cores,
-        primaria: parsed.data.cores?.primaria ?? marcaPlataformaFallback.cores!.primaria,
-      },
-      logoUrl: parsed.data.logoUrl.startsWith('/marca/')
-        ? parsed.data.logoUrl
-        : marcaPlataformaFallback.logoUrl,
-      logoHeaderUrl: parsed.data.logoHeaderUrl ?? marcaPlataformaFallback.logoHeaderUrl,
-    };
+    return parsed.success
+      ? completarBrandingPlataforma(parsed.data)
+      : marcaPlataformaFallback;
   }
-  return parsed.success ? parsed.data : marcaFallback;
+  return parsed.success ? completarBrandingSindicato(parsed.data) : marcaFallback;
 }
 
 export function useMarca(): TenantBranding {
@@ -150,22 +181,11 @@ export function useMarca(): TenantBranding {
   const branding = useTenantStore((s) => s.tenant?.branding);
   const parsed = tenantBrandingSchema.safeParse(branding);
   if (tipo === 'PLATAFORMA') {
-    if (!parsed.success) return marcaPlataformaFallback;
-    return {
-      ...marcaPlataformaFallback,
-      ...parsed.data,
-      cores: {
-        ...marcaPlataformaFallback.cores!,
-        ...parsed.data.cores,
-        primaria: parsed.data.cores?.primaria ?? marcaPlataformaFallback.cores!.primaria,
-      },
-      logoUrl: parsed.data.logoUrl.startsWith('/marca/')
-        ? parsed.data.logoUrl
-        : marcaPlataformaFallback.logoUrl,
-      logoHeaderUrl: parsed.data.logoHeaderUrl ?? marcaPlataformaFallback.logoHeaderUrl,
-    };
+    return parsed.success
+      ? completarBrandingPlataforma(parsed.data)
+      : marcaPlataformaFallback;
   }
-  return parsed.success ? parsed.data : marcaFallback;
+  return parsed.success ? completarBrandingSindicato(parsed.data) : marcaFallback;
 }
 
 export function resolverMarca(): TenantBranding {

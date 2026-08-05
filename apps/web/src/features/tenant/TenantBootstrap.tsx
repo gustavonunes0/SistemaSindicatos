@@ -23,7 +23,7 @@ function TelaCarregamento({ plataforma }: { plataforma: boolean }) {
         />
         <p className="boot-produto">SindiGest</p>
         <div className="boot-spinner" aria-hidden="true" />
-        <p className="boot-texto">Preparando a plataforma…</p>
+        <p className="boot-texto">Preparando sua experiência…</p>
       </div>
     );
   }
@@ -33,7 +33,7 @@ function TelaCarregamento({ plataforma }: { plataforma: boolean }) {
       <div className="boot-marca-faixa" aria-hidden="true" />
       <p className="boot-produto boot-produto--ink">Carregando</p>
       <div className="boot-spinner boot-spinner--ink" aria-hidden="true" />
-      <p className="boot-texto boot-texto--ink">Abrindo o site do sindicato…</p>
+      <p className="boot-texto boot-texto--ink">Carregando sua experiência…</p>
     </div>
   );
 }
