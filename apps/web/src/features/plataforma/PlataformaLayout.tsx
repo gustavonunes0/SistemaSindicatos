@@ -29,10 +29,6 @@ export function PlataformaLayout({ children, titulo, descricao }: PlataformaLayo
           <NavLink to="/plataforma" end className={({ isActive }) => (isActive ? 'sg-nav-link is-active' : 'sg-nav-link')}>
             Visão geral
           </NavLink>
-          <span className="sg-nav-link sg-nav-link--disabled" title="CRUD de tenants na Fase C">
-            Onboarding
-            <span className="sg-nav-soon">em breve</span>
-          </span>
         </nav>
 
         <div className="sg-sidebar-foot">

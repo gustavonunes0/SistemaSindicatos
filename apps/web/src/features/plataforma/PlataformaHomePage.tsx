@@ -115,6 +115,7 @@ export function PlataformaHomePage() {
                   <th scope="col">Afiliados</th>
                   <th scope="col">Usuários</th>
                   <th scope="col">Domínios públicos</th>
+                  <th scope="col">Ações</th>
                 </tr>
               </thead>
               <tbody>
@@ -153,6 +154,11 @@ export function PlataformaHomePage() {
                             </li>
                           ))}
                         </ul>
+                      </td>
+                      <td>
+                        <Link className="sg-btn-ghost sg-btn-ghost--sm" to={`/plataforma/clientes/${t.id}`}>
+                          Editar
+                        </Link>
                       </td>
                     </tr>
                   );

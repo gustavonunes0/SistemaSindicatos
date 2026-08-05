@@ -477,4 +477,6 @@ Dev local: mapear hosts em `/etc/hosts` (`sindprf.local` → tenant seed) ou hea
 
 Ainda aberto / parcial: SMTP host ainda global (destino por tenant ok); VAPID keys ainda globais (subject/nome no push usam o tenant); PWA manifest estático no build.
 
-**Fase C:** CRUD completo de tenants/domínios no painel Stellar.
+**Fase C (em curso):** painel SUPERADMIN edita dados do cliente (nome, ativo, timezone, branding, domínios).
+
+Ainda aberto na C: criar tenant + admin inicial, runbook de onboarding, testes e2e de isolamento.

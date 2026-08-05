@@ -85,3 +85,48 @@ export const tenantPublicSchema = z.object({
 });
 
 export type TenantPublic = z.infer<typeof tenantPublicSchema>;
+
+/** Schemas do painel SUPERADMIN (Fase C). */
+export const atualizarTenantPlataformaSchema = z.object({
+  nome: z.string().min(2).max(200).optional(),
+  ativo: z.boolean().optional(),
+  timezone: z.string().min(1).max(80).optional(),
+  branding: tenantBrandingSchema.optional(),
+});
+export type AtualizarTenantPlataformaInput = z.infer<typeof atualizarTenantPlataformaSchema>;
+
+export const criarDominioPlataformaSchema = z.object({
+  host: z
+    .string()
+    .trim()
+    .min(1)
+    .max(253)
+    .transform((h) => h.toLowerCase().replace(/^https?:\/\//, '').split('/')[0]!.split(':')[0]!)
+    .pipe(z.string().min(1).regex(/^[a-z0-9.-]+$/i, 'Host inválido')),
+  primario: z.boolean().optional().default(false),
+});
+export type CriarDominioPlataformaInput = z.infer<typeof criarDominioPlataformaSchema>;
+
+export const tenantAdminSchema = z.object({
+  id: z.string(),
+  slug: z.string(),
+  nome: z.string(),
+  tipo: tenantTipoSchema,
+  timezone: z.string(),
+  ativo: z.boolean(),
+  branding: tenantBrandingSchema.nullable(),
+  domains: z.array(
+    z.object({
+      id: z.string(),
+      host: z.string(),
+      primario: z.boolean(),
+    }),
+  ),
+  _count: z.object({
+    users: z.number(),
+    afiliados: z.number(),
+  }),
+  createdAt: z.coerce.date().optional(),
+  updatedAt: z.coerce.date().optional(),
+});
+export type TenantAdmin = z.infer<typeof tenantAdminSchema>;

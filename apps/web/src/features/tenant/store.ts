@@ -20,7 +20,19 @@ export const useTenantStore = create<TenantState>((set) => ({
       const tenant = tenantPublicSchema.parse(data);
       set({ tenant, carregando: false });
     } catch (error) {
-      const mensagem = error instanceof Error ? error.message : 'Falha ao carregar sindicato';
+      const axiosData =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string | string[] }; status?: number } })
+              .response
+          : undefined;
+      const apiMsg = axiosData?.data?.message;
+      const mensagem = Array.isArray(apiMsg)
+        ? apiMsg.join(', ')
+        : typeof apiMsg === 'string'
+          ? apiMsg
+          : error instanceof Error
+            ? error.message
+            : 'Falha ao carregar sindicato';
       set({ tenant: null, carregando: false, erro: mensagem });
     }
   },

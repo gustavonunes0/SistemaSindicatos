@@ -1,6 +1,11 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import type { Tenant } from '@prisma/client';
-import { tenantBrandingSchema, type TenantBranding } from '@sindprf/types';
+import { Prisma, type Tenant } from '@prisma/client';
+import {
+  tenantBrandingSchema,
+  type AtualizarTenantPlataformaInput,
+  type CriarDominioPlataformaInput,
+  type TenantBranding,
+} from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 
 export type TenantResolvido = Pick<
@@ -112,6 +117,153 @@ export class TenantService {
         _count: { select: { users: true, afiliados: true } },
       },
     });
+  }
+
+  async buscarSindicato(id: string) {
+    const tenant = await this.prisma.tenant.findFirst({
+      where: { id, tipo: 'SINDICATO' },
+      include: {
+        domains: { orderBy: { host: 'asc' } },
+        _count: { select: { users: true, afiliados: true } },
+      },
+    });
+    if (!tenant) {
+      throw new NotFoundException('Sindicato não encontrado');
+    }
+    return {
+      ...tenant,
+      branding: this.parseBranding(tenant.branding),
+    };
+  }
+
+  async atualizarSindicato(id: string, input: AtualizarTenantPlataformaInput) {
+    const atual = await this.prisma.tenant.findFirst({
+      where: { id, tipo: 'SINDICATO' },
+    });
+    if (!atual) {
+      throw new NotFoundException('Sindicato não encontrado');
+    }
+
+    let branding: Prisma.InputJsonValue | undefined;
+    if (input.branding) {
+      const parsed = tenantBrandingSchema.parse(input.branding);
+      branding = parsed as Prisma.InputJsonValue;
+    }
+
+    const atualizado = await this.prisma.tenant.update({
+      where: { id },
+      data: {
+        ...(input.nome !== undefined ? { nome: input.nome } : {}),
+        ...(input.ativo !== undefined ? { ativo: input.ativo } : {}),
+        ...(input.timezone !== undefined ? { timezone: input.timezone } : {}),
+        ...(branding !== undefined ? { branding } : {}),
+      },
+      include: {
+        domains: { orderBy: { host: 'asc' } },
+        _count: { select: { users: true, afiliados: true } },
+      },
+    });
+
+    this.invalidarCache();
+    return {
+      ...atualizado,
+      branding: this.parseBranding(atualizado.branding),
+    };
+  }
+
+  async adicionarDominio(tenantId: string, input: CriarDominioPlataformaInput) {
+    const tenant = await this.prisma.tenant.findFirst({
+      where: { id: tenantId, tipo: 'SINDICATO' },
+    });
+    if (!tenant) {
+      throw new NotFoundException('Sindicato não encontrado');
+    }
+
+    const host = this.normalizarHost(input.host);
+    if (!host) {
+      throw new BadRequestException('Host inválido');
+    }
+    if (host.startsWith('sindigest.')) {
+      throw new BadRequestException('Host da plataforma não pode ser vinculado a um sindicato');
+    }
+
+    const existente = await this.prisma.tenantDomain.findUnique({ where: { host } });
+    if (existente) {
+      throw new BadRequestException(`Host "${host}" já está cadastrado`);
+    }
+
+    if (input.primario) {
+      await this.prisma.tenantDomain.updateMany({
+        where: { tenantId },
+        data: { primario: false },
+      });
+    }
+
+    const domain = await this.prisma.tenantDomain.create({
+      data: {
+        tenantId,
+        host,
+        primario: Boolean(input.primario),
+      },
+    });
+
+    this.invalidarCache();
+    return domain;
+  }
+
+  async removerDominio(tenantId: string, domainId: string) {
+    const domain = await this.prisma.tenantDomain.findFirst({
+      where: { id: domainId, tenantId, tenant: { tipo: 'SINDICATO' } },
+    });
+    if (!domain) {
+      throw new NotFoundException('Domínio não encontrado');
+    }
+
+    const total = await this.prisma.tenantDomain.count({ where: { tenantId } });
+    if (total <= 1) {
+      throw new BadRequestException('O sindicato precisa de ao menos um domínio');
+    }
+
+    await this.prisma.tenantDomain.delete({ where: { id: domainId } });
+
+    if (domain.primario) {
+      const outro = await this.prisma.tenantDomain.findFirst({
+        where: { tenantId },
+        orderBy: { createdAt: 'asc' },
+      });
+      if (outro) {
+        await this.prisma.tenantDomain.update({
+          where: { id: outro.id },
+          data: { primario: true },
+        });
+      }
+    }
+
+    this.invalidarCache();
+    return { ok: true };
+  }
+
+  async definirDominioPrimario(tenantId: string, domainId: string) {
+    const domain = await this.prisma.tenantDomain.findFirst({
+      where: { id: domainId, tenantId, tenant: { tipo: 'SINDICATO' } },
+    });
+    if (!domain) {
+      throw new NotFoundException('Domínio não encontrado');
+    }
+
+    await this.prisma.$transaction([
+      this.prisma.tenantDomain.updateMany({
+        where: { tenantId },
+        data: { primario: false },
+      }),
+      this.prisma.tenantDomain.update({
+        where: { id: domainId },
+        data: { primario: true },
+      }),
+    ]);
+
+    this.invalidarCache();
+    return this.buscarSindicato(tenantId);
   }
 
   async isAllowedOrigin(origin: string): Promise<boolean> {

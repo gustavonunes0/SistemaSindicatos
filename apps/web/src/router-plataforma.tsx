@@ -6,6 +6,7 @@ import {
   PlataformaGate,
   PlataformaLoginRedirect,
 } from './features/plataforma/PlataformaHomePage';
+import { PlataformaClienteGate } from './features/plataforma/PlataformaClienteGate';
 
 /** Rotas exclusivas do host da plataforma (SindiGest / SUPERADMIN). */
 export const platformRouter = createBrowserRouter([
@@ -14,5 +15,6 @@ export const platformRouter = createBrowserRouter([
   { path: '/esqueci-senha', element: <EsqueciSenhaPage /> },
   { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
   { path: '/plataforma', element: <PlataformaGate /> },
+  { path: '/plataforma/clientes/:id', element: <PlataformaClienteGate /> },
   { path: '*', element: <Navigate to="/" replace /> },
 ]);
