@@ -19,7 +19,7 @@ VALUES (
   'PLATAFORMA',
   'America/Fortaleza',
   true,
-  '{"nome":"SindiGest","nomeCompleto":"SindiGest — plataforma Stellar para sindicatos","logoUrl":"/logo-sindicato.png","sede":{"endereco":"Stellar Soluções","cep":"—"},"contato":{"telefones":[],"email":"contato@stellarsolucoes.com.br"},"themeColor":"#0b3d6b"}'::jsonb,
+  '{"nome":"SindiGest","nomeCompleto":"SindiGest — plataforma Stellar para sindicatos","logoUrl":"/marca/stellar-icon.png","logoHeaderUrl":"/marca/stellar-logo.png","sede":{"endereco":"Stellar Soluções","cep":"—"},"contato":{"telefones":[],"email":"contato@stellarsolucoes.com.br"},"themeColor":"#3198A9","cores":{"primaria":"#3198A9","primariaEscura":"#1f6f7d","destaque":"#7BCCD8","fundo":"#f7f9fb","superficie":"#ffffff","texto":"#1f2937","textoSuave":"#5b6b7c","borda":"#d0d7de"}}'::jsonb,
   NOW(),
   NOW()
 )

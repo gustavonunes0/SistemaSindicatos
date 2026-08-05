@@ -30,10 +30,24 @@ export const filiacaoBrandingSchema = z.object({
   documentos: z.array(z.string()).default([]),
 });
 
+/** Tokens de cor opcionais — sobrescrevem o tema CSS do tenant. */
+export const coresBrandingSchema = z.object({
+  primaria: z.string().min(1),
+  primariaEscura: z.string().optional(),
+  destaque: z.string().optional(),
+  fundo: z.string().optional(),
+  superficie: z.string().optional(),
+  texto: z.string().optional(),
+  textoSuave: z.string().optional(),
+  borda: z.string().optional(),
+});
+
 export const tenantBrandingSchema = z.object({
   nome: z.string().min(1),
   nomeCompleto: z.string().min(1),
   logoUrl: z.string().min(1),
+  /** Wordmark largo (header). Se omitido, usa logoUrl. */
+  logoHeaderUrl: z.string().optional(),
   sede: z.object({
     endereco: z.string().min(1),
     cep: z.string().min(1),
@@ -45,6 +59,7 @@ export const tenantBrandingSchema = z.object({
   reservaApartamentosUrl: z.string().url().nullable().optional(),
   regulamentoApartamentosUrl: z.string().nullable().optional(),
   themeColor: z.string().optional(),
+  cores: coresBrandingSchema.optional(),
   /** E-mail destino do formulário de contato (override). */
   contatoDestinoEmail: z.string().email().optional(),
   vapidSubject: z.string().optional(),
@@ -53,6 +68,7 @@ export const tenantBrandingSchema = z.object({
 });
 
 export type TenantBranding = z.infer<typeof tenantBrandingSchema>;
+export type CoresBranding = z.infer<typeof coresBrandingSchema>;
 export type DiretoriaBranding = z.infer<typeof diretoriaBrandingSchema>;
 export type FiliacaoBranding = z.infer<typeof filiacaoBrandingSchema>;
 export type BlocoDiretoria = z.infer<typeof blocoDiretoriaSchema>;

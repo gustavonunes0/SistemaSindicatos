@@ -42,6 +42,14 @@
   /* Assinatura — a faixa de rodovia */
   --faixa-altura: 3px;
 
+  /* Aliases usados em telas da plataforma / Tailwind arbitrary values */
+  --color-bg: var(--cor-fundo);
+  --color-surface: var(--cor-superficie);
+  --color-ink: var(--cor-texto);
+  --color-ink-muted: var(--cor-texto-suave);
+  --color-border: var(--cor-borda);
+  --color-accent: var(--cor-primaria);
+
   /* Movimento */
   --transicao: 180ms ease-out;
 }

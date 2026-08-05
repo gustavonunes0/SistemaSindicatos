@@ -10,32 +10,49 @@ type LogoProps = {
 
 export function Logo({ variante = 'header', className }: LogoProps) {
   const marca = useMarca();
+  const src =
+    (variante === 'header' || variante === 'footer' || variante === 'sidebar') &&
+    marca.logoHeaderUrl
+      ? marca.logoHeaderUrl
+      : marca.logoUrl;
+  const ehWordmark = src === marca.logoHeaderUrl && Boolean(marca.logoHeaderUrl);
+
   return (
     <img
-      src={marca.logoUrl}
+      src={src}
       alt={`${marca.nome} — ${marca.nomeCompleto}`}
-      className={['logo', `logo-${variante}`, className].filter(Boolean).join(' ')}
+      className={['logo', `logo-${variante}`, ehWordmark ? 'logo-wordmark' : '', className]
+        .filter(Boolean)
+        .join(' ')}
       width={
-        variante === 'hero'
-          ? 120
-          : variante === 'auth'
-            ? 96
-            : variante === 'emblema'
-              ? 72
-              : variante === 'header'
-                ? 88
-                : 56
+        ehWordmark
+          ? variante === 'header'
+            ? 160
+            : 140
+          : variante === 'hero'
+            ? 120
+            : variante === 'auth'
+              ? 96
+              : variante === 'emblema'
+                ? 72
+                : variante === 'header'
+                  ? 88
+                  : 56
       }
       height={
-        variante === 'hero'
-          ? 120
-          : variante === 'auth'
-            ? 96
-            : variante === 'emblema'
-              ? 72
-              : variante === 'header'
-                ? 88
-                : 56
+        ehWordmark
+          ? variante === 'header'
+            ? 28
+            : 24
+          : variante === 'hero'
+            ? 120
+            : variante === 'auth'
+              ? 96
+              : variante === 'emblema'
+                ? 72
+                : variante === 'header'
+                  ? 88
+                  : 56
       }
       decoding="async"
     />

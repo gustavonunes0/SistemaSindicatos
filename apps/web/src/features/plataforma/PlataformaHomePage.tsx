@@ -42,9 +42,21 @@ export function PlataformaHomePage() {
   return (
     <div className="min-h-svh bg-[var(--color-bg)] text-[var(--color-ink)]">
       <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-        <div>
-          <p className="text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">Plataforma</p>
-          <h1 className="text-xl font-semibold">{marca.nome}</h1>
+        <div className="flex items-center gap-4">
+          <img
+            src={marca.logoHeaderUrl ?? marca.logoUrl}
+            alt={marca.nome}
+            className="h-7 w-auto"
+            width={160}
+            height={28}
+            decoding="async"
+          />
+          <div>
+            <p className="text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
+              Plataforma Stellar
+            </p>
+            <h1 className="text-xl font-semibold text-[var(--color-accent)]">{marca.nome}</h1>
+          </div>
         </div>
         <div className="flex items-center gap-4 text-sm">
           <span className="text-[var(--color-ink-muted)]">{user?.email}</span>

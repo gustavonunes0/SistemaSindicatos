@@ -310,6 +310,25 @@ button.botao-primario {
   margin: 0 auto 1rem;
 }
 
+.logo-wordmark.logo-header,
+.logo-wordmark.logo-footer,
+.logo-wordmark.logo-sidebar {
+  height: 28px;
+  width: auto;
+  max-width: 180px;
+}
+
+.auth-marca {
+  margin: 0 0 0.35rem;
+  text-align: center;
+  font-family: var(--fonte-display);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cor-primaria);
+}
+
 .logo-footer {
   height: 72px;
   width: auto;

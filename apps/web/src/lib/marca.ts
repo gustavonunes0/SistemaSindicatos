@@ -111,10 +111,10 @@ export function resolverMarca(): TenantBranding {
   return parsed.success ? parsed.data : marcaFallback;
 }
 
-/** Aplica título e theme-color do tenant no documento. */
+/** Aplica título, theme-color, favicon e tokens CSS do tenant no documento. */
 export function aplicarBrandingNoDocumento(branding: TenantBranding): void {
   document.title = branding.nome;
-  const theme = branding.themeColor ?? '#0b3d6b';
+  const theme = branding.themeColor ?? branding.cores?.primaria ?? '#0b3d6b';
   let meta = document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
@@ -122,4 +122,36 @@ export function aplicarBrandingNoDocumento(branding: TenantBranding): void {
     document.head.appendChild(meta);
   }
   meta.setAttribute('content', theme);
+
+  let icon = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (!icon) {
+    icon = document.createElement('link');
+    icon.rel = 'icon';
+    document.head.appendChild(icon);
+  }
+  icon.href = branding.logoUrl;
+
+  const root = document.documentElement;
+  const cores = branding.cores;
+  if (!cores) {
+    root.style.removeProperty('--azul-placa');
+    root.style.removeProperty('--azul-noite');
+    root.style.removeProperty('--amarelo-faixa');
+    root.style.removeProperty('--concreto');
+    root.style.removeProperty('--grafite');
+    root.style.removeProperty('--cinza-placa');
+    root.style.removeProperty('--cor-borda');
+    root.style.removeProperty('--azul-barra-marca');
+    return;
+  }
+
+  root.style.setProperty('--azul-placa', cores.primaria);
+  root.style.setProperty('--azul-noite', cores.primariaEscura ?? cores.primaria);
+  root.style.setProperty('--amarelo-faixa', cores.destaque ?? cores.primaria);
+  if (cores.fundo) root.style.setProperty('--concreto', cores.fundo);
+  if (cores.texto) root.style.setProperty('--grafite', cores.texto);
+  if (cores.textoSuave) root.style.setProperty('--cinza-placa', cores.textoSuave);
+  if (cores.superficie) root.style.setProperty('--branco-placa', cores.superficie);
+  if (cores.borda) root.style.setProperty('--cor-borda', cores.borda);
+  root.style.setProperty('--azul-barra-marca', cores.primaria);
 }

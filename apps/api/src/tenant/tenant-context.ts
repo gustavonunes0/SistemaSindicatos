@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
+import { InternalServerErrorException } from '@nestjs/common';
 
 export interface TenantContextStore {
   tenantId: string;
@@ -19,7 +20,7 @@ export function getTenantContext(): TenantContextStore | undefined {
 export function requireTenantId(): string {
   const ctx = tenantAls.getStore();
   if (!ctx?.tenantId || ctx.bypass) {
-    throw new Error('Contexto de tenant ausente');
+    throw new InternalServerErrorException('Contexto de tenant ausente');
   }
   return ctx.tenantId;
 }

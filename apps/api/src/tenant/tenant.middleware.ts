@@ -37,14 +37,31 @@ export class TenantMiddleware implements NestMiddleware {
         nome: tenant.nome,
       };
       req.tenant = store;
-      tenantAls.run(store, () => next());
+
+      // Mantém o AsyncLocalStorage ativo até a resposta terminar.
+      // `run(() => next())` sozinho perde o contexto no handler Nest assíncrono
+      // (ex.: POST /auth/login → requireTenantId() → 500).
+      await new Promise<void>((resolve, reject) => {
+        tenantAls.run(store, () => {
+          const concluir = () => resolve();
+          res.once('finish', concluir);
+          res.once('close', concluir);
+          try {
+            next();
+          } catch (erro) {
+            reject(erro);
+          }
+        });
+      });
     } catch (error) {
       if (error instanceof NotFoundException || (error as { status?: number }).status === 404) {
-        res.status(404).json({
-          statusCode: 404,
-          message: error instanceof Error ? error.message : 'Tenant não encontrado',
-          error: 'Not Found',
-        });
+        if (!res.headersSent) {
+          res.status(404).json({
+            statusCode: 404,
+            message: error instanceof Error ? error.message : 'Tenant não encontrado',
+            error: 'Not Found',
+          });
+        }
         return;
       }
       next(error);
