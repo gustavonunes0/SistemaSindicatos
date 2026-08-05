@@ -3,6 +3,8 @@ import { loginSchema, type LoginFormValues, type LoginInput } from '@sindprf/typ
 import { isAxiosError } from 'axios';
 import { useForm } from 'react-hook-form';
 import { Link } from 'react-router-dom';
+import { useSeo } from '../../../lib/seo';
+import { useMarca } from '../../../lib/marca';
 import { useTenantStore } from '../../tenant/store';
 import { useLogin } from '../hooks';
 import { AuthLayout } from './AuthLayout';
@@ -16,6 +18,7 @@ function normalizarCampoLogin(valor: string): string {
 
 export function LoginPage() {
   const tipo = useTenantStore((s) => s.tenant?.tipo);
+  const marca = useMarca();
   const ehPlataforma = tipo === 'PLATAFORMA';
   const login = useLogin();
   const {
@@ -27,6 +30,13 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
+  useSeo({
+    title: ehPlataforma ? `${marca.nome} — Entrar` : `Entrar | ${marca.nome}`,
+    description: ehPlataforma
+      ? 'Acesso SUPERADMIN à plataforma SindiGest / Stellar.'
+      : `Área restrita do ${marca.nomeCompleto}.`,
+  });
+
   const campoLogin = register('login');
 
   const mensagemErro =
@@ -36,7 +46,7 @@ export function LoginPage() {
       : 'Erro ao entrar. Tente novamente.');
 
   return (
-    <AuthLayout titulo={ehPlataforma ? 'Entrar na plataforma' : 'Entrar'}>
+    <AuthLayout titulo={ehPlataforma ? 'Entrar' : 'Entrar'}>
       <form onSubmit={handleSubmit((dados) => login.mutate(dados))} noValidate>
         <label>
           {ehPlataforma ? 'E-mail' : 'CPF'}
@@ -44,7 +54,7 @@ export function LoginPage() {
             type={ehPlataforma ? 'email' : 'text'}
             inputMode={ehPlataforma ? 'email' : 'numeric'}
             autoComplete="username"
-            placeholder={ehPlataforma ? 'superadmin@sindigest.local' : '00000000000'}
+            placeholder={ehPlataforma ? 'seu@email.com' : '00000000000'}
             name={campoLogin.name}
             ref={campoLogin.ref}
             onBlur={campoLogin.onBlur}
@@ -65,7 +75,7 @@ export function LoginPage() {
           <input
             type="password"
             autoComplete="current-password"
-            placeholder={ehPlataforma ? 'Senha do SUPERADMIN' : 'Matrícula SIAPE ou senha'}
+            placeholder={ehPlataforma ? 'Sua senha' : 'Matrícula SIAPE ou senha'}
             {...register('senha')}
           />
           {errors.senha && <span className="erro">{errors.senha.message}</span>}
@@ -73,14 +83,14 @@ export function LoginPage() {
 
         <p className="auth-dica">
           {ehPlataforma
-            ? 'Acesso exclusivo Stellar (SUPERADMIN). Use o e-mail e a senha definidos no seed.'
+            ? 'Painel Stellar — gestão multi-tenant dos sindicatos.'
             : 'Afiliado: CPF só com números e matrícula. Admin do sindicato: e-mail no campo CPF e senha no campo abaixo.'}
         </p>
 
         {mensagemErro && <p className="erro">{mensagemErro}</p>}
 
         <button type="submit" disabled={login.isPending}>
-          {login.isPending ? 'Entrando…' : 'Entrar'}
+          {login.isPending ? 'Entrando…' : ehPlataforma ? 'Acessar plataforma' : 'Entrar'}
         </button>
       </form>
 

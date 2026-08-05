@@ -20,7 +20,7 @@ export function TenantBootstrap({ children }: { children: ReactNode }) {
 
   if (carregando) {
     return (
-      <div className="flex min-h-svh items-center justify-center bg-[var(--color-bg)] text-[var(--color-ink-muted)]">
+      <div className="flex min-h-svh items-center justify-center bg-[#010816] text-[#7bccd8]">
         Carregando…
       </div>
     );

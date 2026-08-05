@@ -6,7 +6,6 @@ import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'node:crypto';
 import type { JwtPayload } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
-import { requireTenantId } from '../tenant/tenant-context';
 
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
@@ -26,8 +25,8 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  async login(login: string, senha: string): Promise<AuthResponse> {
-    const user = await this.encontrarUsuarioPorLogin(login);
+  async login(login: string, senha: string, tenantId: string): Promise<AuthResponse> {
+    const user = await this.encontrarUsuarioPorLogin(login, tenantId);
     const senhaConfere = user && (await bcrypt.compare(senha, user.senhaHash));
     if (!user || !senhaConfere) {
       throw new UnauthorizedException('Credenciais inválidas');
@@ -36,8 +35,7 @@ export class AuthService {
   }
 
   /** CPF (afiliado) ou e-mail (admin / legado). Aceita CPF com ou sem . e -. */
-  private async encontrarUsuarioPorLogin(login: string): Promise<User | null> {
-    const tenantId = requireTenantId();
+  private async encontrarUsuarioPorLogin(login: string, tenantId: string): Promise<User | null> {
     const bruto = login.trim();
     const cpf = bruto.replace(/\D/g, '');
 
@@ -54,13 +52,12 @@ export class AuthService {
     });
   }
 
-  async refresh(refreshToken: string): Promise<AuthResponse> {
+  async refresh(refreshToken: string, tenantId: string): Promise<AuthResponse> {
     const tokenSalvo = await this.prisma.refreshToken.findUnique({
       where: { tokenHash: sha256(refreshToken) },
       include: { user: true },
     });
 
-    const tenantId = requireTenantId();
     const valido =
       tokenSalvo &&
       !tokenSalvo.revogado &&
@@ -96,8 +93,7 @@ export class AuthService {
     };
   }
 
-  async forgotPassword(email: string): Promise<void> {
-    const tenantId = requireTenantId();
+  async forgotPassword(email: string, tenantId: string): Promise<void> {
     const user = await this.prisma.user.findUnique({
       where: { tenantId_email: { tenantId, email } },
     });
@@ -118,12 +114,11 @@ export class AuthService {
     this.logger.log(`Token de reset para ${email}: ${token}`);
   }
 
-  async resetPassword(token: string, novaSenha: string): Promise<void> {
+  async resetPassword(token: string, novaSenha: string, tenantId: string): Promise<void> {
     const tokenSalvo = await this.prisma.passwordResetToken.findUnique({
       where: { tokenHash: sha256(token) },
     });
 
-    const tenantId = requireTenantId();
     const valido =
       tokenSalvo &&
       !tokenSalvo.usado &&

@@ -2147,6 +2147,146 @@ button.botao-primario {
   line-height: 1.45;
 }
 
+/* ============ Auth plataforma (SindiGest / Stellar) ============ */
+.auth-page--stellar {
+  position: relative;
+  isolation: isolate;
+  background: #010816;
+  color: #f0f4f8;
+}
+
+.auth-stellar-fundo {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse 80% 50% at 50% -10%, #3198a94d, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, #7bccd81a, transparent 50%),
+    linear-gradient(165deg, #010816 0%, #0a1628 45%, #061018 100%);
+}
+
+.auth-card--stellar {
+  position: relative;
+  max-width: 400px;
+  padding: 2rem 1.75rem 1.5rem;
+  background: color-mix(in srgb, #0d1a2a 88%, #3198a9 12%);
+  border: 1px solid #3198a966;
+  border-top: 3px solid #3198a9;
+  border-radius: 8px;
+  box-shadow: 0 24px 48px #0008;
+}
+
+.auth-stellar-cabecalho {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.auth-stellar-wordmark {
+  height: 28px;
+  width: auto;
+  margin-bottom: 1.5rem;
+  opacity: 0.98;
+}
+
+.auth-stellar-produto {
+  margin: 0 0 0.35rem;
+  font-family: var(--fonte-display);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #7bccd8;
+}
+
+.auth-card--stellar h2 {
+  margin: 0 0 0.4rem;
+  color: #f7f9fb;
+  font-size: 1.35rem;
+}
+
+.auth-stellar-sub {
+  margin: 0;
+  max-width: 28ch;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: #9aabbc;
+}
+
+.auth-card--stellar label {
+  color: #c5d0db;
+}
+
+.auth-card--stellar input {
+  background: #010816;
+  border: 1px solid #3198a959;
+  color: #f0f4f8;
+}
+
+.auth-card--stellar input::placeholder {
+  color: #5b6b7c;
+}
+
+.auth-card--stellar input:focus {
+  outline: 2px solid #7bccd8;
+  outline-offset: 1px;
+  border-color: #7bccd8;
+}
+
+.auth-card--stellar .auth-dica {
+  color: #8a9aab;
+}
+
+.auth-card--stellar .erro {
+  color: #f87171;
+}
+
+.auth-card--stellar button[type='submit'] {
+  width: 100%;
+  margin-top: 0.25rem;
+  background: #3198a9;
+  color: #010816;
+  border: none;
+  border-radius: 6px;
+  padding: 0.8rem 1.2rem;
+  font-weight: 700;
+  font-family: var(--fonte-base);
+  cursor: pointer;
+  transition: background 180ms ease-out, transform 180ms ease-out;
+}
+
+.auth-card--stellar button[type='submit']:hover:not(:disabled) {
+  background: #7bccd8;
+  transform: translateY(-1px);
+}
+
+.auth-card--stellar button[type='submit']:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-stellar-rodape {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #3198a933;
+  text-align: center;
+}
+
+.auth-stellar-rodape a {
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  color: #7bccd8;
+  text-decoration: none;
+}
+
+.auth-stellar-rodape a:hover {
+  text-decoration: underline;
+  color: #a8e0e8;
+}
+
 /* ============ Cadastro de afiliado ============ */
 .cadastro-page {
   min-height: 100vh;

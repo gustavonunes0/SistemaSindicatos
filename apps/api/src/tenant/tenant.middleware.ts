@@ -37,22 +37,9 @@ export class TenantMiddleware implements NestMiddleware {
         nome: tenant.nome,
       };
       req.tenant = store;
-
-      // Mantém o AsyncLocalStorage ativo até a resposta terminar.
-      // `run(() => next())` sozinho perde o contexto no handler Nest assíncrono
-      // (ex.: POST /auth/login → requireTenantId() → 500).
-      await new Promise<void>((resolve, reject) => {
-        tenantAls.run(store, () => {
-          const concluir = () => resolve();
-          res.once('finish', concluir);
-          res.once('close', concluir);
-          try {
-            next();
-          } catch (erro) {
-            reject(erro);
-          }
-        });
-      });
+      // Best-effort no middleware; o TenantAlsInterceptor reforça no pipeline Nest.
+      tenantAls.enterWith(store);
+      next();
     } catch (error) {
       if (error instanceof NotFoundException || (error as { status?: number }).status === 404) {
         if (!res.headersSent) {

@@ -2,7 +2,7 @@ import type { TenantBranding } from '@sindprf/types';
 import { tenantBrandingSchema } from '@sindprf/types';
 import { useTenantStore } from '../features/tenant/store';
 
-/** Fallback local (dev / branding ausente). */
+/** Fallback local (dev / branding ausente) — identidade SINDPRF. */
 export const marcaFallback: TenantBranding = {
   nome: 'SINDPRF-CE',
   nomeCompleto: 'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará',
@@ -90,6 +90,30 @@ export const marcaFallback: TenantBranding = {
   },
 };
 
+/** Fallback / defaults da plataforma SindiGest (cores e logos Stellar). */
+export const marcaPlataformaFallback: TenantBranding = {
+  nome: 'SindiGest',
+  nomeCompleto: 'SindiGest — plataforma Stellar para sindicatos',
+  logoUrl: '/marca/stellar-icon.png',
+  logoHeaderUrl: '/marca/stellar-logo.png',
+  sede: { endereco: 'Stellar Soluções', cep: '—' },
+  contato: {
+    telefones: [],
+    email: 'contato@stellarsolucoes.com.br',
+  },
+  themeColor: '#3198A9',
+  cores: {
+    primaria: '#3198A9',
+    primariaEscura: '#1f6f7d',
+    destaque: '#7BCCD8',
+    fundo: '#f7f9fb',
+    superficie: '#ffffff',
+    texto: '#1f2937',
+    textoSuave: '#5b6b7c',
+    borda: '#d0d7de',
+  },
+};
+
 /** @deprecated Use useMarca() — mantido para imports legados. */
 export const marca = marcaFallback;
 
@@ -99,16 +123,53 @@ export function telefonePrincipalTel(branding: TenantBranding = marcaFallback): 
   return `+55${tel.replace(/\D/g, '')}`;
 }
 
+function resolverBrandingDoStore(): TenantBranding {
+  const tenant = useTenantStore.getState().tenant;
+  const parsed = tenantBrandingSchema.safeParse(tenant?.branding);
+  if (tenant?.tipo === 'PLATAFORMA') {
+    if (!parsed.success) return marcaPlataformaFallback;
+    return {
+      ...marcaPlataformaFallback,
+      ...parsed.data,
+      cores: {
+        ...marcaPlataformaFallback.cores!,
+        ...parsed.data.cores,
+        primaria: parsed.data.cores?.primaria ?? marcaPlataformaFallback.cores!.primaria,
+      },
+      logoUrl: parsed.data.logoUrl.startsWith('/marca/')
+        ? parsed.data.logoUrl
+        : marcaPlataformaFallback.logoUrl,
+      logoHeaderUrl: parsed.data.logoHeaderUrl ?? marcaPlataformaFallback.logoHeaderUrl,
+    };
+  }
+  return parsed.success ? parsed.data : marcaFallback;
+}
+
 export function useMarca(): TenantBranding {
+  const tipo = useTenantStore((s) => s.tenant?.tipo);
   const branding = useTenantStore((s) => s.tenant?.branding);
   const parsed = tenantBrandingSchema.safeParse(branding);
+  if (tipo === 'PLATAFORMA') {
+    if (!parsed.success) return marcaPlataformaFallback;
+    return {
+      ...marcaPlataformaFallback,
+      ...parsed.data,
+      cores: {
+        ...marcaPlataformaFallback.cores!,
+        ...parsed.data.cores,
+        primaria: parsed.data.cores?.primaria ?? marcaPlataformaFallback.cores!.primaria,
+      },
+      logoUrl: parsed.data.logoUrl.startsWith('/marca/')
+        ? parsed.data.logoUrl
+        : marcaPlataformaFallback.logoUrl,
+      logoHeaderUrl: parsed.data.logoHeaderUrl ?? marcaPlataformaFallback.logoHeaderUrl,
+    };
+  }
   return parsed.success ? parsed.data : marcaFallback;
 }
 
 export function resolverMarca(): TenantBranding {
-  const branding = useTenantStore.getState().tenant?.branding;
-  const parsed = tenantBrandingSchema.safeParse(branding);
-  return parsed.success ? parsed.data : marcaFallback;
+  return resolverBrandingDoStore();
 }
 
 /** Aplica título, theme-color, favicon e tokens CSS do tenant no documento. */
