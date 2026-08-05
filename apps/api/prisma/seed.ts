@@ -1,14 +1,56 @@
-import { PrismaClient, Role, StatusNoticia } from '@prisma/client';
+import { PrismaClient, Role, StatusNoticia, TenantTipo } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 const prisma = new PrismaClient();
 
 const TENANT_ID = 'tenant_sindprf_ce';
 const TENANT_SLUG = 'sindprf-ce';
+const PLATFORM_ID = 'tenant_plataforma';
+const PLATFORM_SLUG = 'sindigest';
+
 const ADMIN_EMAIL = 'admin@sindprf.local';
+const SUPERADMIN_EMAIL = process.env.SEED_SUPERADMIN_EMAIL ?? 'superadmin@sindigest.local';
 const ADMIN_SENHA = process.env.SEED_ADMIN_SENHA ?? 'Admin@123';
 
-function hostsDoSeed(): { host: string; primario: boolean }[] {
+const BRANDING_SINDPRF = {
+  nome: 'SINDPRF-CE',
+  nomeCompleto: 'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará',
+  logoUrl: '/logo-sindicato.png',
+  sede: {
+    endereco: 'Rua Margarida de Queiroz, 07 — Cajazeiras — Fortaleza/CE',
+    cep: '60.864-300',
+  },
+  contato: {
+    telefones: ['(85) 3279-2848', '(85) 3279-5698', '(85) 3279-7852'],
+    email: 'sindprfce@sindprfce.com.br',
+  },
+  reservaApartamentosUrl: 'https://abre.ai/sindprfcereserva',
+  regulamentoApartamentosUrl: '/imoveis/regulamento-apartamentos.pdf',
+  themeColor: '#0b3d6b',
+  contatoDestinoEmail: 'sindprfce@sindprfce.com.br',
+  vapidSubject: 'mailto:sindprfce@sindprfce.com.br',
+};
+
+const BRANDING_PLATAFORMA = {
+  nome: 'SindiGest',
+  nomeCompleto: 'SindiGest — plataforma Stellar para sindicatos',
+  logoUrl: '/logo-sindicato.png',
+  sede: { endereco: 'Stellar Soluções', cep: '—' },
+  contato: {
+    telefones: [],
+    email: 'contato@stellarsolucoes.com.br',
+  },
+  themeColor: '#0b3d6b',
+};
+
+function parseHostList(envName: string): string[] {
+  return (process.env[envName] ?? '')
+    .split(',')
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean);
+}
+
+function hostsSindicato(): { host: string; primario: boolean }[] {
   const hosts = new Map<string, boolean>();
   hosts.set('localhost', true);
   hosts.set('127.0.0.1', false);
@@ -17,52 +59,114 @@ function hostsDoSeed(): { host: string; primario: boolean }[] {
   if (webUrl) {
     try {
       const host = new URL(webUrl).hostname.toLowerCase();
-      if (host && !hosts.has(host)) {
-        hosts.set(host, false);
+      // Não misturar host da plataforma no tenant do sindicato
+      if (host && !host.startsWith('sindigest.') && !hosts.has(host)) {
+        hosts.set(host, host.includes('sindprf'));
       }
     } catch {
       /* ignore */
     }
   }
 
-  const extra = process.env.TENANT_SEED_HOSTS?.split(',') ?? [];
-  for (const h of extra) {
-    const host = h.trim().toLowerCase();
-    if (host && !hosts.has(host)) {
-      hosts.set(host, false);
-    }
+  for (const host of parseHostList('TENANT_SEED_HOSTS')) {
+    if (host.startsWith('sindigest.')) continue;
+    if (!hosts.has(host)) hosts.set(host, host.includes('sindprf'));
+  }
+
+  // Produção Stellar — cliente PRF
+  if (!hosts.has('sindprf.stellarsolucoes.com.br')) {
+    hosts.set('sindprf.stellarsolucoes.com.br', true);
   }
 
   return [...hosts.entries()].map(([host, primario]) => ({ host, primario }));
 }
 
+function hostsPlataforma(): string[] {
+  const set = new Set<string>(['sindigest.stellarsolucoes.com.br']);
+  for (const host of parseHostList('PLATFORM_SEED_HOSTS')) {
+    set.add(host);
+  }
+  return [...set];
+}
+
 async function main(): Promise<void> {
+  const plataforma = await prisma.tenant.upsert({
+    where: { slug: PLATFORM_SLUG },
+    update: {
+      nome: 'SindiGest (plataforma)',
+      tipo: TenantTipo.PLATAFORMA,
+      timezone: 'America/Fortaleza',
+      ativo: true,
+      branding: BRANDING_PLATAFORMA,
+    },
+    create: {
+      id: PLATFORM_ID,
+      slug: PLATFORM_SLUG,
+      nome: 'SindiGest (plataforma)',
+      tipo: TenantTipo.PLATAFORMA,
+      timezone: 'America/Fortaleza',
+      ativo: true,
+      branding: BRANDING_PLATAFORMA,
+    },
+  });
+  console.log(`Plataforma: ${plataforma.slug}`);
+
+  for (const host of hostsPlataforma()) {
+    await prisma.tenantDomain.upsert({
+      where: { host },
+      update: { tenantId: plataforma.id, primario: host.startsWith('sindigest.') },
+      create: {
+        tenantId: plataforma.id,
+        host,
+        primario: host.startsWith('sindigest.'),
+      },
+    });
+    console.log(`  platform domain: ${host}`);
+  }
+
+  const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
+  const superadmin = await prisma.user.upsert({
+    where: { tenantId_email: { tenantId: plataforma.id, email: SUPERADMIN_EMAIL } },
+    update: { role: Role.SUPERADMIN },
+    create: {
+      tenantId: plataforma.id,
+      email: SUPERADMIN_EMAIL,
+      senhaHash,
+      role: Role.SUPERADMIN,
+    },
+  });
+  console.log(`SUPERADMIN: ${superadmin.email}`);
+
   const tenant = await prisma.tenant.upsert({
     where: { slug: TENANT_SLUG },
     update: {
       nome: 'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará',
+      tipo: TenantTipo.SINDICATO,
       timezone: 'America/Fortaleza',
       ativo: true,
+      branding: BRANDING_SINDPRF,
     },
     create: {
       id: TENANT_ID,
       slug: TENANT_SLUG,
       nome: 'Sindicato dos Policiais Rodoviários Federais no Estado do Ceará',
+      tipo: TenantTipo.SINDICATO,
       timezone: 'America/Fortaleza',
       ativo: true,
+      branding: BRANDING_SINDPRF,
     },
   });
 
-  for (const { host, primario } of hostsDoSeed()) {
+  for (const { host, primario } of hostsSindicato()) {
     await prisma.tenantDomain.upsert({
       where: { host },
       update: { tenantId: tenant.id, primario },
       create: { tenantId: tenant.id, host, primario },
     });
+    console.log(`  sindicato domain: ${host}`);
   }
   console.log(`Tenant: ${tenant.slug} (${tenant.id})`);
 
-  const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
   const admin = await prisma.user.upsert({
     where: { tenantId_email: { tenantId: tenant.id, email: ADMIN_EMAIL } },
     update: {},
@@ -73,7 +177,7 @@ async function main(): Promise<void> {
       role: Role.ADMIN,
     },
   });
-  console.log(`Admin: ${admin.email}`);
+  console.log(`Admin sindicato: ${admin.email}`);
 
   const agora = new Date();
   const noticias = [
@@ -119,8 +223,6 @@ async function main(): Promise<void> {
     });
   }
   console.log(`Notícias: ${noticias.length}`);
-
-  console.log('Convênios: pule o seed fictício (script seed-convenios-declaracao.ts)');
 
   const imoveis = [
     {
@@ -171,8 +273,7 @@ async function main(): Promise<void> {
     }
   }
   console.log(`Imóveis: ${imoveis.length}`);
-
-  console.log('Seed de produção concluído.');
+  console.log('Seed Fase B concluído.');
 }
 
 main()

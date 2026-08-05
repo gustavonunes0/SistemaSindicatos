@@ -1,5 +1,5 @@
 import type { Mensagem, SolicitacaoAluguel, SolicitacaoResumo } from '@sindprf/types';
-import type { Mensagem as MensagemPrisma, SolicitacaoAluguel as SolicitacaoPrisma } from '@prisma/client';
+import type { Mensagem as MensagemPrisma, Role, SolicitacaoAluguel as SolicitacaoPrisma } from '@prisma/client';
 
 type SolicitacaoComRelacoes = SolicitacaoPrisma & {
   imovel: { id: string; titulo: string };
@@ -8,7 +8,7 @@ type SolicitacaoComRelacoes = SolicitacaoPrisma & {
 };
 
 type MensagemComAutor = MensagemPrisma & {
-  autor: { id: string; role: 'ADMIN' | 'AFILIADO'; afiliado: { nome: string } | null };
+  autor: { id: string; role: Role; afiliado: { nome: string } | null };
 };
 
 export function serializarSolicitacao(solicitacao: SolicitacaoPrisma): SolicitacaoAluguel {
@@ -35,9 +35,9 @@ export function serializarSolicitacaoResumo(solicitacao: SolicitacaoComRelacoes)
 
 export function serializarMensagem(mensagem: MensagemComAutor): Mensagem {
   const autorNome =
-    mensagem.autor.role === 'ADMIN'
-      ? 'Administração'
-      : (mensagem.autor.afiliado?.nome ?? 'Afiliado');
+    mensagem.autor.role === 'AFILIADO'
+      ? (mensagem.autor.afiliado?.nome ?? 'Afiliado')
+      : 'Administração';
 
   return {
     id: mensagem.id,

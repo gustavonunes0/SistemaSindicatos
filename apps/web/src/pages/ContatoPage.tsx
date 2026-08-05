@@ -10,7 +10,7 @@ import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { api } from '../lib/http';
-import { marca, telefonePrincipalTel } from '../lib/marca';
+import { telefonePrincipalTel, useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 const assuntos = Object.entries(CONTATO_ASSUNTO_ROTULO) as Array<[ContatoAssunto, string]>;
@@ -28,6 +28,7 @@ function mensagemErro(erro: unknown): string {
 }
 
 export function ContatoPage() {
+  const marca = useMarca();
   useSeo({
     title: `Contato — ${marca.nome}`,
     description: `Fale com o ${marca.nomeCompleto}. Envie uma mensagem ou use telefone e e-mail.`,
@@ -167,7 +168,7 @@ export function ContatoPage() {
                 {marca.contato.telefones.map((telefone, indice) => (
                   <li key={telefone}>
                     {indice === 0 ? (
-                      <a href={`tel:${telefonePrincipalTel()}`}>{telefone}</a>
+                      <a href={`tel:${telefonePrincipalTel(marca)}`}>{telefone}</a>
                     ) : (
                       telefone
                     )}

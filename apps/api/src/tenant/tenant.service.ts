@@ -1,8 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import type { Tenant } from '@prisma/client';
+import { tenantBrandingSchema, type TenantBranding } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 
-export type TenantResolvido = Pick<Tenant, 'id' | 'slug' | 'nome' | 'timezone' | 'ativo' | 'branding'>;
+export type TenantResolvido = Pick<
+  Tenant,
+  'id' | 'slug' | 'nome' | 'tipo' | 'timezone' | 'ativo' | 'branding'
+>;
 
 @Injectable()
 export class TenantService {
@@ -17,7 +21,6 @@ export class TenantService {
     if (host.startsWith('[') && host.includes(']')) {
       host = host.slice(1, host.indexOf(']'));
     } else {
-      // remove porta (não confundir com IPv6)
       const colon = host.lastIndexOf(':');
       if (colon > -1 && host.indexOf(':') === colon) {
         host = host.slice(0, colon);
@@ -81,18 +84,34 @@ export class TenantService {
             id: domain.tenant.id,
             slug: domain.tenant.slug,
             nome: domain.tenant.nome,
+            tipo: domain.tenant.tipo,
             timezone: domain.tenant.timezone,
             ativo: domain.tenant.ativo,
             branding: domain.tenant.branding,
           }
         : null;
 
-    this.cachePorHost.set(host, { expires: Date.now() + this.cacheTtlMs, tenant });
+    if (tenant) {
+      this.cachePorHost.set(host, { expires: Date.now() + this.cacheTtlMs, tenant });
+    } else {
+      this.cachePorHost.set(host, { expires: Date.now() + 5_000, tenant: null });
+    }
 
     if (!tenant) {
       throw new NotFoundException(`Tenant não encontrado para o host "${host}"`);
     }
     return tenant;
+  }
+
+  async listarSindicatos() {
+    return this.prisma.tenant.findMany({
+      where: { tipo: 'SINDICATO' },
+      orderBy: { nome: 'asc' },
+      include: {
+        domains: { orderBy: { host: 'asc' } },
+        _count: { select: { users: true, afiliados: true } },
+      },
+    });
   }
 
   async isAllowedOrigin(origin: string): Promise<boolean> {
@@ -142,14 +161,20 @@ export class TenantService {
     this.cachePorHost.clear();
   }
 
+  parseBranding(raw: unknown): TenantBranding | null {
+    const parsed = tenantBrandingSchema.safeParse(raw);
+    return parsed.success ? parsed.data : null;
+  }
+
   toPublicDto(tenant: TenantResolvido, host: string) {
     return {
       id: tenant.id,
       slug: tenant.slug,
       nome: tenant.nome,
+      tipo: tenant.tipo,
       timezone: tenant.timezone,
       host,
-      branding: tenant.branding ?? null,
+      branding: this.parseBranding(tenant.branding),
     };
   }
 }

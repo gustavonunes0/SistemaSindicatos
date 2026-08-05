@@ -1,4 +1,4 @@
-import { marca } from './marca';
+import { marcaFallback as marca } from './marca';
 
 /** Formulários e checklist de filiação do SINDPRF-CE (arquivos em /public/filiacao). */
 export const filiacao = {

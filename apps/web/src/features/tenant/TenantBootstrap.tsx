@@ -23,9 +23,10 @@ export function TenantBootstrap({ children }: { children: React.ReactNode }) {
   if (erro || !tenant) {
     return (
       <div className="flex min-h-svh flex-col items-center justify-center gap-2 bg-[var(--color-bg)] px-6 text-center">
-        <p className="text-lg font-medium text-[var(--color-ink)]">Sindicato não encontrado</p>
+        <p className="text-lg font-medium text-[var(--color-ink)]">Domínio não encontrado</p>
         <p className="max-w-md text-sm text-[var(--color-ink-muted)]">
-          Este domínio não está vinculado a um cliente. Verifique o DNS ou o cadastro do host.
+          Este domínio não está vinculado à plataforma nem a um sindicato. Verifique o DNS ou o
+          cadastro do host.
         </p>
       </div>
     );

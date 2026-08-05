@@ -25,15 +25,16 @@ datasource db {
 // =====================================================================
 
 model Tenant {
-  id        String   @id @default(cuid())
-  slug      String   @unique
+  id        String     @id @default(cuid())
+  slug      String     @unique
   nome      String
-  timezone  String   @default("America/Fortaleza")
-  ativo     Boolean  @default(true)
-  /// Branding/config JSON (preenchido na Fase B).
+  tipo      TenantTipo @default(SINDICATO)
+  timezone  String     @default("America/Fortaleza")
+  ativo     Boolean    @default(true)
+  /// Branding/config JSON (Fase B) — ver tenantBrandingSchema em @sindprf/types.
   branding  Json?
-  createdAt DateTime @default(now()) @db.Timestamptz
-  updatedAt DateTime @updatedAt @db.Timestamptz
+  createdAt DateTime   @default(now()) @db.Timestamptz
+  updatedAt DateTime   @updatedAt @db.Timestamptz
 
   domains              TenantDomain[]
   users                User[]
@@ -66,6 +67,11 @@ model Tenant {
   @@map("tenants")
 }
 
+enum TenantTipo {
+  SINDICATO
+  PLATAFORMA
+}
+
 model TenantDomain {
   id        String   @id @default(cuid())
   tenantId  String
@@ -85,6 +91,7 @@ model TenantDomain {
 // =====================================================================
 
 enum Role {
+  SUPERADMIN
   ADMIN
   AFILIADO
 }

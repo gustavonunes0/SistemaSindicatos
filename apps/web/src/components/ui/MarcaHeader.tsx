@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
+import { useMarca } from '../../lib/marca';
 import { Logo } from './Logo';
 
 export function MarcaNome() {
+  const marca = useMarca();
   return (
     <span className="marca-nome">
       <span className="marca-nome-faixa" aria-hidden="true" />
-      <span className="marca-nome-texto">
-        SIND<span className="marca-nome-destaque">PRF</span>-CE
-      </span>
+      <span className="marca-nome-texto">{marca.nome}</span>
     </span>
   );
 }

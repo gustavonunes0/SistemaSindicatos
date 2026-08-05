@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { marca } from '../../lib/marca';
+import { useMarca } from '../../lib/marca';
 
 type LogoVariante = 'header' | 'emblema' | 'sidebar' | 'auth' | 'footer' | 'hero';
 
@@ -9,9 +9,10 @@ type LogoProps = {
 };
 
 export function Logo({ variante = 'header', className }: LogoProps) {
+  const marca = useMarca();
   return (
     <img
-      src={marca.logo}
+      src={marca.logoUrl}
       alt={`${marca.nome} — ${marca.nomeCompleto}`}
       className={['logo', `logo-${variante}`, className].filter(Boolean).join(' ')}
       width={

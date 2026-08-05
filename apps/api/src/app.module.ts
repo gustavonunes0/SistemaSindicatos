@@ -22,6 +22,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { StorageModule } from './storage/storage.module';
 import { TenantMiddleware } from './tenant/tenant.middleware';
 import { TenantModule } from './tenant/tenant.module';
+import { PlataformaModule } from './plataforma/plataforma.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { TenantModule } from './tenant/tenant.module';
     ScheduleModule.forRoot(),
     PrismaModule,
     TenantModule,
+    PlataformaModule,
     StorageModule,
     AuthModule,
     AfiliadosModule,

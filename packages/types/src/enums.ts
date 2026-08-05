@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const roleSchema = z.enum(['ADMIN', 'AFILIADO']);
+export const roleSchema = z.enum(['SUPERADMIN', 'ADMIN', 'AFILIADO']);
 export type Role = z.infer<typeof roleSchema>;
 
 export const statusAfiliadoSchema = z.enum(['PENDENTE', 'APROVADO', 'INATIVO']);

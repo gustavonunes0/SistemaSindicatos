@@ -6,7 +6,7 @@ import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa
 import { usePushNoticiasPorPadrao } from '../../features/pwa/hooks/usePushNoticias';
 import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
-import { marca } from '../../lib/marca';
+import { useMarca } from '../../lib/marca';
 
 const links = [
   { to: '/', rotulo: 'Início' },
@@ -19,6 +19,7 @@ const links = [
 export function PublicLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
   const user = useAuthStore((state) => state.user);
+  const marca = useMarca();
   usePushNoticiasPorPadrao();
 
   return (

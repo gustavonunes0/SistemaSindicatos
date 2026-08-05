@@ -5,7 +5,9 @@ import * as authApi from './api';
 import { useAuthStore } from './store';
 
 export function areaPorRole(role: Role): string {
-  return role === 'ADMIN' ? '/admin' : '/afiliado';
+  if (role === 'SUPERADMIN') return '/plataforma';
+  if (role === 'ADMIN') return '/admin';
+  return '/afiliado';
 }
 
 export function useLogin() {

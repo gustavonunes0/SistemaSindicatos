@@ -472,12 +472,8 @@ Dev local: mapear hosts em `/etc/hosts` (`sindprf.local` → tenant seed) ou hea
 
 ## 14. Próximo passo de engenharia
 
-Decisões de produto fechadas. **Fase A em andamento no código:**
+**Fase A:** feita (tenantId, Host, JWT).  
+**Fase B (em curso):** branding no `Tenant.branding`, host `sindigest` = tenant `PLATAFORMA` + role `SUPERADMIN`, site do cliente só em `sindprf…`.
 
-- Models `Tenant` / `TenantDomain` + `tenantId` nas tabelas de negócio
-- Migration com backfill `sindprf-ce` (`tenant_sindprf_ce`)
-- Resolução por Host / `X-Tenant-Host` + JWT com `tenantId`
-- Extension Prisma + `requireTenantId()` nos creates
-- Bootstrap web `GET /tenants/current`
-
-**Ainda na Fase A / B:** painel SUPERADMIN (Fase C), branding dinâmico (Fase B), runbook DNS/TLS do domínio do cliente.
+Ainda aberto na B: uploads `{tenantId}/`, SMTP/VAPID lidos do branding em runtime, diretoria/filiação no JSON.  
+**Fase C:** CRUD completo de tenants/domínios no painel Stellar.

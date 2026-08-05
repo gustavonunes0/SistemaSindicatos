@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { roleSchema } from './enums';
 
 export const statusSolicitacaoSchema = z.enum(['ABERTA', 'EM_ANDAMENTO', 'FECHADA']);
 export type StatusSolicitacao = z.infer<typeof statusSolicitacaoSchema>;
@@ -58,7 +59,7 @@ export const mensagemSchema = z.object({
   texto: z.string(),
   criadoEm: z.coerce.date(),
   autorNome: z.string(),
-  autorRole: z.enum(['ADMIN', 'AFILIADO']),
+  autorRole: roleSchema,
 });
 export type Mensagem = z.infer<typeof mensagemSchema>;
 
