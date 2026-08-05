@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { RequireRole } from '../../auth/components/guards';
-import { useLogout } from '../../auth/hooks';
-import { useAuthStore } from '../../auth/store';
-import { useMarca } from '../../../lib/marca';
-import { api } from '../../../lib/http';
+import { RequireRole } from '../auth/components/guards';
+import { useLogout } from '../auth/hooks';
+import { useAuthStore } from '../auth/store';
+import { api } from '../../lib/http';
+import { useMarca } from '../../lib/marca';
 
 type TenantLista = {
   id: string;
@@ -15,7 +16,7 @@ type TenantLista = {
   _count: { users: number; afiliados: number };
 };
 
-function protegidaPlataforma(element: React.ReactNode) {
+function protegidaPlataforma(element: ReactNode) {
   return <RequireRole role="SUPERADMIN">{element}</RequireRole>;
 }
 

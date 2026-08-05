@@ -28,7 +28,7 @@ export function ImoveisPage() {
             </p>
             <a
               className="botao-secundario"
-              href={marca.regulamentoApartamentosUrl}
+              href={marca.regulamentoApartamentosUrl ?? undefined}
               target="_blank"
               rel="noreferrer"
             >
@@ -44,7 +44,7 @@ export function ImoveisPage() {
             </p>
             <a
               className="botao-primario"
-              href={marca.reservaApartamentosUrl}
+              href={marca.reservaApartamentosUrl ?? undefined}
               target="_blank"
               rel="noreferrer"
             >
