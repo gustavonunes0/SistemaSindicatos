@@ -5,8 +5,30 @@ import { join } from 'node:path';
 import { AppModule } from './app.module';
 import { TenantService } from './tenant/tenant.service';
 
+function originsEstaticosPermitidos(): Set<string> {
+  const set = new Set<string>();
+  const add = (raw: string | undefined) => {
+    for (const parte of (raw ?? '').split(',')) {
+      const v = parte.trim().replace(/\/+$/, '');
+      if (!v) continue;
+      if (v.startsWith('http://') || v.startsWith('https://')) {
+        set.add(v);
+        continue;
+      }
+      // Host sem scheme (TENANT_SEED_HOSTS / PLATFORM_SEED_HOSTS)
+      set.add(`https://${v}`);
+      set.add(`http://${v}`);
+    }
+  };
+  add(process.env.WEB_URL);
+  add(process.env.CORS_ORIGINS);
+  add(process.env.TENANT_SEED_HOSTS);
+  add(process.env.PLATFORM_SEED_HOSTS);
+  return set;
+}
+
 export async function configurarApp(app: NestExpressApplication): Promise<void> {
-  const webUrl = (process.env.WEB_URL ?? 'http://localhost:5173').replace(/\/+$/, '');
+  const originsFixos = originsEstaticosPermitidos();
   const tenants = app.get(TenantService);
 
   app.use(
@@ -23,16 +45,7 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
       }
       try {
         const normalizado = origin.replace(/\/+$/, '');
-        if (normalizado === webUrl) {
-          callback(null, true);
-          return;
-        }
-        // Origins extras (vírgula), ex.: segundo front sindigest + sindprf
-        const extras = (process.env.CORS_ORIGINS ?? '')
-          .split(',')
-          .map((o) => o.trim().replace(/\/+$/, ''))
-          .filter(Boolean);
-        if (extras.includes(normalizado)) {
+        if (originsFixos.has(normalizado)) {
           callback(null, true);
           return;
         }
@@ -44,7 +57,12 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Tenant-Host'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Tenant-Host',
+      'X-Requested-With',
+    ],
   });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
 }

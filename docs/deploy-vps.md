@@ -147,8 +147,10 @@ Mesmo padrão do Baturité (`http://187.127.42.128:PORTA`).
 | Domain Names | `apisindigest.stellarsolucoes.com.br` |
 | Scheme | `http` |
 | Forward Hostname / IP | `187.127.42.128` |
-| Forward Port | `3001` |
+| Forward Port | `3002` (ou o valor de `API_PORT` no `.env`) |
 | SSL | Let’s Encrypt + Force SSL |
+
+> Se a porta do NPM ≠ `API_PORT`, o browser mostra “CORS” / `ERR_FAILED` (na verdade é 502 sem header CORS).
 
 **Advanced** (API), se o NPM não repassar headers:
 

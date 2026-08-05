@@ -294,8 +294,10 @@ export class TenantService {
         }
       }
 
-      const seedHosts = (process.env.TENANT_SEED_HOSTS ?? '')
-        .split(',')
+      const seedHosts = [
+        ...(process.env.TENANT_SEED_HOSTS ?? '').split(','),
+        ...(process.env.PLATFORM_SEED_HOSTS ?? '').split(','),
+      ]
         .map((h) => this.normalizarHost(h.trim()))
         .filter(Boolean);
       if (seedHosts.includes(host)) {
