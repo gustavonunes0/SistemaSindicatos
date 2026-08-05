@@ -2,13 +2,13 @@ import { useQuery } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import { Link, Navigate } from 'react-router-dom';
 import { RequireRole } from '../auth/components/guards';
-import { useLogout } from '../auth/hooks';
 import { useAuthStore } from '../auth/store';
 import { api } from '../../lib/http';
 import { useMarca } from '../../lib/marca';
 import { useSeo } from '../../lib/seo';
+import { PlataformaLayout } from './PlataformaLayout';
 
-type TenantLista = {
+export type TenantLista = {
   id: string;
   slug: string;
   nome: string;
@@ -21,13 +21,27 @@ function protegidaPlataforma(element: ReactNode) {
   return <RequireRole role="SUPERADMIN">{element}</RequireRole>;
 }
 
+function hostPublico(host: string): boolean {
+  const h = host.toLowerCase();
+  return h !== 'localhost' && h !== '127.0.0.1' && !h.endsWith('.local');
+}
+
+function urlDoHost(host: string): string {
+  if (host === 'localhost' || host === '127.0.0.1') {
+    return `http://${host}:5173`;
+  }
+  return `https://${host}`;
+}
+
+function formatarNumero(n: number): string {
+  return new Intl.NumberFormat('pt-BR').format(n);
+}
+
 export function PlataformaHomePage() {
   const marca = useMarca();
-  const logout = useLogout();
-  const user = useAuthStore((s) => s.user);
 
   useSeo({
-    title: `${marca.nome} — plataforma`,
+    title: `${marca.nome} — visão geral`,
     description: marca.nomeCompleto,
   });
 
@@ -39,86 +53,116 @@ export function PlataformaHomePage() {
     },
   });
 
+  const tenants = data ?? [];
+  const ativos = tenants.filter((t) => t.ativo).length;
+  const afiliados = tenants.reduce((acc, t) => acc + t._count.afiliados, 0);
+  const usuarios = tenants.reduce((acc, t) => acc + t._count.users, 0);
+  const dominiosPublicos = tenants.reduce(
+    (acc, t) => acc + t.domains.filter((d) => hostPublico(d.host)).length,
+    0,
+  );
+
   return (
-    <div className="min-h-svh bg-[var(--color-bg)] text-[var(--color-ink)]">
-      <header className="flex items-center justify-between border-b border-[var(--color-border)] px-6 py-4">
-        <div className="flex items-center gap-4">
-          <img
-            src={marca.logoHeaderUrl ?? marca.logoUrl}
-            alt={marca.nome}
-            className="h-7 w-auto"
-            width={160}
-            height={28}
-            decoding="async"
-          />
+    <PlataformaLayout
+      titulo="Visão geral"
+      descricao="Acompanhe os sindicatos hospedados na plataforma e os domínios públicos de cada cliente."
+    >
+      <section className="sg-kpis" aria-label="Indicadores">
+        <article className="sg-kpi">
+          <p className="sg-kpi-label">Clientes</p>
+          <p className="sg-kpi-valor">{isLoading ? '—' : formatarNumero(tenants.length)}</p>
+          <p className="sg-kpi-hint">{ativos} ativos</p>
+        </article>
+        <article className="sg-kpi">
+          <p className="sg-kpi-label">Afiliados</p>
+          <p className="sg-kpi-valor">{isLoading ? '—' : formatarNumero(afiliados)}</p>
+          <p className="sg-kpi-hint">base total nos tenants</p>
+        </article>
+        <article className="sg-kpi">
+          <p className="sg-kpi-label">Usuários</p>
+          <p className="sg-kpi-valor">{isLoading ? '—' : formatarNumero(usuarios)}</p>
+          <p className="sg-kpi-hint">contas de acesso</p>
+        </article>
+        <article className="sg-kpi">
+          <p className="sg-kpi-label">Domínios</p>
+          <p className="sg-kpi-valor">{isLoading ? '—' : formatarNumero(dominiosPublicos)}</p>
+          <p className="sg-kpi-hint">hosts públicos</p>
+        </article>
+      </section>
+
+      <section className="sg-painel" aria-labelledby="sg-clientes-titulo">
+        <header className="sg-painel-cabecalho">
           <div>
-            <p className="text-xs uppercase tracking-wide text-[var(--color-ink-muted)]">
-              Plataforma Stellar
-            </p>
-            <h1 className="text-xl font-semibold text-[var(--color-accent)]">{marca.nome}</h1>
+            <h2 id="sg-clientes-titulo">Sindicatos clientes</h2>
+            <p>Site público em domínio próprio · painel e API compartilhados</p>
           </div>
-        </div>
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-[var(--color-ink-muted)]">{user?.email}</span>
-          <button
-            type="button"
-            className="botao-secundario"
-            onClick={() => logout.mutate()}
-            disabled={logout.isPending}
-          >
-            Sair
-          </button>
-        </div>
-      </header>
+        </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <h2 className="mb-2 text-2xl font-semibold">Sindicatos (clientes)</h2>
-        <p className="mb-8 text-sm text-[var(--color-ink-muted)]">
-          Painel Stellar — gestão multi-tenant. O site público de cada cliente fica no domínio próprio.
-        </p>
+        {isLoading && <p className="sg-estado">Carregando clientes…</p>}
+        {error && <p className="sg-estado sg-estado--erro">Não foi possível listar os sindicatos.</p>}
 
-        {isLoading && <p>Carregando…</p>}
-        {error && <p className="text-red-700">Falha ao listar tenants.</p>}
-
-        <ul className="space-y-4">
-          {(data ?? []).map((t) => (
-            <li
-              key={t.id}
-              className="border border-[var(--color-border)] bg-[var(--color-surface)] px-5 py-4"
-            >
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <h3 className="text-lg font-medium">{t.nome}</h3>
-                <span className="text-xs uppercase text-[var(--color-ink-muted)]">
-                  {t.ativo ? 'ativo' : 'inativo'} · {t.slug}
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-[var(--color-ink-muted)]">
-                {t._count.afiliados} afiliados · {t._count.users} usuários
-              </p>
-              <ul className="mt-3 space-y-1 text-sm">
-                {t.domains.map((d) => (
-                  <li key={d.host}>
-                    <a
-                      className="text-[var(--color-accent)] underline-offset-2 hover:underline"
-                      href={`https://${d.host}`}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {d.host}
-                      {d.primario ? ' (primário)' : ''}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </li>
-          ))}
-        </ul>
-
-        {(data?.length ?? 0) === 0 && !isLoading && (
-          <p className="text-sm text-[var(--color-ink-muted)]">Nenhum sindicato cadastrado.</p>
+        {!isLoading && !error && tenants.length === 0 && (
+          <p className="sg-estado">Nenhum sindicato cadastrado ainda.</p>
         )}
-      </main>
-    </div>
+
+        {!isLoading && tenants.length > 0 && (
+          <div className="sg-tabela-wrap">
+            <table className="sg-tabela">
+              <thead>
+                <tr>
+                  <th scope="col">Cliente</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Afiliados</th>
+                  <th scope="col">Usuários</th>
+                  <th scope="col">Domínios públicos</th>
+                </tr>
+              </thead>
+              <tbody>
+                {tenants.map((t) => {
+                  const publicos = t.domains.filter((d) => hostPublico(d.host));
+                  const internos = t.domains.filter((d) => !hostPublico(d.host));
+                  const primarios = publicos.filter((d) => d.primario);
+                  const links = primarios.length > 0 ? primarios : publicos;
+
+                  return (
+                    <tr key={t.id}>
+                      <td>
+                        <div className="sg-cliente">
+                          <strong>{t.nome}</strong>
+                          <span className="sg-slug">{t.slug}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={t.ativo ? 'sg-badge sg-badge--ok' : 'sg-badge sg-badge--off'}>
+                          {t.ativo ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </td>
+                      <td className="sg-num">{formatarNumero(t._count.afiliados)}</td>
+                      <td className="sg-num">{formatarNumero(t._count.users)}</td>
+                      <td>
+                        {links.length === 0 && internos.length > 0 && (
+                          <span className="sg-muted">somente hosts locais</span>
+                        )}
+                        <ul className="sg-hosts">
+                          {links.map((d) => (
+                            <li key={d.host}>
+                              <a href={urlDoHost(d.host)} target="_blank" rel="noreferrer">
+                                {d.host}
+                              </a>
+                              {d.primario ? <span className="sg-host-tag">primário</span> : null}
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+    </PlataformaLayout>
   );
 }
 
@@ -134,10 +178,10 @@ export function PlataformaLoginRedirect() {
   }
   if (token && user) {
     return (
-      <main className="auth-page">
-        <section className="auth-card">
+      <main className="auth-page auth-page--stellar">
+        <section className="auth-card auth-card--stellar">
           <h2>Área da plataforma</h2>
-          <p>Este domínio é exclusivo da Stellar (SUPERADMIN).</p>
+          <p className="auth-stellar-sub">Este domínio é exclusivo da Stellar (SUPERADMIN).</p>
           <Link to="/login">Entrar com outra conta</Link>
         </section>
       </main>

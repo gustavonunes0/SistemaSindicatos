@@ -194,16 +194,47 @@ async function main(): Promise<void> {
   console.log(`Plataforma: ${plataforma.slug}`);
 
   const senhaHash = await bcrypt.hash(ADMIN_SENHA, 10);
-  const superadmin = await prisma.user.upsert({
-    where: { tenantId_email: { tenantId: plataforma.id, email: SUPERADMIN_EMAIL } },
-    update: { role: Role.SUPERADMIN, senhaHash },
-    create: {
-      tenantId: plataforma.id,
-      email: SUPERADMIN_EMAIL,
-      senhaHash,
-      role: Role.SUPERADMIN,
-    },
+
+  const superadminsAntigos = await prisma.user.findMany({
+    where: { tenantId: plataforma.id, role: Role.SUPERADMIN },
+    select: { id: true, email: true },
   });
+
+  let superadmin = await prisma.user.findUnique({
+    where: { tenantId_email: { tenantId: plataforma.id, email: SUPERADMIN_EMAIL } },
+  });
+
+  if (superadmin) {
+    superadmin = await prisma.user.update({
+      where: { id: superadmin.id },
+      data: { role: Role.SUPERADMIN, senhaHash },
+    });
+  } else if (superadminsAntigos.length === 1) {
+    // Troca de e-mail do SUPERADMIN (ex.: SEED_SUPERADMIN_EMAIL novo)
+    superadmin = await prisma.user.update({
+      where: { id: superadminsAntigos[0]!.id },
+      data: { email: SUPERADMIN_EMAIL, role: Role.SUPERADMIN, senhaHash },
+    });
+  } else {
+    superadmin = await prisma.user.create({
+      data: {
+        tenantId: plataforma.id,
+        email: SUPERADMIN_EMAIL,
+        senhaHash,
+        role: Role.SUPERADMIN,
+      },
+    });
+  }
+
+  await prisma.user.updateMany({
+    where: {
+      tenantId: plataforma.id,
+      role: Role.SUPERADMIN,
+      NOT: { id: superadmin.id },
+    },
+    data: { role: Role.ADMIN },
+  });
+
   console.log(`SUPERADMIN: ${superadmin.email} (senha = SEED_ADMIN_SENHA)`);
 
   const tenant = await prisma.tenant.upsert({
