@@ -52,6 +52,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
   ],
   controllers: [AppController],
   providers: [
+    TenantMiddleware,
     { provide: APP_INTERCEPTOR, useClass: TenantAlsInterceptor },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
@@ -59,13 +60,12 @@ import { PlataformaModule } from './plataforma/plataforma.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): void {
-    // Registrado no AppModule para valer em todas as rotas (não só TenantModule).
+    // OPTIONS é tratado dentro do middleware (não excluir com path '*' — quebra o match).
     consumer
       .apply(TenantMiddleware)
       .exclude(
         { path: '/', method: RequestMethod.GET },
         { path: 'health', method: RequestMethod.GET },
-        { path: '*', method: RequestMethod.OPTIONS },
       )
       .forRoutes('*');
   }

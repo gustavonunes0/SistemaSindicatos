@@ -25,19 +25,43 @@ import {
 import { CurrentUser, Public } from '../common/decorators';
 import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { tenantAls, type TenantContextStore } from '../tenant/tenant-context';
 import type { RequestComTenant } from '../tenant/tenant.middleware';
+import { TenantService } from '../tenant/tenant.service';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tenants: TenantService,
+  ) {}
 
-  private tenantIdDoRequest(req: RequestComTenant): string {
-    const tenantId = req.tenant?.tenantId;
-    if (!tenantId) {
-      throw new BadRequestException('Tenant não resolvido para este host');
+  /** Garante tenant no request (middleware pode não ter preenchido req.tenant). */
+  private async garantirTenantId(req: RequestComTenant): Promise<string> {
+    if (req.tenant?.tenantId) {
+      tenantAls.enterWith(req.tenant);
+      return req.tenant.tenantId;
     }
-    return tenantId;
+
+    const host = this.tenants.extrairHostDoRequest(
+      req.headers as Record<string, string | string[] | undefined>,
+    );
+    if (!host) {
+      throw new BadRequestException('Não foi possível determinar o host do tenant');
+    }
+
+    const tenant = await this.tenants.resolverPorHost(host);
+    const store: TenantContextStore = {
+      tenantId: tenant.id,
+      slug: tenant.slug,
+      host,
+      timezone: tenant.timezone,
+      nome: tenant.nome,
+    };
+    req.tenant = store;
+    tenantAls.enterWith(store);
+    return store.tenantId;
   }
 
   @Public()
@@ -46,11 +70,12 @@ export class AuthController {
   @SkipThrottle({ cadastro: true })
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  login(
+  async login(
     @Req() req: RequestComTenant,
     @Body(new ZodValidationPipe(loginSchema)) body: LoginInput,
   ): Promise<AuthResponse> {
-    return this.authService.login(body.login, body.senha, this.tenantIdDoRequest(req));
+    const tenantId = await this.garantirTenantId(req);
+    return this.authService.login(body.login, body.senha, tenantId);
   }
 
   @Public()
@@ -59,11 +84,12 @@ export class AuthController {
   @SkipThrottle({ cadastro: true })
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  refresh(
+  async refresh(
     @Req() req: RequestComTenant,
     @Body(new ZodValidationPipe(refreshTokenSchema)) body: RefreshTokenInput,
   ): Promise<AuthResponse> {
-    return this.authService.refresh(body.refreshToken, this.tenantIdDoRequest(req));
+    const tenantId = await this.garantirTenantId(req);
+    return this.authService.refresh(body.refreshToken, tenantId);
   }
 
   @Public()
@@ -89,7 +115,8 @@ export class AuthController {
     @Req() req: RequestComTenant,
     @Body(new ZodValidationPipe(forgotPasswordSchema)) body: ForgotPasswordInput,
   ): Promise<{ message: string }> {
-    await this.authService.forgotPassword(body.email, this.tenantIdDoRequest(req));
+    const tenantId = await this.garantirTenantId(req);
+    await this.authService.forgotPassword(body.email, tenantId);
     return { message: 'Se o email existir, um link de recuperação será enviado' };
   }
 
@@ -99,10 +126,11 @@ export class AuthController {
   @SkipThrottle({ cadastro: true })
   @Post('reset')
   @HttpCode(HttpStatus.NO_CONTENT)
-  reset(
+  async reset(
     @Req() req: RequestComTenant,
     @Body(new ZodValidationPipe(resetPasswordSchema)) body: ResetPasswordInput,
   ): Promise<void> {
-    return this.authService.resetPassword(body.token, body.novaSenha, this.tenantIdDoRequest(req));
+    const tenantId = await this.garantirTenantId(req);
+    return this.authService.resetPassword(body.token, body.novaSenha, tenantId);
   }
 }
