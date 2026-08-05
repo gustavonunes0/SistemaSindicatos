@@ -12,6 +12,12 @@ export class TenantMiddleware implements NestMiddleware {
   constructor(private readonly tenants: TenantService) {}
 
   async use(req: RequestComTenant, res: Response, next: NextFunction): Promise<void> {
+    // Preflight CORS não carrega tenant (Host é o da API, não o do front).
+    if (req.method === 'OPTIONS') {
+      next();
+      return;
+    }
+
     // Health (GET /) e assets estáticos não exigem tenant.
     if (req.path === '/' || req.path === '/health' || req.path.startsWith('/uploads/')) {
       next();

@@ -108,6 +108,29 @@ export class TenantService {
           /* ignore */
         }
       }
+
+      const extras = (process.env.CORS_ORIGINS ?? '')
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+      for (const extra of extras) {
+        try {
+          if (this.normalizarHost(new URL(extra).host) === host) {
+            return true;
+          }
+        } catch {
+          /* ignore */
+        }
+      }
+
+      const seedHosts = (process.env.TENANT_SEED_HOSTS ?? '')
+        .split(',')
+        .map((h) => this.normalizarHost(h.trim()))
+        .filter(Boolean);
+      if (seedHosts.includes(host)) {
+        return true;
+      }
+
       await this.resolverPorHost(host);
       return true;
     } catch {
