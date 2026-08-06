@@ -32,7 +32,7 @@ const gruposAdmin: GrupoNav[] = [
     links: [
       { to: '/admin', rotulo: 'Painel', end: true },
       { to: '/admin/tutoriais', rotulo: 'Tutoriais' },
-      { to: '/admin/afiliados', rotulo: 'Afiliados' },
+      { to: '/admin/afiliados', rotulo: 'Filiados' },
       { to: '/admin/financeiro', rotulo: 'Financeiro' },
       { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
       { to: '/admin/eleicoes', rotulo: 'Eleições' },
@@ -141,7 +141,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
           {identificacao && (
             <div className="area-sidebar-usuario-bloco">
               <span className="area-sidebar-papel">
-                {tipo === 'admin' ? 'Administrador' : 'Afiliado'}
+                {tipo === 'admin' ? 'Administrador' : 'Filiado'}
               </span>
               <span className="area-sidebar-usuario">{identificacao}</span>
             </div>
