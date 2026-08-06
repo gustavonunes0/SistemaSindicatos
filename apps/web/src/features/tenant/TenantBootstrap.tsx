@@ -138,16 +138,18 @@ export function TenantBootstrap({ children }: { children: ReactNode }) {
   }, [carregar]);
 
   useEffect(() => {
-    if (!tenant) return;
+    // Aplica fallback imediatamente; troca para branding do tenant quando chegar.
     aplicarBrandingNoDocumento(resolverMarca());
   }, [tenant]);
 
-  if (carregando) {
-    return <TelaCarregamento plataforma={plataformaHint} />;
+  // Erro definitivo: domínio inválido / API fora.
+  if (!carregando && (erro || !tenant)) {
+    return <TelaDominioAusente detalhe={erro} />;
   }
 
-  if (erro || !tenant) {
-    return <TelaDominioAusente detalhe={erro} />;
+  // Primeira pintura: splash curto só até ter tenant; evita bloquear se já houver cache.
+  if (carregando && !tenant) {
+    return <TelaCarregamento plataforma={plataformaHint} />;
   }
 
   return children;

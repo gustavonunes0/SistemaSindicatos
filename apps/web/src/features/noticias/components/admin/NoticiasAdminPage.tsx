@@ -1,4 +1,4 @@
-import type { Noticia } from '@sindprf/types';
+import type { NoticiaListagem } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
@@ -15,7 +15,7 @@ export function NoticiasAdminPage() {
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalNoticia>(null);
 
-  const onRemover = (noticia: Noticia) => {
+  const onRemover = (noticia: NoticiaListagem) => {
     pedirConfirmacao({
       titulo: 'Excluir notícia?',
       descricao: `A notícia “${noticia.titulo}” será removida permanentemente.`,

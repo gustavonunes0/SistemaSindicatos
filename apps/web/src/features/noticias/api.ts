@@ -1,10 +1,12 @@
 import {
+  noticiaListagemSchema,
   noticiaSchema,
   noticiasPaginadasSchema,
   uploadCapaResponseSchema,
   type AtualizarNoticiaInput,
   type CriarNoticiaInput,
   type Noticia,
+  type NoticiaListagem,
   type NoticiasPaginadas,
   type UploadCapaResponse,
 } from '@sindprf/types';
@@ -21,9 +23,9 @@ export async function buscarNoticiaPorSlug(slug: string): Promise<Noticia> {
   return noticiaSchema.parse(data);
 }
 
-export async function listarNoticiasAdmin(): Promise<Noticia[]> {
+export async function listarNoticiasAdmin(): Promise<NoticiaListagem[]> {
   const { data } = await api.get('/noticias/admin');
-  return z.array(noticiaSchema).parse(data);
+  return z.array(noticiaListagemSchema).parse(data);
 }
 
 export async function buscarNoticiaAdmin(id: string): Promise<Noticia> {

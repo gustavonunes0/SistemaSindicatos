@@ -2,10 +2,7 @@ import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMe } from '../../auth/hooks';
-import { useConveniosAdmin } from '../../convenios/hooks';
-import { useImoveisAdmin } from '../../imoveis/hooks';
-import { useNoticiasAdmin } from '../../noticias/hooks';
-import { useSolicitacoesAdmin } from '../../solicitacoes/hooks';
+import { useAdminMetricas } from '../hooks';
 
 type ModuloAdmin = {
   to: string;
@@ -78,25 +75,14 @@ function formatarDataPainel(data: Date): string {
 
 export function AdminDashboardPage() {
   const { data: me, isLoading: carregandoMe, isError: erroMe } = useMe();
-  const { data: noticias, isLoading: carregandoNoticias } = useNoticiasAdmin();
-  const { data: convenios, isLoading: carregandoConvenios } = useConveniosAdmin();
-  const { data: imoveis, isLoading: carregandoImoveis } = useImoveisAdmin();
-  const { data: solicitacoes, isLoading: carregandoSolicitacoes } = useSolicitacoesAdmin({});
+  const { data: metricas, isLoading: carregandoMetricas } = useAdminMetricas();
 
-  const carregandoMetricas =
-    carregandoNoticias || carregandoConvenios || carregandoImoveis || carregandoSolicitacoes;
-
-  const noticiasPublicadas =
-    noticias?.filter((noticia) => noticia.status === 'PUBLICADO').length ?? 0;
-  const totalNoticias = noticias?.length ?? 0;
-  const totalConvenios = convenios?.length ?? 0;
-  const totalImoveis = imoveis?.length ?? 0;
-  const solicitacoesAbertas =
-    solicitacoes?.filter(
-      (solicitacao) =>
-        solicitacao.status === 'ABERTA' || solicitacao.status === 'EM_ANDAMENTO',
-    ).length ?? 0;
-  const totalSolicitacoes = solicitacoes?.length ?? 0;
+  const solicitacoesAbertas = metricas?.solicitacoesAbertas ?? 0;
+  const totalSolicitacoes = metricas?.solicitacoesTotal ?? 0;
+  const totalNoticias = metricas?.noticiasTotal ?? 0;
+  const noticiasPublicadas = metricas?.noticiasPublicadas ?? 0;
+  const totalConvenios = metricas?.conveniosTotal ?? 0;
+  const totalImoveis = metricas?.imoveisTotal ?? 0;
 
   return (
     <AreaLayout

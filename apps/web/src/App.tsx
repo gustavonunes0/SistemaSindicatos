@@ -7,13 +7,24 @@ import { platformRouter } from './router-plataforma';
 
 const queryClient = new QueryClient({
   defaultOptions: {
-    queries: { retry: 1, refetchOnWindowFocus: false },
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+    },
   },
 });
 
+function hostEhPlataforma(): boolean {
+  if (typeof window === 'undefined') return false;
+  const h = window.location.hostname.toLowerCase();
+  return h === 'sindigest.stellarsolucoes.com.br' || h.startsWith('sindigest.');
+}
+
 function AppRouter() {
   const tipo = useTenantStore((s) => s.tenant?.tipo);
-  return <RouterProvider router={tipo === 'PLATAFORMA' ? platformRouter : router} />;
+  const plataforma = tipo === 'PLATAFORMA' || (!tipo && hostEhPlataforma());
+  return <RouterProvider router={plataforma ? platformRouter : router} />;
 }
 
 export function App() {

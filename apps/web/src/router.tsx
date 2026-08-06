@@ -1,45 +1,162 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, useParams } from 'react-router-dom';
 import { PublicLayout } from './components/layout/PublicLayout';
-import { AfiliadoDashboardPage } from './features/afiliado/components/AfiliadoDashboardPage';
-import { CadastroAfiliadoPage } from './features/afiliado/components/CadastroAfiliadoPage';
-import { AfiliadosAdminPage } from './features/afiliado/components/admin/AfiliadosAdminPage';
-import { AdminDashboardPage } from './features/admin/components/AdminDashboardPage';
-import { TutoriaisAdminPage } from './features/admin/components/TutoriaisAdminPage';
-import { EsqueciSenhaPage } from './features/auth/components/EsqueciSenhaPage';
+import { EstadoCarregando } from './components/ui/EstadoCarregando';
 import { RequireRole } from './features/auth/components/guards';
-import { LoginPage } from './features/auth/components/LoginPage';
-import { RedefinirSenhaPage } from './features/auth/components/RedefinirSenhaPage';
-import { ConvenioDetalhePage } from './features/convenios/components/ConvenioDetalhePage';
-import { ConveniosAdminPage } from './features/convenios/components/admin/ConveniosAdminPage';
-import { ConveniosPage } from './features/convenios/components/ConveniosPage';
-import { D8AdminPage } from './features/d8/components/admin/D8AdminPage';
-import { D8DetalheAdminPage } from './features/d8/components/admin/D8DetalheAdminPage';
-import { BalancetesAdminPage } from './features/balancetes/components/admin/BalancetesAdminPage';
-import { BalanceteDetalheAdminPage } from './features/balancetes/components/admin/BalanceteDetalheAdminPage';
-import { FinanceiroHubPage } from './features/financeiro/components/admin/FinanceiroHubPage';
-import { EleicaoDetalheAdminPage } from './features/eleicao/components/admin/EleicaoDetalheAdminPage';
-import { EleicoesAdminPage } from './features/eleicao/components/admin/EleicoesAdminPage';
-import { EleicaoResultadoPage } from './features/eleicao/components/EleicaoResultadoPage';
-import { EleicaoVotacaoPage } from './features/eleicao/components/EleicaoVotacaoPage';
-import { EleicoesPage } from './features/eleicao/components/EleicoesPage';
-import { NoticiasAdminPage } from './features/noticias/components/admin/NoticiasAdminPage';
-import { NoticiaDetalhePage } from './features/noticias/components/NoticiaDetalhePage';
-import { NoticiasPage } from './features/noticias/components/NoticiasPage';
-import { ImoveisAdminPage } from './features/imoveis/components/admin/ImoveisAdminPage';
-import { ImoveisPage } from './features/imoveis/components/ImoveisPage';
-import { SolicitacaoDetalhePage } from './features/solicitacoes/components/SolicitacaoDetalhePage';
-import { SolicitacoesAdminPage } from './features/solicitacoes/components/admin/SolicitacoesAdminPage';
-import { ContatoPage } from './pages/ContatoPage';
-import { DiretoriaPage } from './pages/DiretoriaPage';
 import { HomePage } from './pages/HomePage';
-import { SobrePage } from './pages/SobrePage';
+
+const SobrePage = lazy(() =>
+  import('./pages/SobrePage').then((m) => ({ default: m.SobrePage })),
+);
+const DiretoriaPage = lazy(() =>
+  import('./pages/DiretoriaPage').then((m) => ({ default: m.DiretoriaPage })),
+);
+const ContatoPage = lazy(() =>
+  import('./pages/ContatoPage').then((m) => ({ default: m.ContatoPage })),
+);
+const NoticiasPage = lazy(() =>
+  import('./features/noticias/components/NoticiasPage').then((m) => ({
+    default: m.NoticiasPage,
+  })),
+);
+const NoticiaDetalhePage = lazy(() =>
+  import('./features/noticias/components/NoticiaDetalhePage').then((m) => ({
+    default: m.NoticiaDetalhePage,
+  })),
+);
+const LoginPage = lazy(() =>
+  import('./features/auth/components/LoginPage').then((m) => ({ default: m.LoginPage })),
+);
+const CadastroAfiliadoPage = lazy(() =>
+  import('./features/afiliado/components/CadastroAfiliadoPage').then((m) => ({
+    default: m.CadastroAfiliadoPage,
+  })),
+);
+const EsqueciSenhaPage = lazy(() =>
+  import('./features/auth/components/EsqueciSenhaPage').then((m) => ({
+    default: m.EsqueciSenhaPage,
+  })),
+);
+const RedefinirSenhaPage = lazy(() =>
+  import('./features/auth/components/RedefinirSenhaPage').then((m) => ({
+    default: m.RedefinirSenhaPage,
+  })),
+);
+const AdminDashboardPage = lazy(() =>
+  import('./features/admin/components/AdminDashboardPage').then((m) => ({
+    default: m.AdminDashboardPage,
+  })),
+);
+const TutoriaisAdminPage = lazy(() =>
+  import('./features/admin/components/TutoriaisAdminPage').then((m) => ({
+    default: m.TutoriaisAdminPage,
+  })),
+);
+const AfiliadosAdminPage = lazy(() =>
+  import('./features/afiliado/components/admin/AfiliadosAdminPage').then((m) => ({
+    default: m.AfiliadosAdminPage,
+  })),
+);
+const FinanceiroHubPage = lazy(() =>
+  import('./features/financeiro/components/admin/FinanceiroHubPage').then((m) => ({
+    default: m.FinanceiroHubPage,
+  })),
+);
+const BalancetesAdminPage = lazy(() =>
+  import('./features/balancetes/components/admin/BalancetesAdminPage').then((m) => ({
+    default: m.BalancetesAdminPage,
+  })),
+);
+const BalanceteDetalheAdminPage = lazy(() =>
+  import('./features/balancetes/components/admin/BalanceteDetalheAdminPage').then((m) => ({
+    default: m.BalanceteDetalheAdminPage,
+  })),
+);
+const D8AdminPage = lazy(() =>
+  import('./features/d8/components/admin/D8AdminPage').then((m) => ({ default: m.D8AdminPage })),
+);
+const D8DetalheAdminPage = lazy(() =>
+  import('./features/d8/components/admin/D8DetalheAdminPage').then((m) => ({
+    default: m.D8DetalheAdminPage,
+  })),
+);
+const NoticiasAdminPage = lazy(() =>
+  import('./features/noticias/components/admin/NoticiasAdminPage').then((m) => ({
+    default: m.NoticiasAdminPage,
+  })),
+);
+const ConveniosAdminPage = lazy(() =>
+  import('./features/convenios/components/admin/ConveniosAdminPage').then((m) => ({
+    default: m.ConveniosAdminPage,
+  })),
+);
+const EleicoesAdminPage = lazy(() =>
+  import('./features/eleicao/components/admin/EleicoesAdminPage').then((m) => ({
+    default: m.EleicoesAdminPage,
+  })),
+);
+const EleicaoDetalheAdminPage = lazy(() =>
+  import('./features/eleicao/components/admin/EleicaoDetalheAdminPage').then((m) => ({
+    default: m.EleicaoDetalheAdminPage,
+  })),
+);
+const ImoveisAdminPage = lazy(() =>
+  import('./features/imoveis/components/admin/ImoveisAdminPage').then((m) => ({
+    default: m.ImoveisAdminPage,
+  })),
+);
+const SolicitacoesAdminPage = lazy(() =>
+  import('./features/solicitacoes/components/admin/SolicitacoesAdminPage').then((m) => ({
+    default: m.SolicitacoesAdminPage,
+  })),
+);
+const SolicitacaoDetalhePage = lazy(() =>
+  import('./features/solicitacoes/components/SolicitacaoDetalhePage').then((m) => ({
+    default: m.SolicitacaoDetalhePage,
+  })),
+);
+const AfiliadoDashboardPage = lazy(() =>
+  import('./features/afiliado/components/AfiliadoDashboardPage').then((m) => ({
+    default: m.AfiliadoDashboardPage,
+  })),
+);
+const ConveniosPage = lazy(() =>
+  import('./features/convenios/components/ConveniosPage').then((m) => ({
+    default: m.ConveniosPage,
+  })),
+);
+const ConvenioDetalhePage = lazy(() =>
+  import('./features/convenios/components/ConvenioDetalhePage').then((m) => ({
+    default: m.ConvenioDetalhePage,
+  })),
+);
+const ImoveisPage = lazy(() =>
+  import('./features/imoveis/components/ImoveisPage').then((m) => ({ default: m.ImoveisPage })),
+);
+const EleicoesPage = lazy(() =>
+  import('./features/eleicao/components/EleicoesPage').then((m) => ({ default: m.EleicoesPage })),
+);
+const EleicaoVotacaoPage = lazy(() =>
+  import('./features/eleicao/components/EleicaoVotacaoPage').then((m) => ({
+    default: m.EleicaoVotacaoPage,
+  })),
+);
+const EleicaoResultadoPage = lazy(() =>
+  import('./features/eleicao/components/EleicaoResultadoPage').then((m) => ({
+    default: m.EleicaoResultadoPage,
+  })),
+);
+
+function comSuspense(element: React.ReactNode) {
+  return <Suspense fallback={<EstadoCarregando mensagem="Carregando…" />}>{element}</Suspense>;
+}
 
 function protegidaAdmin(element: React.ReactNode) {
-  return <RequireRole role="ADMIN">{element}</RequireRole>;
+  return comSuspense(<RequireRole role="ADMIN">{element}</RequireRole>);
 }
 
 function protegidaAfiliado(element: React.ReactNode) {
-  return <RequireRole role="AFILIADO">{element}</RequireRole>;
+  return comSuspense(<RequireRole role="AFILIADO">{element}</RequireRole>);
 }
 
 function RedirecionarBalanceteDetalhe() {
@@ -57,17 +174,17 @@ export const router = createBrowserRouter([
     element: <PublicLayout />,
     children: [
       { path: '/', element: <HomePage /> },
-      { path: '/sobre', element: <SobrePage /> },
-      { path: '/diretoria', element: <DiretoriaPage /> },
-      { path: '/contato', element: <ContatoPage /> },
-      { path: '/noticias', element: <NoticiasPage /> },
-      { path: '/noticias/:slug', element: <NoticiaDetalhePage /> },
+      { path: '/sobre', element: comSuspense(<SobrePage />) },
+      { path: '/diretoria', element: comSuspense(<DiretoriaPage />) },
+      { path: '/contato', element: comSuspense(<ContatoPage />) },
+      { path: '/noticias', element: comSuspense(<NoticiasPage />) },
+      { path: '/noticias/:slug', element: comSuspense(<NoticiaDetalhePage />) },
     ],
   },
-  { path: '/login', element: <LoginPage /> },
-  { path: '/cadastro', element: <CadastroAfiliadoPage /> },
-  { path: '/esqueci-senha', element: <EsqueciSenhaPage /> },
-  { path: '/redefinir-senha', element: <RedefinirSenhaPage /> },
+  { path: '/login', element: comSuspense(<LoginPage />) },
+  { path: '/cadastro', element: comSuspense(<CadastroAfiliadoPage />) },
+  { path: '/esqueci-senha', element: comSuspense(<EsqueciSenhaPage />) },
+  { path: '/redefinir-senha', element: comSuspense(<RedefinirSenhaPage />) },
   { path: '/admin', element: protegidaAdmin(<AdminDashboardPage />) },
   { path: '/admin/tutoriais', element: protegidaAdmin(<TutoriaisAdminPage />) },
   { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },

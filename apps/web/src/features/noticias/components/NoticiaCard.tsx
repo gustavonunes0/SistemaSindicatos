@@ -1,17 +1,18 @@
-import type { Noticia } from '@sindprf/types';
+import type { NoticiaListagem } from '@sindprf/types';
 import { Link } from 'react-router-dom';
 import { formatarData } from '../../../lib/datas';
 import { marca } from '../../../lib/marca';
-import { resumoDeHtml } from '../../../lib/seo';
 import { urlDaApi } from '../../../lib/urls';
 
 type NoticiaCardProps = {
-  noticia: Noticia;
+  noticia: NoticiaListagem;
   destaque?: boolean;
 };
 
 export function NoticiaCard({ noticia, destaque = false }: NoticiaCardProps) {
-  const resumo = resumoDeHtml(noticia.conteudo, destaque ? 180 : 120);
+  const limite = destaque ? 180 : 120;
+  const resumo =
+    noticia.resumo.length > limite ? `${noticia.resumo.slice(0, limite - 1)}…` : noticia.resumo;
 
   return (
     <article className={`noticia-card${destaque ? ' noticia-card--destaque' : ''}`}>

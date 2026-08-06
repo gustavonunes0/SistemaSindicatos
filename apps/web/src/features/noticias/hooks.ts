@@ -2,10 +2,14 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AtualizarNoticiaInput, CriarNoticiaInput } from '@sindprf/types';
 import * as noticiasApi from './api';
 
+const STALE_PUBLICO = 2 * 60 * 1000;
+const STALE_ADMIN = 60 * 1000;
+
 export function useNoticias(page: number, limit = 9) {
   return useQuery({
     queryKey: ['noticias', 'publicas', page, limit],
     queryFn: () => noticiasApi.listarNoticias(page, limit),
+    staleTime: STALE_PUBLICO,
   });
 }
 
@@ -13,6 +17,7 @@ export function useNoticia(slug: string) {
   return useQuery({
     queryKey: ['noticias', 'detalhe', slug],
     queryFn: () => noticiasApi.buscarNoticiaPorSlug(slug),
+    staleTime: STALE_PUBLICO,
   });
 }
 
@@ -20,6 +25,7 @@ export function useNoticiasAdmin() {
   return useQuery({
     queryKey: ['noticias', 'admin'],
     queryFn: noticiasApi.listarNoticiasAdmin,
+    staleTime: STALE_ADMIN,
   });
 }
 
@@ -33,7 +39,10 @@ export function useNoticiaAdmin(id: string | undefined) {
 
 function useInvalidarNoticias() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: ['noticias'] });
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ['noticias'] });
+    void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
+  };
 }
 
 export function useCriarNoticia() {

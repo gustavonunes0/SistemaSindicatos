@@ -8,7 +8,26 @@ import type {
 import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../push/push.service';
 import { requireTenantId } from '../tenant/tenant-context';
+import { resumoDeConteudo } from './noticia-resumo';
 import { gerarSlug } from './slug';
+
+const CAMPOS_LISTAGEM = {
+  id: true,
+  titulo: true,
+  slug: true,
+  capaUrl: true,
+  conteudo: true,
+  status: true,
+  publicadoEm: true,
+  autorId: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+function paraListagem<T extends { conteudo: string }>(noticia: T) {
+  const { conteudo, ...resto } = noticia;
+  return { ...resto, resumo: resumoDeConteudo(conteudo) };
+}
 
 @Injectable()
 export class NoticiasService {
@@ -86,8 +105,12 @@ export class NoticiasService {
     }
   }
 
-  listarAdmin() {
-    return this.prisma.noticia.findMany({ orderBy: { createdAt: 'desc' } });
+  async listarAdmin() {
+    const itens = await this.prisma.noticia.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: CAMPOS_LISTAGEM,
+    });
+    return itens.map(paraListagem);
   }
 
   async buscarAdmin(id: string) {
@@ -106,10 +129,16 @@ export class NoticiasService {
         orderBy: { publicadoEm: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
+        select: CAMPOS_LISTAGEM,
       }),
       this.prisma.noticia.count({ where }),
     ]);
-    return { items, total, page, totalPages: Math.max(1, Math.ceil(total / limit)) };
+    return {
+      items: items.map(paraListagem),
+      total,
+      page,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+    };
   }
 
   async buscarPublicadaPorSlug(slug: string) {

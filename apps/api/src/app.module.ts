@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { AdminModule } from './admin/admin.module';
 import { AfiliadosModule } from './afiliados/afiliados.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
@@ -38,6 +39,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
     PlataformaModule,
     StorageModule,
     AuthModule,
+    AdminModule,
     AfiliadosModule,
     NoticiasModule,
     PushModule,
