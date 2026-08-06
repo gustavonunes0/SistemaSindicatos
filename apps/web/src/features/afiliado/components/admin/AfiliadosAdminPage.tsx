@@ -80,8 +80,8 @@ export function AfiliadosAdminPage() {
   return (
     <AreaLayout
       tipo="admin"
-      titulo="Afiliados"
-      descricao="Aprove solicitações de cadastro e gerencie a situação da afiliação."
+      titulo="Filiados"
+      descricao="Aprove solicitações de cadastro e gerencie a situação da filiação."
     >
       <div className="afiliados-toolbar">
         <label className="afiliados-busca">

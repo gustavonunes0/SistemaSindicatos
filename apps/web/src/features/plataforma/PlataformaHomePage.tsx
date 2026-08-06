@@ -74,7 +74,7 @@ export function PlataformaHomePage() {
           <p className="sg-kpi-hint">{ativos} ativos</p>
         </article>
         <article className="sg-kpi">
-          <p className="sg-kpi-label">Afiliados</p>
+          <p className="sg-kpi-label">Filiados</p>
           <p className="sg-kpi-valor">{isLoading ? '—' : formatarNumero(afiliados)}</p>
           <p className="sg-kpi-hint">base total nos tenants</p>
         </article>
@@ -112,7 +112,7 @@ export function PlataformaHomePage() {
                 <tr>
                   <th scope="col">Cliente</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Afiliados</th>
+                  <th scope="col">Filiados</th>
                   <th scope="col">Usuários</th>
                   <th scope="col">Domínios públicos</th>
                   <th scope="col">Ações</th>

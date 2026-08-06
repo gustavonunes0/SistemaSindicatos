@@ -24,21 +24,21 @@ type Tutorial = {
 const TUTORIAIS: Tutorial[] = [
   {
     id: 'afiliados',
-    titulo: 'Aprovar e gerenciar afiliados',
+    titulo: 'Aprovar e gerenciar filiados',
     grupo: 'Operação',
     resumo: 'A filiação é presencial. No admin você aprova, inativa ou redefine a senha.',
     rota: '/admin/afiliados',
-    acao: 'Abrir afiliados',
+    acao: 'Abrir filiados',
     passos: [
-      'Abra Afiliados no menu lateral.',
+      'Abra filiados no menu lateral.',
       'Filtre por status (Pendente, Aprovado ou Inativo) para achar o cadastro.',
       'Em Pendente, use Aprovar para liberar o acesso do sindicalizado.',
       'Se precisar, use Inativar ou Reabrir conforme a situação.',
-      'Em Senha, defina uma nova senha quando o afiliado precisar recuperar o acesso.',
+      'Em Senha, defina uma nova senha quando o filiado precisar recuperar o acesso.',
     ],
     dicas: [
       'Não há cadastro online no site — o interessado baixa os formulários em /cadastro e comparece à secretaria.',
-      'Novos afiliados também podem surgir automaticamente na importação do D8.',
+      'Novos filiados também podem surgir automaticamente na importação do D8.',
     ],
   },
   {
@@ -213,7 +213,7 @@ const TUTORIAIS: Tutorial[] = [
     id: 'imoveis',
     titulo: 'Cadastrar um apartamento',
     grupo: 'Conteúdo',
-    resumo: 'Cadastro interno de imóveis (legado). Afiliados reservam pelo link oficial abre.ai/sindprfcereserva.',
+    resumo: 'Cadastro interno de imóveis (legado). Filiados reservam pelo link oficial abre.ai/sindprfcereserva.',
     rota: '/admin/imoveis',
     acao: 'Abrir apartamentos',
     passos: [

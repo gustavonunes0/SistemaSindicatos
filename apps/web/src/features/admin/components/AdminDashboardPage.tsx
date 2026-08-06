@@ -25,9 +25,9 @@ const modulos: ModuloAdmin[] = [
   },
   {
     to: '/admin/afiliados',
-    titulo: 'Afiliados',
-    descricao: 'Aprove cadastros e gerencie o status da afiliação.',
-    acao: 'Abrir afiliados',
+    titulo: 'Filiados',
+    descricao: 'Aprove cadastros e gerencie o status da filiação.',
+    acao: 'Abrir filiados',
     destaque: true,
   },
   {
