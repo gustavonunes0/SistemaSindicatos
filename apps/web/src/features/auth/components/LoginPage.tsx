@@ -84,7 +84,7 @@ export function LoginPage() {
         <p className="auth-dica">
           {ehPlataforma
             ? 'Painel Stellar — gestão multi-tenant dos sindicatos.'
-            : 'Afiliado: CPF só com números e matrícula. Admin do sindicato: e-mail no campo CPF e senha no campo abaixo.'}
+            : 'Filiado: CPF só com números e matrícula. Admin do sindicato: e-mail no campo CPF e senha no campo abaixo.'}
         </p>
 
         {mensagemErro && <p className="erro">{mensagemErro}</p>}
