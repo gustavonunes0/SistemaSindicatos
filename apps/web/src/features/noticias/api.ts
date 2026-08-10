@@ -2,12 +2,14 @@ import {
   noticiaListagemSchema,
   noticiaSchema,
   noticiasPaginadasSchema,
+  uploadAnexoResponseSchema,
   uploadCapaResponseSchema,
   type AtualizarNoticiaInput,
   type CriarNoticiaInput,
   type Noticia,
   type NoticiaListagem,
   type NoticiasPaginadas,
+  type UploadAnexoResponse,
   type UploadCapaResponse,
 } from '@sindprf/types';
 import { z } from 'zod';
@@ -55,4 +57,11 @@ export async function uploadCapa(arquivo: File): Promise<UploadCapaResponse> {
   form.append('file', arquivo);
   const { data } = await api.post('/noticias/capa', form);
   return uploadCapaResponseSchema.parse(data);
+}
+
+export async function uploadAnexo(arquivo: File): Promise<UploadAnexoResponse> {
+  const form = new FormData();
+  form.append('file', arquivo);
+  const { data } = await api.post('/noticias/anexo', form);
+  return uploadAnexoResponseSchema.parse(data);
 }

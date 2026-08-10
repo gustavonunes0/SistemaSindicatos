@@ -8,6 +8,8 @@ export const noticiaSchema = z.object({
   titulo: z.string(),
   slug: z.string(),
   capaUrl: z.string().nullable(),
+  anexoUrl: z.string().nullable(),
+  anexoNome: z.string().nullable(),
   conteudo: z.string(),
   status: statusNoticiaSchema,
   publicadoEm: z.coerce.date().nullable(),
@@ -36,6 +38,8 @@ export const criarNoticiaSchema = z.object({
   titulo: z.string().min(3, 'Título deve ter no mínimo 3 caracteres'),
   conteudo: z.string().min(1, 'Conteúdo é obrigatório'),
   capaUrl: z.string().nullable().optional(),
+  anexoUrl: z.string().nullable().optional(),
+  anexoNome: z.string().nullable().optional(),
   status: statusNoticiaSchema.default('RASCUNHO'),
 });
 export type CriarNoticiaInput = z.infer<typeof criarNoticiaSchema>;
@@ -61,6 +65,12 @@ export const uploadCapaResponseSchema = z.object({
   url: z.string(),
 });
 export type UploadCapaResponse = z.infer<typeof uploadCapaResponseSchema>;
+
+export const uploadAnexoResponseSchema = z.object({
+  url: z.string(),
+  nome: z.string(),
+});
+export type UploadAnexoResponse = z.infer<typeof uploadAnexoResponseSchema>;
 
 export const adminMetricasSchema = z.object({
   noticiasTotal: z.number().int(),

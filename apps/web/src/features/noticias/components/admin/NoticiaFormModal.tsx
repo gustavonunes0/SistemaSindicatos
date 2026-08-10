@@ -7,7 +7,13 @@ import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { Modal } from '../../../../components/ui/Modal';
 import { RichTextEditor } from '../../../../components/ui/RichTextEditor';
 import { urlDaApi } from '../../../../lib/urls';
-import { useAtualizarNoticia, useCriarNoticia, useNoticiaAdmin, useUploadCapa } from '../../hooks';
+import {
+  useAtualizarNoticia,
+  useCriarNoticia,
+  useNoticiaAdmin,
+  useUploadAnexo,
+  useUploadCapa,
+} from '../../hooks';
 
 type NoticiaFormValues = z.input<typeof criarNoticiaSchema>;
 
@@ -17,12 +23,23 @@ type NoticiaFormModalProps = {
   onFechar: () => void;
 };
 
+const valoresVazios: NoticiaFormValues = {
+  titulo: '',
+  conteudo: '',
+  capaUrl: null,
+  anexoUrl: null,
+  anexoNome: null,
+  status: 'RASCUNHO',
+};
+
 export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps) {
   const { data: noticiaExistente, isLoading } = useNoticiaAdmin(aberto ? id : undefined);
   const criar = useCriarNoticia();
   const atualizar = useAtualizarNoticia();
   const uploadCapa = useUploadCapa();
+  const uploadAnexo = useUploadAnexo();
   const inputCapaRef = useRef<HTMLInputElement>(null);
+  const inputAnexoRef = useRef<HTMLInputElement>(null);
   const editando = Boolean(id);
 
   const {
@@ -35,7 +52,7 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
     formState: { errors },
   } = useForm<NoticiaFormValues, unknown, CriarNoticiaInput>({
     resolver: zodResolver(criarNoticiaSchema),
-    defaultValues: { titulo: '', conteudo: '', capaUrl: null, status: 'RASCUNHO' },
+    defaultValues: valoresVazios,
   });
 
   useEffect(() => {
@@ -45,16 +62,20 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
         titulo: noticiaExistente.titulo,
         conteudo: noticiaExistente.conteudo,
         capaUrl: noticiaExistente.capaUrl,
+        anexoUrl: noticiaExistente.anexoUrl,
+        anexoNome: noticiaExistente.anexoNome,
         status: noticiaExistente.status,
       });
       return;
     }
     if (!id) {
-      reset({ titulo: '', conteudo: '', capaUrl: null, status: 'RASCUNHO' });
+      reset(valoresVazios);
     }
   }, [aberto, id, noticiaExistente, reset]);
 
   const capaUrl = watch('capaUrl');
+  const anexoUrl = watch('anexoUrl');
+  const anexoNome = watch('anexoNome');
   const salvando = criar.isPending || atualizar.isPending;
 
   const onSubmit = (dados: CriarNoticiaInput) => {
@@ -71,6 +92,25 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
       uploadCapa.mutate(arquivo, {
         onSuccess: ({ url }) => setValue('capaUrl', url, { shouldDirty: true }),
       });
+    }
+  };
+
+  const onSelecionarAnexo = (arquivo: File | undefined) => {
+    if (arquivo) {
+      uploadAnexo.mutate(arquivo, {
+        onSuccess: ({ url, nome }) => {
+          setValue('anexoUrl', url, { shouldDirty: true });
+          setValue('anexoNome', nome, { shouldDirty: true });
+        },
+      });
+    }
+  };
+
+  const removerAnexo = () => {
+    setValue('anexoUrl', null, { shouldDirty: true });
+    setValue('anexoNome', null, { shouldDirty: true });
+    if (inputAnexoRef.current) {
+      inputAnexoRef.current.value = '';
     }
   };
 
@@ -119,6 +159,30 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
                 }}
               >
                 Remover capa
+              </button>
+            )}
+          </div>
+
+          <div className="campo">
+            <span className="campo-rotulo">Anexo (PDF)</span>
+            {anexoUrl && (
+              <div className="noticia-anexo-preview">
+                <a href={urlDaApi(anexoUrl)} target="_blank" rel="noreferrer">
+                  {anexoNome || 'Anexo.pdf'}
+                </a>
+              </div>
+            )}
+            <input
+              ref={inputAnexoRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(evento) => onSelecionarAnexo(evento.target.files?.[0])}
+            />
+            {uploadAnexo.isPending && <span>Enviando PDF…</span>}
+            {uploadAnexo.isError && <span className="erro">Erro ao enviar o PDF.</span>}
+            {anexoUrl && (
+              <button type="button" className="botao-link" onClick={removerAnexo}>
+                Remover anexo
               </button>
             )}
           </div>

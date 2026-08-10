@@ -73,3 +73,7 @@ export function useRemoverNoticia() {
 export function useUploadCapa() {
   return useMutation({ mutationFn: noticiasApi.uploadCapa });
 }
+
+export function useUploadAnexo() {
+  return useMutation({ mutationFn: noticiasApi.uploadAnexo });
+}

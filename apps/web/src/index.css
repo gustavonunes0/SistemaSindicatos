@@ -1814,9 +1814,78 @@ button.botao-primario {
   color: var(--cor-texto-suave);
 }
 
+.noticia-anexo {
+  margin-top: 2rem;
+  padding: 1rem 1.1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.noticia-anexo-rotulo {
+  margin: 0 0 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.noticia-anexo-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: var(--cor-texto);
+}
+
+.noticia-anexo-link:hover .noticia-anexo-nome {
+  text-decoration: underline;
+}
+
+.noticia-anexo-icone {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: 0 0.4rem;
+  border-radius: var(--raio);
+  background: var(--azul-placa);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.noticia-anexo-nome {
+  flex: 1;
+  min-width: 0;
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.noticia-anexo-acao {
+  flex-shrink: 0;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.noticia-anexo-preview {
+  margin-bottom: 0.5rem;
+}
+
+.noticia-anexo-preview a {
+  font-weight: 600;
+  word-break: break-word;
+}
+
 .noticia-detalhe-hero-inner > *,
 .noticia-capa-wrap,
 .noticia-prose,
+.noticia-anexo,
 .noticia-detalhe-rodape {
   animation: surgir 260ms ease-out both;
 }
@@ -6005,8 +6074,8 @@ textarea {
 }
 
 @media (max-width: 767px) {
-  .site,
-  .area-conteudo {
+  .site:has(.pwa-instalar-bar),
+  .area-shell:has(.pwa-instalar-bar) .area-conteudo {
     padding-bottom: 5.5rem;
   }
 }

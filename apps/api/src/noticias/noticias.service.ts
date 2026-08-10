@@ -44,6 +44,8 @@ export class NoticiasService {
         slug: await this.slugDisponivel(gerarSlug(input.titulo)),
         conteudo: input.conteudo,
         capaUrl: input.capaUrl ?? null,
+        anexoUrl: input.anexoUrl ?? null,
+        anexoNome: input.anexoNome ?? null,
         status: input.status,
         publicadoEm: input.status === 'PUBLICADO' ? new Date() : null,
         autorId,
@@ -73,6 +75,12 @@ export class NoticiasService {
     }
     if (input.capaUrl !== undefined) {
       data.capaUrl = input.capaUrl;
+    }
+    if (input.anexoUrl !== undefined) {
+      data.anexoUrl = input.anexoUrl;
+      data.anexoNome = input.anexoUrl ? (input.anexoNome ?? null) : null;
+    } else if (input.anexoNome !== undefined) {
+      data.anexoNome = input.anexoNome;
     }
 
     const publicandoAgora =

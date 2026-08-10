@@ -76,6 +76,25 @@ export function NoticiaDetalhePage() {
             dangerouslySetInnerHTML={{ __html: noticia.conteudo }}
           />
 
+          {noticia.anexoUrl && (
+            <aside className="noticia-anexo" aria-label="Anexo">
+              <p className="noticia-anexo-rotulo">Anexo</p>
+              <a
+                className="noticia-anexo-link"
+                href={urlDaApi(noticia.anexoUrl)}
+                target="_blank"
+                rel="noreferrer"
+                download={noticia.anexoNome || undefined}
+              >
+                <span className="noticia-anexo-icone" aria-hidden="true">
+                  PDF
+                </span>
+                <span className="noticia-anexo-nome">{noticia.anexoNome || 'Documento.pdf'}</span>
+                <span className="noticia-anexo-acao">Baixar</span>
+              </a>
+            </aside>
+          )}
+
           <footer className="noticia-detalhe-rodape">
             <p>Publicado pelo {marca.nome}</p>
             <Link to="/noticias" className="botao-secundario">

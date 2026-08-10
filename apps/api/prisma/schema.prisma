@@ -252,6 +252,8 @@ model Noticia {
   titulo      String
   slug        String
   capaUrl     String?
+  anexoUrl    String?
+  anexoNome   String?
   conteudo    String        @db.Text
   status      StatusNoticia @default(RASCUNHO)
   publicadoEm DateTime?     @db.Timestamptz

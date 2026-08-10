@@ -19,6 +19,7 @@ import {
   type AtualizarNoticiaInput,
   type CriarNoticiaInput,
   type ListarNoticiasQuery,
+  type UploadAnexoResponse,
   type UploadCapaResponse,
 } from '@sindprf/types';
 import { CurrentUser, Public, Roles } from '../common/decorators';
@@ -29,6 +30,13 @@ import { NoticiasService } from './noticias.service';
 
 const CAPA_MAX_BYTES = 5 * 1024 * 1024;
 const CAPA_MIMETYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const ANEXO_MAX_BYTES = 15 * 1024 * 1024;
+const ANEXO_MIMETYPES = ['application/pdf'];
+
+function nomeArquivoSeguro(nomeOriginal: string): string {
+  const base = nomeOriginal.split(/[/\\]/).pop()?.trim() || 'anexo.pdf';
+  return base.slice(0, 180);
+}
 
 @Controller('noticias')
 export class NoticiasController {
@@ -99,5 +107,20 @@ export class NoticiasController {
     }
     const url = await this.storageService.salvar(file.buffer, file.originalname);
     return { url };
+  }
+
+  @Roles('ADMIN')
+  @Post('anexo')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: ANEXO_MAX_BYTES } }))
+  async uploadAnexo(@UploadedFile() file?: Express.Multer.File): Promise<UploadAnexoResponse> {
+    if (!file) {
+      throw new BadRequestException('Arquivo não enviado');
+    }
+    if (!ANEXO_MIMETYPES.includes(file.mimetype)) {
+      throw new BadRequestException('Formato inválido: envie um PDF');
+    }
+    const nome = nomeArquivoSeguro(file.originalname);
+    const url = await this.storageService.salvar(file.buffer, nome.endsWith('.pdf') ? nome : `${nome}.pdf`);
+    return { url, nome };
   }
 }
