@@ -6,7 +6,7 @@ import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa
 import { usePushNoticiasPorPadrao } from '../../features/pwa/hooks/usePushNoticias';
 import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
-import { useMarca } from '../../lib/marca';
+import { telefonePrincipalTel, useMarca } from '../../lib/marca';
 
 const links = [
   { to: '/', rotulo: 'Início' },
@@ -74,7 +74,19 @@ export function PublicLayout() {
             <p>
               <a href={`mailto:${marca.contato.email}`}>{marca.contato.email}</a>
             </p>
-            <p>{marca.contato.telefones.join(' / ')}</p>
+            {marca.contato.telefones.length > 0 && (
+              <ul className="contato-telefones site-footer-telefones">
+                {marca.contato.telefones.map((telefone, indice) => (
+                  <li key={telefone}>
+                    {indice === 0 ? (
+                      <a href={`tel:${telefonePrincipalTel(marca)}`}>{telefone}</a>
+                    ) : (
+                      telefone
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div>
             <h4>Endereço</h4>

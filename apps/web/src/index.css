@@ -2155,6 +2155,22 @@ button.botao-primario {
   font-size: var(--texto-sm);
 }
 
+.site-footer-telefones {
+  margin: 0.25rem 0 0;
+  font-size: var(--texto-sm);
+}
+
+.site-footer-telefones a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.site-footer-telefones a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
 .site-footer-copy {
   max-width: var(--largura-conteudo);
   margin: 2rem auto 0;
