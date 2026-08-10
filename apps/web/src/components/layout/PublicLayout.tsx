@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
 import { MarcaHeaderLink } from '../ui/MarcaHeader';
 import { LogoLink } from '../ui/Logo';
+import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { usePushNoticiasPorPadrao } from '../../features/pwa/hooks/usePushNoticias';
 import { useAuthStore } from '../../features/auth/store';
@@ -102,6 +103,7 @@ export function PublicLayout() {
         </div>
       </footer>
 
+      <BotaoAtualizarPwa />
       <BotaoInstalarPwa />
     </div>
   );

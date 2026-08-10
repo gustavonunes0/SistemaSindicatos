@@ -28,7 +28,7 @@ export function BotaoInstalarPwa() {
 
   return (
     <>
-      <aside className="pwa-instalar-bar" aria-label="Instalar aplicativo">
+      <aside className="pwa-barra-fixixa pwa-instalar-bar" aria-label="Instalar aplicativo">
         <div className="pwa-instalar-texto">
           <strong>Instalar no celular</strong>
           <span>Acesso rápido à área do sindicalizado, offline básico.</span>

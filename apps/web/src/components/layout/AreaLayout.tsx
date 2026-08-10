@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
+import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useLogout, useMe } from '../../features/auth/hooks';
 
@@ -180,6 +181,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         {children}
       </div>
 
+      <BotaoAtualizarPwa />
       <BotaoInstalarPwa />
     </div>
   );

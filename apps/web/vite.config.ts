@@ -11,7 +11,7 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       includeAssets: ['logo-sindicato.png', 'icons/*.png'],
       manifest: {
         name: 'SINDPRF-CE — Sindicato PRF Ceará',

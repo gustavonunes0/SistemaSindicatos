@@ -5985,8 +5985,8 @@ textarea {
   color: var(--cor-erro, #b42318);
 }
 
-/* ---- PWA: instalar no celular ---- */
-.pwa-instalar-bar {
+/* ---- PWA: barras fixas (atualizar / instalar) ---- */
+.pwa-barra-fixixa {
   position: fixed;
   bottom: 0;
   left: 0;
@@ -6001,6 +6001,17 @@ textarea {
   background: var(--cor-superficie);
   border-top: 3px solid var(--amarelo-faixa);
   box-shadow: 0 -4px 20px rgb(7 31 56 / 8%);
+}
+
+.pwa-atualizar-bar {
+  z-index: 210;
+  border-top-color: var(--azul-placa);
+}
+
+/* Se houver atualização, esconde o banner de instalar para não empilhar. */
+.site:has(.pwa-atualizar-bar) .pwa-instalar-bar,
+.area-shell:has(.pwa-atualizar-bar) .pwa-instalar-bar {
+  display: none;
 }
 
 .pwa-instalar-texto {
@@ -6074,8 +6085,8 @@ textarea {
 }
 
 @media (max-width: 767px) {
-  .site:has(.pwa-instalar-bar),
-  .area-shell:has(.pwa-instalar-bar) .area-conteudo {
+  .site:has(.pwa-barra-fixixa),
+  .area-shell:has(.pwa-barra-fixixa) .area-conteudo {
     padding-bottom: 5.5rem;
   }
 }
@@ -6084,10 +6095,26 @@ textarea {
   .pwa-instalar-bar {
     display: none;
   }
+
+  /* No desktop, a barra de atualizar só aparece no app instalado (PWA). */
+  .pwa-atualizar-bar {
+    display: none;
+  }
+
+  @media (display-mode: standalone) {
+    .pwa-atualizar-bar {
+      display: flex;
+    }
+
+    .site:has(.pwa-atualizar-bar),
+    .area-shell:has(.pwa-atualizar-bar) .area-conteudo {
+      padding-bottom: 5.5rem;
+    }
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pwa-instalar-bar,
+  .pwa-barra-fixixa,
   .pwa-ios-overlay {
     transition: none;
   }
