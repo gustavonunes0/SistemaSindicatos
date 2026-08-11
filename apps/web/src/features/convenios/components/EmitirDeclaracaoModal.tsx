@@ -5,16 +5,32 @@ import {
   type EmitirDeclaracaoInput,
   type ModeloDeclaracao,
 } from '@sindprf/types';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 import { Modal } from '../../../components/ui/Modal';
+import { useMe } from '../../auth/hooks';
 import { useEmitirDeclaracao } from '../hooks';
 
 type FormValues = z.input<typeof emitirDeclaracaoSchema>;
 
-function schemaPorModelo(modelo: ModeloDeclaracao | null) {
+function schemaPorModelo(modelo: ModeloDeclaracao | null, exigeBeneficiario: boolean) {
   return emitirDeclaracaoSchema.superRefine((dados, ctx) => {
+    if (exigeBeneficiario) {
+      if (!dados.beneficiarioNome?.trim()) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe o seu nome',
+          path: ['beneficiarioNome'],
+        });
+      }
+      if (!dados.beneficiarioCpf) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: 'Informe o seu CPF',
+          path: ['beneficiarioCpf'],
+        });
+      }
+    }
     if (modelo === 'DEPENDENTE') {
       if (!dados.dependenteNome?.trim()) {
         ctx.addIssue({
@@ -54,32 +70,56 @@ type EmitirDeclaracaoModalProps = {
   aberto: boolean;
   convenio: Convenio;
   onFechar: () => void;
+  /** No admin, permite emitir para si mesmo sem vínculo de afiliado aprovado. */
+  modoAdmin?: boolean;
 };
 
 export function EmitirDeclaracaoModal({
   aberto,
   convenio,
   onFechar,
+  modoAdmin = false,
 }: EmitirDeclaracaoModalProps) {
+  const { data: me } = useMe();
   const emitir = useEmitirDeclaracao();
   const modelo = convenio.modeloDeclaracao;
+  const afiliadoAprovado = me?.afiliado?.status === 'APROVADO';
+  const exigeBeneficiario = modoAdmin && !afiliadoAprovado;
   const precisaDependente = modelo === 'DEPENDENTE';
   const precisaPeriodo = modelo === 'AUTORIZACAO_HOSPEDAGEM';
-  const schema = useMemo(() => schemaPorModelo(modelo), [modelo]);
+  const schema = useMemo(
+    () => schemaPorModelo(modelo, exigeBeneficiario),
+    [modelo, exigeBeneficiario],
+  );
 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm<FormValues, unknown, EmitirDeclaracaoInput>({
     resolver: zodResolver(schema),
     defaultValues: {
       dependenteNome: '',
       dependenteCpf: '',
+      beneficiarioNome: '',
+      beneficiarioCpf: '',
       periodoInicio: undefined,
       periodoFim: undefined,
     },
   });
+
+  useEffect(() => {
+    if (!aberto) return;
+    reset({
+      dependenteNome: '',
+      dependenteCpf: '',
+      beneficiarioNome: me?.afiliado?.nome ?? '',
+      beneficiarioCpf: me?.afiliado?.cpf ?? '',
+      periodoInicio: undefined,
+      periodoFim: undefined,
+    });
+  }, [aberto, me?.afiliado?.nome, me?.afiliado?.cpf, reset]);
 
   const onSubmit = (dados: EmitirDeclaracaoInput) => {
     emitir.mutate(
@@ -99,9 +139,30 @@ export function EmitirDeclaracaoModal({
       tamanho="md"
     >
       <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area form-area--modal">
-        <p className="convenio-declaracao-resumo">
-          Serão preenchidos automaticamente o seu nome e CPF de afiliado aprovado.
-        </p>
+        {exigeBeneficiario ? (
+          <div className="form-grid">
+            <label>
+              Seu nome
+              <input type="text" {...register('beneficiarioNome')} autoComplete="name" />
+              {errors.beneficiarioNome && (
+                <span className="erro">{errors.beneficiarioNome.message}</span>
+              )}
+            </label>
+            <label>
+              Seu CPF
+              <input type="text" {...register('beneficiarioCpf')} inputMode="numeric" />
+              {errors.beneficiarioCpf && (
+                <span className="erro">{errors.beneficiarioCpf.message}</span>
+              )}
+            </label>
+          </div>
+        ) : (
+          <p className="convenio-declaracao-resumo">
+            {modoAdmin && afiliadoAprovado
+              ? `Serão usados os dados do seu cadastro de afiliado: ${me?.afiliado?.nome}.`
+              : 'Serão preenchidos automaticamente o seu nome e CPF de afiliado aprovado.'}
+          </p>
+        )}
 
         {precisaDependente && (
           <div className="form-grid">

@@ -125,6 +125,15 @@ export const emitirDeclaracaoSchema = z
     ),
     periodoInicio: dataIso,
     periodoFim: dataIso,
+    /** Admin sem vínculo de afiliado: dados do beneficiário (ele próprio). */
+    beneficiarioNome: z.preprocess(
+      (valor) => (valor === '' || valor === null ? undefined : valor),
+      z.string().trim().min(3, 'Informe o nome').max(120).optional(),
+    ),
+    beneficiarioCpf: z.preprocess(
+      (valor) => (valor === '' || valor === null ? undefined : valor),
+      cpfSchema.optional(),
+    ),
   })
   .superRefine((dados, ctx) => {
     if (dados.periodoInicio && dados.periodoFim && dados.periodoFim < dados.periodoInicio) {
@@ -146,7 +155,7 @@ export const declaracaoValidacaoSchema = z.object({
   destino: z.string(),
   afiliadoNome: z.string(),
   afiliadoCpfMascarado: z.string(),
-  afiliadoStatus: z.enum(['PENDENTE', 'APROVADO', 'INATIVO']),
+  afiliadoStatus: z.enum(['PENDENTE', 'APROVADO', 'INATIVO']).nullable(),
   afiliadoAtivo: z.boolean(),
   dependenteNome: z.string().nullable(),
   dependenteCpfMascarado: z.string().nullable(),

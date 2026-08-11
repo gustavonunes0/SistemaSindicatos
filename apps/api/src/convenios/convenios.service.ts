@@ -101,18 +101,48 @@ export class ConveniosService {
     input: EmitirDeclaracaoInput,
   ): Promise<{ buffer: Buffer; nomeArquivo: string }> {
     const tenantId = requireTenantId();
+    const ehAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN';
 
     const afiliado = await this.prisma.afiliado.findUnique({
       where: { userId: user.id },
       select: { id: true, nome: true, cpf: true, status: true },
     });
-    if (!afiliado || afiliado.status !== 'APROVADO') {
+
+    let beneficiario: {
+      afiliadoId: string | null;
+      nome: string;
+      cpf: string;
+    };
+
+    if (afiliado?.status === 'APROVADO') {
+      beneficiario = {
+        afiliadoId: afiliado.id,
+        nome: afiliado.nome,
+        cpf: afiliado.cpf,
+      };
+    } else if (ehAdmin) {
+      const nome = input.beneficiarioNome?.trim();
+      const cpf = input.beneficiarioCpf;
+      if (!nome || !cpf) {
+        throw new BadRequestException(
+          'Informe nome e CPF do beneficiário para emitir a declaração',
+        );
+      }
+      beneficiario = { afiliadoId: afiliado?.id ?? null, nome, cpf };
+    } else {
       throw new ForbiddenException('Afiliação ainda não aprovada');
     }
 
-    const convenio = await this.buscarPublico(convenioId);
+    const convenio = ehAdmin
+      ? await this.buscarAdmin(convenioId)
+      : await this.buscarPublico(convenioId);
+
     if (!convenio.emiteDeclaracao || !convenio.modeloDeclaracao || !convenio.destinoDeclaracao) {
       throw new BadRequestException('Este convênio não emite declaração');
+    }
+
+    if (!ehAdmin && !convenio.ativo) {
+      throw new NotFoundException('Convênio não encontrado');
     }
 
     if (convenio.modeloDeclaracao === 'DEPENDENTE') {
@@ -135,12 +165,12 @@ export class ConveniosService {
         tenantId,
         codigo,
         convenioId: convenio.id,
-        afiliadoId: afiliado.id,
+        afiliadoId: beneficiario.afiliadoId,
         modelo: convenio.modeloDeclaracao,
         destino: convenio.destinoDeclaracao,
         textoComplementar: convenio.textoComplementar,
-        afiliadoNome: afiliado.nome,
-        afiliadoCpf: afiliado.cpf,
+        afiliadoNome: beneficiario.nome,
+        afiliadoCpf: beneficiario.cpf,
         dependenteNome: input.dependenteNome?.trim() || null,
         dependenteCpf: input.dependenteCpf ?? null,
         periodoInicio: input.periodoInicio ?? null,
@@ -193,7 +223,8 @@ export class ConveniosService {
       return { valida: false, motivo: 'Declaração não encontrada para este código.' };
     }
 
-    const afiliadoAtivo = registro.afiliado.status === 'APROVADO';
+    const statusAfiliado = registro.afiliado?.status ?? null;
+    const afiliadoAtivo = statusAfiliado === 'APROVADO' || statusAfiliado === null;
 
     return {
       valida: true,
@@ -204,7 +235,7 @@ export class ConveniosService {
       destino: registro.destino,
       afiliadoNome: registro.afiliadoNome,
       afiliadoCpfMascarado: mascararCpf(registro.afiliadoCpf),
-      afiliadoStatus: registro.afiliado.status as 'PENDENTE' | 'APROVADO' | 'INATIVO',
+      afiliadoStatus: statusAfiliado as 'PENDENTE' | 'APROVADO' | 'INATIVO' | null,
       afiliadoAtivo,
       dependenteNome: registro.dependenteNome,
       dependenteCpfMascarado: registro.dependenteCpf

@@ -85,7 +85,7 @@ export class ConveniosController {
     return this.conveniosService.listarPublico(query);
   }
 
-  @UseGuards(AfiliadoAprovadoGuard)
+  @Roles('ADMIN', 'AFILIADO', 'SUPERADMIN')
   @Post(':id/declaracao')
   @Header('Content-Type', 'application/pdf')
   async emitirDeclaracao(

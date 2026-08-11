@@ -4,6 +4,7 @@ import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { useConveniosAdmin, useRemoverConvenio } from '../../hooks';
+import { EmitirDeclaracaoModal } from '../EmitirDeclaracaoModal';
 import { ConvenioFormModal } from './ConvenioFormModal';
 
 type ModalConvenio = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
@@ -13,6 +14,7 @@ export function ConveniosAdminPage() {
   const remover = useRemoverConvenio();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalConvenio>(null);
+  const [emitirPara, setEmitirPara] = useState<Convenio | null>(null);
 
   const onRemover = (convenio: Convenio) => {
     pedirConfirmacao({
@@ -27,7 +29,7 @@ export function ConveniosAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Convênios"
-      descricao="Gerencie parceiros e benefícios para afiliados."
+      descricao="Gerencie parceiros e benefícios. Você também pode emitir declaração para si."
       acoes={
         <button
           type="button"
@@ -86,6 +88,15 @@ export function ConveniosAdminPage() {
                     )}
                   </td>
                   <td className="tabela-acoes">
+                    {convenio.emiteDeclaracao && convenio.ativo ? (
+                      <button
+                        type="button"
+                        className="botao-link-acao"
+                        onClick={() => setEmitirPara(convenio)}
+                      >
+                        Emitir
+                      </button>
+                    ) : null}
                     <button
                       type="button"
                       className="botao-link-acao"
@@ -114,6 +125,14 @@ export function ConveniosAdminPage() {
         id={modal?.modo === 'editar' ? modal.id : undefined}
         onFechar={() => setModal(null)}
       />
+      {emitirPara ? (
+        <EmitirDeclaracaoModal
+          aberto
+          modoAdmin
+          convenio={emitirPara}
+          onFechar={() => setEmitirPara(null)}
+        />
+      ) : null}
       {modalConfirmacao}
     </AreaLayout>
   );
