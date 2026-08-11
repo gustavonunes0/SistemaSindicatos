@@ -7,6 +7,7 @@ import {
 } from '@sindprf/types';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { Modal } from '../../../components/ui/Modal';
 import { useMe } from '../../auth/hooks';
 import { useEmitirDeclaracao } from '../hooks';
