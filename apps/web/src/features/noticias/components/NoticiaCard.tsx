@@ -18,7 +18,13 @@ export function NoticiaCard({ noticia, destaque = false }: NoticiaCardProps) {
     <article className={`noticia-card${destaque ? ' noticia-card--destaque' : ''}`}>
       <Link to={`/noticias/${noticia.slug}`} className="noticia-card-media">
         {noticia.capaUrl ? (
-          <img src={urlDaApi(noticia.capaUrl)} alt="" loading="lazy" />
+          <img
+            src={urlDaApi(noticia.capaUrl)}
+            alt=""
+            loading={destaque ? 'eager' : 'lazy'}
+            decoding="async"
+            fetchPriority={destaque ? 'high' : 'auto'}
+          />
         ) : (
           <span className="noticia-card-placeholder" aria-hidden="true">
             <span className="noticia-card-placeholder-faixa" />

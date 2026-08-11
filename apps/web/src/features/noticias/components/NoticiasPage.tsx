@@ -12,10 +12,11 @@ export function NoticiasPage() {
     description: `Acompanhe as últimas notícias do ${marca.nome}.`,
   });
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError } = useNoticias(page);
+  const { data, isLoading, isError, isFetching } = useNoticias(page);
 
   const destaque = page === 1 ? data?.items[0] : undefined;
   const demais = page === 1 && data ? data.items.slice(1) : data?.items ?? [];
+  const mostrandoCache = Boolean(data) && isFetching;
 
   return (
     <main className="noticias-page">
@@ -33,8 +34,8 @@ export function NoticiasPage() {
       <div className="noticias-corpo secao-inner">
         <BotaoAlertasNoticia />
 
-        {isLoading && <EstadoCarregando mensagem="Carregando notícias…" />}
-        {isError && (
+        {isLoading && !data && <EstadoCarregando mensagem="Carregando notícias…" />}
+        {isError && !data && (
           <p className="erro noticias-estado">Não foi possível carregar as notícias.</p>
         )}
         {data && data.items.length === 0 && (
@@ -43,6 +44,11 @@ export function NoticiasPage() {
 
         {data && data.items.length > 0 && (
           <>
+            {mostrandoCache ? (
+              <p className="noticias-estado noticias-atualizando" aria-live="polite">
+                Atualizando…
+              </p>
+            ) : null}
             {destaque && (
               <section className="noticias-destaque" aria-label="Destaque">
                 <NoticiaCard noticia={destaque} destaque />

@@ -1407,6 +1407,11 @@ button.botao-primario {
   color: var(--cor-texto-suave);
 }
 
+.noticias-atualizando {
+  font-size: var(--texto-sm);
+  opacity: 0.75;
+}
+
 .noticias-destaque .noticia-card--destaque {
   display: grid;
   gap: 0;

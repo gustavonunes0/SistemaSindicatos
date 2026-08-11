@@ -1,15 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AtualizarNoticiaInput, CriarNoticiaInput } from '@sindprf/types';
+import { useEffect } from 'react';
 import * as noticiasApi from './api';
+import { gravarCacheNoticias, lerCacheNoticias, limparCacheNoticias } from './cache-local';
 
-const STALE_PUBLICO = 2 * 60 * 1000;
+const STALE_PUBLICO = 10 * 60 * 1000;
 const STALE_ADMIN = 60 * 1000;
+const GC_PUBLICO = 30 * 60 * 1000;
 
 export function useNoticias(page: number, limit = 9) {
+  const cache = lerCacheNoticias(page, limit);
+
   return useQuery({
     queryKey: ['noticias', 'publicas', page, limit],
-    queryFn: () => noticiasApi.listarNoticias(page, limit),
+    queryFn: async () => {
+      const data = await noticiasApi.listarNoticias(page, limit);
+      gravarCacheNoticias(page, limit, data);
+      return data;
+    },
     staleTime: STALE_PUBLICO,
+    gcTime: GC_PUBLICO,
+    // Pinta na hora com o último resultado; revalida em background.
+    initialData: cache,
+    initialDataUpdatedAt: cache ? Date.now() - STALE_PUBLICO + 5_000 : undefined,
+    placeholderData: (anterior) => anterior ?? cache,
   });
 }
 
@@ -18,6 +32,7 @@ export function useNoticia(slug: string) {
     queryKey: ['noticias', 'detalhe', slug],
     queryFn: () => noticiasApi.buscarNoticiaPorSlug(slug),
     staleTime: STALE_PUBLICO,
+    gcTime: GC_PUBLICO,
   });
 }
 
@@ -40,6 +55,7 @@ export function useNoticiaAdmin(id: string | undefined) {
 function useInvalidarNoticias() {
   const queryClient = useQueryClient();
   return () => {
+    limparCacheNoticias();
     void queryClient.invalidateQueries({ queryKey: ['noticias'] });
     void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
   };
@@ -76,4 +92,30 @@ export function useUploadCapa() {
 
 export function useUploadAnexo() {
   return useMutation({ mutationFn: noticiasApi.uploadAnexo });
+}
+
+/** Prefetch da 1ª página — chama no layout público para aquecer cache. */
+export function usePrefetchNoticias() {
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: ['noticias', 'publicas', 1, 9],
+      queryFn: async () => {
+        const data = await noticiasApi.listarNoticias(1, 9);
+        gravarCacheNoticias(1, 9, data);
+        return data;
+      },
+      staleTime: STALE_PUBLICO,
+    });
+    void queryClient.prefetchQuery({
+      queryKey: ['noticias', 'publicas', 1, 3],
+      queryFn: async () => {
+        const data = await noticiasApi.listarNoticias(1, 3);
+        gravarCacheNoticias(1, 3, data);
+        return data;
+      },
+      staleTime: STALE_PUBLICO,
+    });
+  }, [queryClient]);
 }

@@ -11,7 +11,7 @@ import { requireTenantId } from '../tenant/tenant-context';
 import { resumoDeConteudo } from './noticia-resumo';
 import { gerarSlug } from './slug';
 
-const CAMPOS_LISTAGEM = {
+const CAMPOS_LISTAGEM_PUBLICA = {
   id: true,
   titulo: true,
   slug: true,
@@ -24,17 +24,45 @@ const CAMPOS_LISTAGEM = {
   updatedAt: true,
 } as const;
 
+const CAMPOS_LISTAGEM_ADMIN = CAMPOS_LISTAGEM_PUBLICA;
+
+type ListaCache = {
+  expires: number;
+  payload: {
+    items: unknown[];
+    total: number;
+    page: number;
+    totalPages: number;
+  };
+};
+
 @Injectable()
 export class NoticiasService {
+  private readonly cacheListagem = new Map<string, ListaCache>();
+  private readonly cacheTtlMs = 45_000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly pushService: PushService,
   ) {}
 
+  private chaveCache(tenantId: string, page: number, limit: number): string {
+    return `${tenantId}:${page}:${limit}`;
+  }
+
+  private invalidarCacheListagem(tenantId = requireTenantId()) {
+    for (const chave of this.cacheListagem.keys()) {
+      if (chave.startsWith(`${tenantId}:`)) {
+        this.cacheListagem.delete(chave);
+      }
+    }
+  }
+
   async criar(autorId: string, input: CriarNoticiaInput) {
+    const tenantId = requireTenantId();
     const noticia = await this.prisma.noticia.create({
       data: {
-        tenantId: requireTenantId(),
+        tenantId,
         titulo: input.titulo,
         slug: await this.slugDisponivel(gerarSlug(input.titulo)),
         conteudo: input.conteudo,
@@ -47,6 +75,8 @@ export class NoticiasService {
         autorId,
       },
     });
+
+    this.invalidarCacheListagem(tenantId);
 
     if (noticia.status === 'PUBLICADO') {
       void this.pushService.notificarNovaNoticia(noticia);
@@ -91,6 +121,7 @@ export class NoticiasService {
     }
 
     const atualizada = await this.prisma.noticia.update({ where: { id }, data });
+    this.invalidarCacheListagem(noticia.tenantId);
 
     if (publicandoAgora) {
       void this.pushService.notificarNovaNoticia(atualizada);
@@ -101,7 +132,8 @@ export class NoticiasService {
 
   async remover(id: string): Promise<void> {
     try {
-      await this.prisma.noticia.delete({ where: { id } });
+      const removida = await this.prisma.noticia.delete({ where: { id } });
+      this.invalidarCacheListagem(removida.tenantId);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new NotFoundException('Notícia não encontrada');
@@ -113,7 +145,7 @@ export class NoticiasService {
   async listarAdmin() {
     return this.prisma.noticia.findMany({
       orderBy: { createdAt: 'desc' },
-      select: CAMPOS_LISTAGEM,
+      select: CAMPOS_LISTAGEM_ADMIN,
       take: 100,
     });
   }
@@ -127,23 +159,40 @@ export class NoticiasService {
   }
 
   async listarPublicadas({ page, limit }: ListarNoticiasQuery) {
-    const where = { status: 'PUBLICADO' } as const;
-    const [items, total] = await this.prisma.$transaction([
+    const tenantId = requireTenantId();
+    const chave = this.chaveCache(tenantId, page, limit);
+    const cached = this.cacheListagem.get(chave);
+    if (cached && cached.expires > Date.now()) {
+      return cached.payload;
+    }
+
+    const where = { tenantId, status: 'PUBLICADO' as const };
+
+    // Promise.all evita round-trip sequencial do $transaction no pool remoto.
+    const [items, total] = await Promise.all([
       this.prisma.noticia.findMany({
         where,
         orderBy: { publicadoEm: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
-        select: CAMPOS_LISTAGEM,
+        select: CAMPOS_LISTAGEM_PUBLICA,
       }),
       this.prisma.noticia.count({ where }),
     ]);
-    return {
+
+    const payload = {
       items,
       total,
       page,
       totalPages: Math.max(1, Math.ceil(total / limit)),
     };
+
+    this.cacheListagem.set(chave, {
+      expires: Date.now() + this.cacheTtlMs,
+      payload,
+    });
+
+    return payload;
   }
 
   async buscarPublicadaPorSlug(slug: string) {

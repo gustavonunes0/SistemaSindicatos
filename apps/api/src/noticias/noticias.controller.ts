@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
@@ -47,6 +48,7 @@ export class NoticiasController {
 
   @Public()
   @Get()
+  @Header('Cache-Control', 'public, max-age=30, stale-while-revalidate=120')
   listarPublicadas(
     @Query(new ZodValidationPipe(listarNoticiasQuerySchema)) query: ListarNoticiasQuery,
   ) {
