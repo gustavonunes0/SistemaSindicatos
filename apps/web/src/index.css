@@ -4416,6 +4416,7 @@ textarea {
 
 .convenios-public-hero h1 {
   margin: 0.25rem 0 0;
+  color: #fff;
   font-family: var(--fonte-display);
   font-size: clamp(1.75rem, 4vw, 2.35rem);
 }
