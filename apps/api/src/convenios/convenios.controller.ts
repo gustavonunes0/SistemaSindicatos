@@ -72,14 +72,14 @@ export class ConveniosController {
     return this.conveniosService.validarDeclaracao(codigo);
   }
 
-  // ---- Consulta (AFILIADO aprovado) ----
-  @UseGuards(AfiliadoAprovadoGuard)
+  // ---- Consulta pública (site institucional + área do afiliado) ----
+  @Public()
   @Get('categorias')
   listarCategorias() {
     return this.conveniosService.listarCategorias();
   }
 
-  @UseGuards(AfiliadoAprovadoGuard)
+  @Public()
   @Get()
   listar(@Query(new ZodValidationPipe(filtroConveniosSchema)) query: FiltroConveniosInput) {
     return this.conveniosService.listarPublico(query);

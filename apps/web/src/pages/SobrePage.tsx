@@ -77,6 +77,11 @@ export function SobrePage() {
               <li key={item.titulo}>
                 <strong>{item.titulo}</strong>
                 <p>{item.texto}</p>
+                {item.titulo === 'Convênios' ? (
+                  <Link to="/convenios" className="sobre-oferta-link">
+                    Ver convênios
+                  </Link>
+                ) : null}
               </li>
             ))}
           </ul>

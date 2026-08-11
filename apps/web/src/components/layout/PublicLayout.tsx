@@ -12,6 +12,7 @@ import { telefonePrincipalTel, useMarca } from '../../lib/marca';
 const links = [
   { to: '/', rotulo: 'Início' },
   { to: '/noticias', rotulo: 'Notícias' },
+  { to: '/convenios', rotulo: 'Convênios' },
   { to: '/sobre', rotulo: 'Sobre' },
   { to: '/diretoria', rotulo: 'Diretoria' },
   { to: '/contato', rotulo: 'Contato' },

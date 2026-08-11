@@ -4389,6 +4389,198 @@ textarea {
   outline-offset: 1px;
 }
 
+/* Site institucional — convênios públicos */
+.convenios-public-page {
+  background: var(--cor-fundo, #e9ebee);
+}
+
+.convenios-public-hero {
+  background:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--cor-primaria, #0b3d6b) 92%, #000),
+      var(--azul-noite, #071f38)
+    );
+  color: #fff;
+  padding: 2.75rem 1.25rem 2.5rem;
+}
+
+.convenios-public-hero-inner {
+  width: min(100%, 52rem);
+  margin: 0 auto;
+}
+
+.convenios-public-hero .eyebrow {
+  color: var(--amarelo-faixa, #f4b301);
+}
+
+.convenios-public-hero h1 {
+  margin: 0.25rem 0 0;
+  font-family: var(--fonte-display);
+  font-size: clamp(1.75rem, 4vw, 2.35rem);
+}
+
+.convenios-public-faixa {
+  display: block;
+  width: 3.5rem;
+  height: 3px;
+  margin: 1rem 0;
+  background: var(--amarelo-faixa, #f4b301);
+}
+
+.convenios-public-hero-texto {
+  margin: 0;
+  max-width: 36rem;
+  line-height: 1.55;
+  color: color-mix(in srgb, #fff 82%, transparent);
+}
+
+.convenios-public-corpo {
+  padding-block: 2rem 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.convenios-public-grupo-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 1rem;
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.55rem;
+  border-bottom: 2px solid var(--cor-primaria, #0b3d6b);
+}
+
+.convenios-public-grupo-cabecalho h2 {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 1.25rem;
+  color: var(--cor-primaria, #0b3d6b);
+}
+
+.convenios-public-grupo-cabecalho p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave, #5a6472);
+}
+
+.convenios-public-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .convenios-public-lista {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.convenios-public-item {
+  display: grid;
+  grid-template-columns: 4rem 1fr;
+  gap: 0.9rem;
+  padding: 1rem;
+  background: var(--cor-superficie, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  border-left: 3px solid var(--amarelo-faixa, #f4b301);
+}
+
+.convenios-public-logo {
+  width: 4rem;
+  height: 4rem;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--cor-primaria, #0b3d6b) 8%, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  overflow: hidden;
+}
+
+.convenios-public-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.35rem;
+}
+
+.convenios-public-logo span {
+  font-family: var(--fonte-display);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--cor-primaria, #0b3d6b);
+}
+
+.convenios-public-item-corpo h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  color: var(--cor-texto, #1a1d23);
+}
+
+.convenios-public-item-corpo p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--cor-texto-suave, #5a6472);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.convenios-public-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-top: 0.65rem;
+  font-size: 0.82rem;
+}
+
+.convenios-public-item-meta a {
+  color: var(--cor-primaria, #0b3d6b);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.convenios-public-item-meta a:hover {
+  text-decoration: underline;
+}
+
+.convenios-public-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.25rem;
+  background: var(--cor-superficie, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  border-top: 3px solid var(--cor-primaria, #0b3d6b);
+}
+
+.convenios-public-rodape p {
+  margin: 0;
+  max-width: 28rem;
+  font-size: 0.92rem;
+  color: var(--cor-texto-suave, #5a6472);
+}
+
+.sobre-oferta-link {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--cor-primaria, #0b3d6b);
+  text-decoration: none;
+}
+
+.sobre-oferta-link:hover {
+  text-decoration: underline;
+}
+
 .convenios-grid {
   display: grid;
   gap: 1rem;
