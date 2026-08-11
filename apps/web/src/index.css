@@ -4399,36 +4399,51 @@ textarea {
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.convenios-public-hero {
   background:
-    radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--azul-placa) 8%, transparent), transparent),
-    var(--cor-fundo);
+    linear-gradient(135deg, var(--azul-noite) 0%, var(--azul-placa) 68%, #134a7c 100%);
+  color: #fff;
+  border-bottom: var(--faixa-altura) solid var(--amarelo-faixa);
+  padding: 2.75rem 1rem 2.5rem;
 }
 
-.convenios-public-topo {
-  padding: 2.5rem 1rem 0.5rem;
-  text-align: center;
-}
-
-.convenios-public-topo-inner {
-  max-width: 36rem;
+.convenios-public-hero-inner {
+  max-width: var(--largura-conteudo);
   margin: 0 auto;
 }
 
-.convenios-public-topo h1 {
-  margin: 0;
-  font-family: var(--fonte-display);
-  font-size: clamp(2.1rem, 5vw, 2.85rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  color: var(--amarelo-faixa);
-  text-shadow: 0 1px 0 color-mix(in srgb, var(--azul-noite) 18%, transparent);
+.convenios-public-hero-eyebrow {
+  color: rgb(255 255 255 / 0.62);
 }
 
-.convenios-public-topo p {
-  margin: 0.75rem 0 0;
-  font-size: 1rem;
+.convenios-public-hero-eyebrow::before {
+  background: var(--amarelo-faixa);
+}
+
+.convenios-public-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  letter-spacing: -0.02em;
+}
+
+.convenios-public-faixa {
+  display: block;
+  width: 5.5rem;
+  height: var(--faixa-altura);
+  background: var(--amarelo-faixa);
+  margin: 1rem 0 0;
+  transform-origin: left center;
+}
+
+.convenios-public-hero-texto {
+  margin: 0.85rem 0 0;
+  max-width: 48ch;
+  font-size: var(--texto-sm);
   line-height: 1.55;
-  color: var(--cor-texto-suave);
+  color: rgb(255 255 255 / 0.8);
 }
 
 .convenios-public-corpo {
@@ -4706,11 +4721,16 @@ textarea {
   color: var(--cor-texto-suave);
 }
 
-.convenios-public-topo,
+.convenios-public-hero-inner > *,
 .convenios-public-areas,
 .convenios-public-parceiros,
 .convenios-public-rodape {
   animation: surgir 240ms ease-out both;
+}
+
+.convenios-public-hero-inner > .convenios-public-faixa {
+  animation: faixa-pintar 500ms ease-out both;
+  animation-delay: 100ms;
 }
 
 .convenios-public-areas-grade > li {
@@ -4731,7 +4751,7 @@ textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .convenios-public-topo,
+  .convenios-public-hero-inner > *,
   .convenios-public-areas,
   .convenios-public-parceiros,
   .convenios-public-rodape,

@@ -115,15 +115,17 @@ export function ConveniosPublicPage() {
 
   return (
     <main className="convenios-public-page">
-      <header className="convenios-public-topo">
-        <div className="convenios-public-topo-inner">
+      <section className="convenios-public-hero" aria-labelledby="convenios-titulo">
+        <div className="convenios-public-hero-inner">
+          <p className="eyebrow convenios-public-hero-eyebrow">Benefícios</p>
           <h1 id="convenios-titulo">Convênios</h1>
-          <p>
-            Benefícios do {marca.nome} para associados e dependentes. Escolha uma área e veja os
-            parceiros.
+          <span className="convenios-public-faixa" aria-hidden="true" />
+          <p className="convenios-public-hero-texto">
+            Parcerias do {marca.nome} para associados e dependentes. Escolha a área e abra o
+            parceiro para ver condições e contatos.
           </p>
         </div>
-      </header>
+      </section>
 
       <div className="convenios-public-corpo secao-inner">
         {isLoading && <EstadoCarregando mensagem="Carregando convênios…" />}
