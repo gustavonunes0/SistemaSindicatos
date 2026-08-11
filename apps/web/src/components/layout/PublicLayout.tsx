@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, NavLink, Outlet } from 'react-router-dom';
+import { ScrollToTop } from '../ScrollToTop';
 import { MarcaHeaderLink } from '../ui/MarcaHeader';
 import { LogoLink } from '../ui/Logo';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
@@ -28,6 +29,7 @@ export function PublicLayout() {
 
   return (
     <div className="site">
+      <ScrollToTop />
       <header className="site-header">
         <div className="site-header-inner">
           <MarcaHeaderLink to="/" onClick={() => setMenuAberto(false)} />
