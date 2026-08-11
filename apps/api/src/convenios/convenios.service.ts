@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, type Convenio } from '@prisma/client';
 import type {
   AtualizarConvenioInput,
   CriarConvenioInput,
@@ -168,12 +168,12 @@ export class ConveniosService {
     return payload;
   }
 
-  async buscarPublico(id: string) {
+  async buscarPublico(id: string): Promise<Convenio> {
     const tenantId = requireTenantId();
     const chave = `${tenantId}:detalhe:${id}`;
     const cached = this.cachePublico.get(chave);
     if (cached && cached.expires > Date.now()) {
-      return cached.payload;
+      return cached.payload as Convenio;
     }
 
     const convenio = await this.prisma.convenio.findFirst({
