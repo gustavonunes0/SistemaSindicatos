@@ -4488,12 +4488,32 @@ textarea {
   border-top: var(--faixa-altura) solid transparent;
   transition:
     border-color var(--transicao),
+    background var(--transicao),
     transform var(--transicao),
     box-shadow var(--transicao);
 }
 
-.convenios-public-categoria:hover {
+.convenios-public-categoria:hover:not(:disabled),
+.convenios-public-categoria:focus-visible {
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
   border-color: color-mix(in srgb, var(--cor-primaria) 28%, var(--cor-borda));
+}
+
+.convenios-public-categoria:hover:not(:disabled) .convenios-public-categoria-texto strong,
+.convenios-public-categoria:focus-visible .convenios-public-categoria-texto strong {
+  color: var(--cor-primaria);
+}
+
+.convenios-public-categoria:hover:not(:disabled) .convenios-public-categoria-texto span,
+.convenios-public-categoria:focus-visible .convenios-public-categoria-texto span {
+  color: var(--cor-texto-suave);
+}
+
+.convenios-public-categoria:hover:not(:disabled) .convenios-public-categoria-icone,
+.convenios-public-categoria:focus-visible .convenios-public-categoria-icone {
+  color: var(--cor-primaria);
+  background: color-mix(in srgb, var(--azul-placa) 12%, var(--cor-superficie));
 }
 
 .convenios-public-categoria:focus-visible {
@@ -4501,14 +4521,17 @@ textarea {
   outline-offset: 2px;
 }
 
-.convenios-public-categoria.is-ativa {
+.convenios-public-categoria.is-ativa,
+.convenios-public-categoria.is-ativa:hover:not(:disabled) {
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
   border-color: var(--cor-primaria);
   border-top-color: var(--amarelo-faixa);
   box-shadow: 0 8px 22px rgb(7 31 56 / 8%);
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  .convenios-public-categoria:hover {
+  .convenios-public-categoria:hover:not(:disabled) {
     transform: translateY(-2px);
   }
 }
