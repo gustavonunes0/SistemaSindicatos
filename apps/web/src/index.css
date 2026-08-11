@@ -4453,179 +4453,118 @@ textarea {
   gap: 1.5rem;
 }
 
-.convenios-public-instrucao {
-  margin: 0;
-  font-size: var(--texto-sm);
-  color: var(--cor-texto-suave);
-}
-
-.convenios-public-categorias {
+.convenios-public-filtros {
   display: grid;
-  gap: 0.85rem;
-  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  grid-template-columns: 1fr 1fr;
 }
 
-@media (min-width: 560px) {
-  .convenios-public-categorias {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (min-width: 720px) {
+  .convenios-public-filtros {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-@media (min-width: 900px) {
-  .convenios-public-categorias {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-.convenios-public-categoria {
+.convenios-public-filtro {
   display: flex;
-  align-items: center;
-  gap: 0.9rem;
+  align-items: flex-start;
+  gap: 0.75rem;
   width: 100%;
   margin: 0;
-  padding: 1rem 1.1rem;
+  padding: 0.9rem 0.95rem;
   text-align: left;
   cursor: pointer;
   color: var(--cor-texto);
-  background: var(--cor-superficie);
-  border: var(--borda-fina);
-  border-radius: var(--raio-lg);
-  border-top: var(--faixa-altura) solid transparent;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--cor-borda);
+  border-radius: 0;
   transition:
     border-color var(--transicao),
-    background var(--transicao),
-    transform var(--transicao),
-    box-shadow var(--transicao);
+    color var(--transicao);
 }
 
-.convenios-public-categoria:hover:not(:disabled),
-.convenios-public-categoria:focus-visible {
-  background: var(--cor-superficie);
+.convenios-public-filtro:hover:not(:disabled),
+.convenios-public-filtro:focus-visible {
+  background: transparent;
   color: var(--cor-texto);
-  border-color: color-mix(in srgb, var(--cor-primaria) 28%, var(--cor-borda));
+  border-bottom-color: color-mix(in srgb, var(--cor-primaria) 45%, var(--cor-borda));
 }
 
-.convenios-public-categoria:hover:not(:disabled) .convenios-public-categoria-texto strong,
-.convenios-public-categoria:focus-visible .convenios-public-categoria-texto strong {
-  color: var(--cor-primaria);
-}
-
-.convenios-public-categoria:hover:not(:disabled) .convenios-public-categoria-texto span,
-.convenios-public-categoria:focus-visible .convenios-public-categoria-texto span {
-  color: var(--cor-texto-suave);
-}
-
-.convenios-public-categoria:hover:not(:disabled) .convenios-public-categoria-icone,
-.convenios-public-categoria:focus-visible .convenios-public-categoria-icone {
-  color: var(--cor-primaria);
-  background: color-mix(in srgb, var(--azul-placa) 12%, var(--cor-superficie));
-}
-
-.convenios-public-categoria:focus-visible {
+.convenios-public-filtro:focus-visible {
   outline: 2px solid var(--cor-primaria);
   outline-offset: 2px;
 }
 
-.convenios-public-categoria.is-ativa,
-.convenios-public-categoria.is-ativa:hover:not(:disabled) {
-  background: var(--cor-superficie);
+.convenios-public-filtro:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.convenios-public-filtro.is-ativa,
+.convenios-public-filtro.is-ativa:hover:not(:disabled) {
+  background: transparent;
   color: var(--cor-texto);
-  border-color: var(--cor-primaria);
-  border-top-color: var(--amarelo-faixa);
-  box-shadow: 0 8px 22px rgb(7 31 56 / 8%);
+  border-bottom-color: var(--amarelo-faixa);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .convenios-public-categoria:hover:not(:disabled) {
-    transform: translateY(-2px);
-  }
-}
-
-.convenios-public-categoria-icone {
+.convenios-public-filtro-icone {
   flex-shrink: 0;
   display: grid;
   place-items: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: var(--raio);
-  background: color-mix(in srgb, var(--azul-placa) 12%, var(--cor-superficie));
+  width: 2.1rem;
+  height: 2.1rem;
   color: var(--cor-primaria);
 }
 
-.convenios-public-categoria-icone svg {
-  width: 1.35rem;
-  height: 1.35rem;
+.convenios-public-filtro-icone svg {
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
-.convenios-public-categoria-texto {
+.convenios-public-filtro-texto {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
   min-width: 0;
 }
 
-.convenios-public-categoria-texto strong {
+.convenios-public-filtro-texto strong {
   font-family: var(--fonte-display);
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 600;
   color: var(--cor-primaria);
+  line-height: 1.25;
 }
 
-.convenios-public-categoria-texto span {
-  font-size: var(--texto-sm);
+.convenios-public-filtro.is-ativa .convenios-public-filtro-texto strong {
+  color: var(--cor-texto);
+}
+
+.convenios-public-filtro-texto span {
+  font-size: 0.8rem;
   color: var(--cor-texto-suave);
 }
 
-.convenios-public-painel {
+.convenios-public-resultado {
   display: flex;
   flex-direction: column;
   gap: 1.15rem;
-  padding: 1.25rem 1.15rem 1.35rem;
-  background: var(--cor-superficie);
-  border: var(--borda-fina);
-  border-radius: var(--raio-lg);
-  border-top: var(--faixa-altura) solid var(--amarelo-faixa);
-  animation: surgir 260ms ease-out both;
 }
 
-.convenios-public-painel-cabecalho {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem 1rem;
-}
-
-.convenios-public-painel-titulo {
-  display: flex;
-  align-items: center;
-  gap: 0.85rem;
-  min-width: 0;
-}
-
-.convenios-public-painel-titulo h2 {
+.convenios-public-resultado-cabecalho h2 {
   margin: 0;
-  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+  font-size: clamp(1.25rem, 2.4vw, 1.55rem);
   color: var(--cor-primaria);
 }
 
-.convenios-public-painel-titulo p {
-  margin: 0.15rem 0 0;
+.convenios-public-resultado-cabecalho p {
+  margin: 0.25rem 0 0;
   font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
 }
 
-.convenios-public-vazio-selecao {
-  margin: 0;
-  padding: 1.1rem 1.15rem;
-  border: 1px dashed var(--cor-borda);
-  border-radius: var(--raio);
-  font-size: var(--texto-sm);
-  color: var(--cor-texto-suave);
-  text-align: center;
-}
-
-.convenios-public-lista {
+.convenios-public-grade {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -4634,29 +4573,37 @@ textarea {
 }
 
 @media (min-width: 720px) {
-  .convenios-public-lista {
+  .convenios-public-grade {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
   }
 }
 
-.convenios-public-item {
+.convenios-public-card {
   display: grid;
   grid-template-columns: 4rem minmax(0, 1fr);
   gap: 0.9rem;
-  padding: 1.1rem 1.15rem 1.15rem;
-  background: var(--cor-superficie);
-  border: var(--borda-fina);
-  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
-  border-radius: var(--raio);
-  transition: border-color var(--transicao), transform var(--transicao);
+  padding: 1rem 1.05rem 1.1rem;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--cor-borda);
+  border-radius: 0;
+  transition:
+    border-color var(--transicao),
+    background var(--transicao);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .convenios-public-item:hover {
-    border-color: color-mix(in srgb, var(--cor-primaria) 35%, var(--cor-borda));
-    transform: translateY(-2px);
-  }
+.convenios-public-card:hover,
+.convenios-public-card:focus-visible {
+  background: color-mix(in srgb, var(--azul-placa) 4%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--cor-primaria) 35%, var(--cor-borda));
+}
+
+.convenios-public-card:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
 }
 
 .convenios-public-logo {
@@ -4665,7 +4612,7 @@ textarea {
   display: grid;
   place-items: center;
   border-radius: var(--raio);
-  background: var(--cor-fundo);
+  background: var(--cor-superficie);
   border: var(--borda-fina);
   overflow: hidden;
   flex-shrink: 0;
@@ -4685,41 +4632,26 @@ textarea {
   color: var(--cor-primaria);
 }
 
-.convenios-public-item-corpo h3 {
-  margin: 0 0 0.35rem;
+.convenios-public-card-corpo h3 {
+  margin: 0 0 0.3rem;
   font-family: var(--fonte-display);
   font-size: 1.05rem;
   color: var(--cor-primaria);
 }
 
-.convenios-public-item-corpo p {
+.convenios-public-card-corpo p {
   margin: 0;
   font-size: var(--texto-sm);
   line-height: 1.45;
   color: var(--cor-texto-suave);
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 }
 
-.convenios-public-item-meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1rem;
-  margin-top: 0.65rem;
+.convenios-public-card-cta {
+  display: inline-block;
+  margin-top: 0.55rem;
   font-size: var(--texto-sm);
-  color: var(--cor-texto-suave);
-}
-
-.convenios-public-item-meta a {
-  color: var(--cor-primaria);
   font-weight: 600;
-  text-decoration: none;
-}
-
-.convenios-public-item-meta a:hover {
-  text-decoration: underline;
+  color: var(--cor-primaria);
 }
 
 .convenios-public-rodape {
@@ -4729,11 +4661,8 @@ textarea {
   justify-content: space-between;
   gap: 1rem;
   margin-top: 0.5rem;
-  padding: 1.35rem 1.25rem 1.45rem;
-  background: var(--cor-superficie);
-  border: var(--borda-fina);
-  border-radius: var(--raio-lg);
-  border-top: var(--faixa-altura) solid var(--amarelo-faixa);
+  padding: 1.25rem 0 0;
+  border-top: 1px solid var(--cor-borda);
 }
 
 .convenios-public-rodape p {
@@ -4745,10 +4674,175 @@ textarea {
 }
 
 .convenios-public-hero-inner > *,
-.convenios-public-categorias,
-.convenios-public-instrucao,
+.convenios-public-filtros,
+.convenios-public-resultado,
 .convenios-public-rodape {
   animation: surgir 260ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .convenios-public-hero-inner > *,
+  .convenios-public-filtros,
+  .convenios-public-resultado,
+  .convenios-public-rodape {
+    animation: none;
+  }
+}
+
+/* Detalhe público do convênio */
+.convenio-publico-page {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.convenio-publico-hero {
+  background:
+    linear-gradient(135deg, var(--azul-noite) 0%, var(--azul-placa) 68%, #134a7c 100%);
+  color: #fff;
+  border-bottom: var(--faixa-altura) solid var(--amarelo-faixa);
+  padding: 1.75rem 1rem 2.25rem;
+}
+
+.convenio-publico-hero-inner {
+  max-width: var(--largura-conteudo);
+  margin: 0 auto;
+}
+
+.convenio-publico-voltar {
+  display: inline-block;
+  margin-bottom: 1rem;
+  color: rgb(255 255 255 / 0.78);
+  text-decoration: none;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.convenio-publico-voltar:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+.convenio-publico-eyebrow {
+  color: rgb(255 255 255 / 0.62);
+}
+
+.convenio-publico-eyebrow::before {
+  background: var(--amarelo-faixa);
+}
+
+.convenio-publico-hero-topo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.convenio-publico-logo {
+  width: 4.5rem;
+  height: 4.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: var(--raio);
+  background: #fff;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.convenio-publico-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 0.35rem;
+}
+
+.convenio-publico-logo span {
+  font-family: var(--fonte-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--cor-primaria);
+}
+
+.convenio-publico-hero h1 {
+  margin: 0;
+  color: #fff;
+  font-size: clamp(1.55rem, 3.5vw, 2.15rem);
+  letter-spacing: -0.02em;
+}
+
+.convenio-publico-vigencia {
+  margin: 0.35rem 0 0;
+  font-size: var(--texto-sm);
+  color: rgb(255 255 255 / 0.72);
+}
+
+.convenio-publico-corpo {
+  padding: 1.75rem 1rem 3rem;
+}
+
+.convenio-publico-artigo {
+  max-width: 42rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.convenio-publico-artigo h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--cor-primaria);
+}
+
+.convenio-publico-descricao {
+  margin: 0;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--cor-texto);
+  white-space: pre-wrap;
+}
+
+.convenio-publico-dados {
+  margin: 0.5rem 0 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.convenio-publico-dados div {
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.convenio-publico-dados dt {
+  margin: 0 0 0.2rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.convenio-publico-dados dd {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--cor-texto);
+}
+
+.convenio-publico-dados a {
+  color: var(--cor-primaria);
+  font-weight: 600;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.convenio-publico-dados a:hover {
+  text-decoration: underline;
+}
+
+.convenio-publico-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
 .convenios-public-hero-inner > .convenios-public-faixa {
@@ -4768,32 +4862,32 @@ textarea {
   animation-delay: 140ms;
 }
 
-.convenios-public-instrucao {
+.convenios-public-filtros {
   animation-delay: 160ms;
 }
 
-.convenios-public-categorias {
-  animation-delay: 200ms;
+.convenios-public-filtro:nth-child(1) {
+  animation: surgir 260ms ease-out both;
+  animation-delay: 180ms;
 }
 
-.convenios-public-categoria:nth-child(1) {
+.convenios-public-filtro:nth-child(2) {
   animation: surgir 260ms ease-out both;
-  animation-delay: 200ms;
+  animation-delay: 220ms;
 }
 
-.convenios-public-categoria:nth-child(2) {
+.convenios-public-filtro:nth-child(3) {
   animation: surgir 260ms ease-out both;
-  animation-delay: 240ms;
+  animation-delay: 260ms;
 }
 
-.convenios-public-categoria:nth-child(3) {
+.convenios-public-filtro:nth-child(4) {
   animation: surgir 260ms ease-out both;
-  animation-delay: 280ms;
+  animation-delay: 300ms;
 }
 
-.convenios-public-categoria:nth-child(4) {
-  animation: surgir 260ms ease-out both;
-  animation-delay: 320ms;
+.convenios-public-resultado {
+  animation-delay: 220ms;
 }
 
 .convenios-public-rodape {

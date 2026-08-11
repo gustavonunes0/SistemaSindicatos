@@ -9,7 +9,6 @@ import {
   Post,
   Query,
   StreamableFile,
-  UseGuards,
 } from '@nestjs/common';
 import {
   atualizarConvenioSchema,
@@ -22,7 +21,6 @@ import {
   type FiltroConveniosInput,
 } from '@sindprf/types';
 import { CurrentUser, Public, Roles } from '../common/decorators';
-import { AfiliadoAprovadoGuard } from '../common/guards/afiliado-aprovado.guard';
 import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { ConveniosService } from './convenios.service';
@@ -101,7 +99,7 @@ export class ConveniosController {
     });
   }
 
-  @UseGuards(AfiliadoAprovadoGuard)
+  @Public()
   @Get(':id')
   buscar(@Param('id') id: string) {
     return this.conveniosService.buscarPublico(id);

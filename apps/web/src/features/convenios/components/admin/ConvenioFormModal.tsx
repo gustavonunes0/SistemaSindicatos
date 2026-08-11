@@ -148,7 +148,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
               <input
                 type="text"
                 {...register('categoria')}
-                placeholder="Ex.: Saúde, Educação"
+                placeholder="Ex.: Educação, Saúde, Esporte e Lazer, Serviços e Facilidades"
                 autoComplete="off"
               />
               {errors.categoria && <span className="erro">{errors.categoria.message}</span>}

@@ -17,6 +17,11 @@ const ContatoPage = lazy(() =>
 const ConveniosPublicPage = lazy(() =>
   import('./pages/ConveniosPublicPage').then((m) => ({ default: m.ConveniosPublicPage })),
 );
+const ConvenioPublicoDetalhePage = lazy(() =>
+  import('./features/convenios/components/ConvenioPublicoDetalhePage').then((m) => ({
+    default: m.ConvenioPublicoDetalhePage,
+  })),
+);
 const ValidarDeclaracaoPage = lazy(() =>
   import('./pages/ValidarDeclaracaoPage').then((m) => ({ default: m.ValidarDeclaracaoPage })),
 );
@@ -183,6 +188,7 @@ export const router = createBrowserRouter([
       { path: '/noticias', element: comSuspense(<NoticiasPage />) },
       { path: '/noticias/:slug', element: comSuspense(<NoticiaDetalhePage />) },
       { path: '/convenios', element: comSuspense(<ConveniosPublicPage />) },
+      { path: '/convenios/:id', element: comSuspense(<ConvenioPublicoDetalhePage />) },
       { path: '/sobre', element: comSuspense(<SobrePage />) },
       { path: '/diretoria', element: comSuspense(<DiretoriaPage />) },
       { path: '/contato', element: comSuspense(<ContatoPage />) },
