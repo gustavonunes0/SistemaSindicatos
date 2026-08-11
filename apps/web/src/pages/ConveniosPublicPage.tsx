@@ -12,52 +12,74 @@ import { urlDaApi } from '../lib/urls';
 import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
-function resumoCurto(texto: string, max = 110): string {
+const META_CATEGORIA: Record<
+  CategoriaConvenio,
+  { subtitulo: string; tom: 'educacao' | 'saude' | 'lazer' | 'servicos' }
+> = {
+  Educação: { subtitulo: 'Faculdades, cursos e escolas', tom: 'educacao' },
+  Saúde: { subtitulo: 'Clínicas, exames e bem-estar', tom: 'saude' },
+  'Esporte e Lazer': { subtitulo: 'Hotéis, clubes e turismo', tom: 'lazer' },
+  'Serviços e Facilidades': { subtitulo: 'Praticidade no dia a dia', tom: 'servicos' },
+};
+
+function resumoCurto(texto: string, max = 100): string {
   const limpo = texto.replace(/\s+/g, ' ').trim();
   if (limpo.length <= max) return limpo;
   return `${limpo.slice(0, max).replace(/\s+\S*$/, '')}…`;
 }
 
-function iconeDeCategoria(categoria: CategoriaConvenio): ReactNode {
+function IlustracaoCategoria({ categoria }: { categoria: CategoriaConvenio }): ReactNode {
   if (categoria === 'Saúde') {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+        <circle cx="40" cy="40" r="34" fill="#FEE2E2" />
         <path
-          fill="currentColor"
-          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          fill="#DC2626"
+          d="M40 58c-9.5-7.4-16-13.2-16-20.2 0-4.7 3.6-8.3 8.2-8.3 2.6 0 5.1 1.2 6.8 3.2 1.7-2 4.2-3.2 6.8-3.2 4.6 0 8.2 3.6 8.2 8.3 0 7-6.5 12.8-16 20.2z"
         />
+        <rect x="36.5" y="28" width="7" height="18" rx="1.5" fill="#fff" />
+        <rect x="31" y="33.5" width="18" height="7" rx="1.5" fill="#fff" />
       </svg>
     );
   }
 
   if (categoria === 'Educação') {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-        <path
-          fill="currentColor"
-          d="M12 3L1 9l4 2.18v6L12 21l7-3.82v-6l2-1.09V17h2V9L12 3zm6.82 6L12 12.72 5.18 9 12 5.28 18.82 9zM17 15.99l-5 2.73-5-2.73v-3.72L12 15l5-2.73v3.72z"
-        />
+      <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+        <circle cx="40" cy="40" r="34" fill="#DBEAFE" />
+        <path fill="#1D4ED8" d="M40 22 16 34l24 12 24-12-24-12z" />
+        <path fill="#2563EB" d="M24 40.5v10.2L40 58l16-7.3V40.5L40 48.2 24 40.5z" />
+        <path fill="#93C5FD" d="M60 36.5v12.8h4V38.2l-4-1.7z" />
+        <rect x="28" y="52" width="24" height="3" rx="1.5" fill="#1E3A8A" opacity=".35" />
       </svg>
     );
   }
 
   if (categoria === 'Esporte e Lazer') {
     return (
-      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+        <circle cx="40" cy="40" r="34" fill="#DCFCE7" />
         <path
-          fill="currentColor"
-          d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"
+          fill="#16A34A"
+          d="M40 18c-9.4 0-17 7.6-17 17 0 12.8 17 27 17 27s17-14.2 17-27c0-9.4-7.6-17-17-17zm0 23.5a6.5 6.5 0 1 1 0-13 6.5 6.5 0 0 1 0 13z"
+        />
+        <path
+          fill="#86EFAC"
+          d="M40 22.5c-6.9 0-12.5 5.6-12.5 12.5 0 1.1.1 2.2.4 3.2A9.5 9.5 0 0 1 40 29.5a9.5 9.5 0 0 1 12.1 8.7c.3-1 .4-2.1.4-3.2 0-6.9-5.6-12.5-12.5-12.5z"
         />
       </svg>
     );
   }
 
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path
-        fill="currentColor"
-        d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96a7.15 7.15 0 0 0-1.62-.94l-.36-2.54A.48.48 0 0 0 13.98 2h-3.96a.48.48 0 0 0-.47.41l-.36 2.54c-.59.24-1.13.55-1.62.94l-2.39-.96a.49.49 0 0 0-.59.22L2.67 8.87a.49.49 0 0 0 .12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94L2.79 14.52a.49.49 0 0 0-.12.61l1.92 3.32c.13.22.39.3.59.22l2.39-.96c.5.39 1.04.7 1.62.94l.36 2.54c.05.24.24.41.47.41h3.96c.24 0 .43-.17.47-.41l.36 2.54c.59-.24 1.13-.55 1.62-.94l2.39.96c.22.08.46 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.03-1.58zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
-      />
+    <svg viewBox="0 0 80 80" aria-hidden="true" focusable="false">
+      <circle cx="40" cy="40" r="34" fill="#FEF3C7" />
+      <rect x="24" y="28" width="32" height="26" rx="3" fill="#D97706" />
+      <rect x="28" y="32" width="10" height="8" rx="1.5" fill="#FDE68A" />
+      <rect x="42" y="32" width="10" height="8" rx="1.5" fill="#FDE68A" />
+      <rect x="28" y="44" width="10" height="6" rx="1.5" fill="#FDE68A" />
+      <rect x="42" y="44" width="10" height="6" rx="1.5" fill="#FDE68A" />
+      <path fill="#92400E" d="M36 54h8v4h-8z" />
     </svg>
   );
 }
@@ -88,31 +110,20 @@ export function ConveniosPublicPage() {
     return mapa;
   }, [convenios]);
 
-  const categoriasComParceiros = useMemo(
-    () => CATEGORIAS_CONVENIO.filter((cat) => porCategoria[cat].length > 0),
-    [porCategoria],
-  );
-
-  const ativa =
-    categoriaAtiva && porCategoria[categoriaAtiva]?.length > 0
-      ? categoriaAtiva
-      : (categoriasComParceiros[0] ?? null);
-
-  const listaAtiva = ativa ? porCategoria[ativa] : [];
+  const totalParceiros = convenios?.length ?? 0;
+  const listaAtiva = categoriaAtiva ? porCategoria[categoriaAtiva] : [];
 
   return (
     <main className="convenios-public-page">
-      <section className="convenios-public-hero" aria-labelledby="convenios-titulo">
-        <div className="convenios-public-hero-inner">
-          <p className="eyebrow convenios-public-hero-eyebrow">Benefícios</p>
+      <header className="convenios-public-topo">
+        <div className="convenios-public-topo-inner">
           <h1 id="convenios-titulo">Convênios</h1>
-          <span className="convenios-public-faixa" aria-hidden="true" />
-          <p className="convenios-public-hero-texto">
-            Parcerias do {marca.nome} para associados e dependentes. Escolha a área e abra o
-            parceiro para ver condições e contatos.
+          <p>
+            Benefícios do {marca.nome} para associados e dependentes. Escolha uma área e veja os
+            parceiros.
           </p>
         </div>
-      </section>
+      </header>
 
       <div className="convenios-public-corpo secao-inner">
         {isLoading && <EstadoCarregando mensagem="Carregando convênios…" />}
@@ -127,73 +138,88 @@ export function ConveniosPublicPage() {
           </div>
         )}
 
-        {categoriasComParceiros.length > 0 && ativa && (
+        {totalParceiros > 0 && (
           <>
-            <nav className="convenios-public-filtros" aria-label="Áreas de convênios">
-              {CATEGORIAS_CONVENIO.map((categoria) => {
-                const qtd = porCategoria[categoria].length;
-                const selecionada = ativa === categoria;
-                return (
-                  <button
-                    key={categoria}
-                    type="button"
-                    className={`convenios-public-filtro${selecionada ? ' is-ativa' : ''}`}
-                    aria-pressed={selecionada}
-                    disabled={qtd === 0}
-                    onClick={() => setCategoriaAtiva(categoria)}
-                  >
-                    <span className="convenios-public-filtro-icone" aria-hidden="true">
-                      {iconeDeCategoria(categoria)}
-                    </span>
-                    <span className="convenios-public-filtro-texto">
-                      <strong>{categoria}</strong>
-                      <span>
-                        {qtd === 0
-                          ? 'Em breve'
-                          : `${qtd} ${qtd === 1 ? 'parceiro' : 'parceiros'}`}
-                      </span>
-                    </span>
-                  </button>
-                );
-              })}
-            </nav>
-
-            <section
-              className="convenios-public-resultado"
-              aria-labelledby="convenios-resultado-titulo"
-            >
-              <header className="convenios-public-resultado-cabecalho">
-                <h2 id="convenios-resultado-titulo">{ativa}</h2>
-                <p>
-                  {listaAtiva.length}{' '}
-                  {listaAtiva.length === 1 ? 'parceiro nesta área' : 'parceiros nesta área'}
-                </p>
+            <section className="convenios-public-areas" aria-labelledby="convenios-areas-titulo">
+              <header className="convenios-public-secao-cabecalho">
+                <h2 id="convenios-areas-titulo">Áreas</h2>
+                <p>Toque em uma categoria para listar os parceiros</p>
               </header>
 
-              <ul className="convenios-public-grade">
-                {listaAtiva.map((convenio) => (
-                  <li key={convenio.id}>
-                    <Link to={`/convenios/${convenio.id}`} className="convenios-public-card">
-                      <div className="convenios-public-logo" aria-hidden={!convenio.logoUrl}>
-                        {convenio.logoUrl ? (
-                          <img src={urlDaApi(convenio.logoUrl)} alt="" loading="lazy" />
-                        ) : (
-                          <span>{convenio.nome.charAt(0)}</span>
-                        )}
-                      </div>
-                      <div className="convenios-public-card-corpo">
-                        <h3>{convenio.nome}</h3>
-                        {convenio.descricao ? (
-                          <p>{resumoCurto(convenio.descricao)}</p>
-                        ) : (
-                          <p>Toque para ver condições e contatos.</p>
-                        )}
-                        <span className="convenios-public-card-cta">Ver detalhes</span>
-                      </div>
-                    </Link>
-                  </li>
-                ))}
+              <ul className="convenios-public-areas-grade">
+                {CATEGORIAS_CONVENIO.map((categoria) => {
+                  const qtd = porCategoria[categoria].length;
+                  const selecionada = categoriaAtiva === categoria;
+                  const meta = META_CATEGORIA[categoria];
+                  return (
+                    <li key={categoria}>
+                      <button
+                        type="button"
+                        className={`convenios-public-area tom-${meta.tom}${selecionada ? ' is-ativa' : ''}${qtd === 0 ? ' is-vazia' : ''}`}
+                        aria-pressed={selecionada}
+                        disabled={qtd === 0}
+                        onClick={() => setCategoriaAtiva(categoria)}
+                      >
+                        <span className="convenios-public-area-ilustracao">
+                          <IlustracaoCategoria categoria={categoria} />
+                        </span>
+                        <strong>{categoria}</strong>
+                        <span className="convenios-public-area-meta">
+                          {qtd === 0
+                            ? 'Em breve'
+                            : `${qtd} ${qtd === 1 ? 'parceiro' : 'parceiros'}`}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
+            </section>
+
+            <section
+              className="convenios-public-parceiros"
+              aria-labelledby="convenios-parceiros-titulo"
+            >
+              {!categoriaAtiva ? (
+                <div className="convenios-public-parceiros-vazio">
+                  <p>Selecione uma área acima para ver os convênios disponíveis.</p>
+                </div>
+              ) : (
+                <>
+                  <header className="convenios-public-secao-cabecalho">
+                    <p className="convenios-public-parceiros-eyebrow">Parceiros</p>
+                    <h2 id="convenios-parceiros-titulo">{categoriaAtiva}</h2>
+                    <p>{META_CATEGORIA[categoriaAtiva].subtitulo}</p>
+                  </header>
+
+                  <ul className="convenios-public-grade">
+                    {listaAtiva.map((convenio) => (
+                      <li key={convenio.id}>
+                        <Link to={`/convenios/${convenio.id}`} className="convenios-public-card">
+                          <div className="convenios-public-logo" aria-hidden={!convenio.logoUrl}>
+                            {convenio.logoUrl ? (
+                              <img src={urlDaApi(convenio.logoUrl)} alt="" loading="lazy" />
+                            ) : (
+                              <span>{convenio.nome.charAt(0)}</span>
+                            )}
+                          </div>
+                          <div className="convenios-public-card-corpo">
+                            <h3>{convenio.nome}</h3>
+                            {convenio.descricao ? (
+                              <p>{resumoCurto(convenio.descricao)}</p>
+                            ) : (
+                              <p>Condições, contatos e detalhes do benefício.</p>
+                            )}
+                          </div>
+                          <span className="convenios-public-card-seta" aria-hidden="true">
+                            →
+                          </span>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </section>
 
             <aside className="convenios-public-rodape">
