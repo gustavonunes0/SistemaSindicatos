@@ -37,25 +37,55 @@ const CAMPOS_LISTAGEM = {
   updatedAt: true,
 } as const;
 
+/** Lista admin: só o necessário para a tabela (detalhe/edição busca por id). */
+const CAMPOS_LISTAGEM_ADMIN = {
+  id: true,
+  nome: true,
+  categoria: true,
+  ativo: true,
+  emiteDeclaracao: true,
+  modeloDeclaracao: true,
+  createdAt: true,
+} as const;
+
+type ListaCache = { expires: number; payload: unknown };
+
 @Injectable()
 export class ConveniosService {
+  private readonly cacheAdmin = new Map<string, ListaCache>();
+  private readonly cachePublico = new Map<string, ListaCache>();
+  private readonly cacheTtlMs = 120_000;
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly declaracaoPdf: DeclaracaoPdfService,
   ) {}
 
-  criar(input: CriarConvenioInput) {
-    return this.prisma.convenio.create({
+  private invalidarCaches(tenantId = requireTenantId()) {
+    for (const chave of [...this.cacheAdmin.keys(), ...this.cachePublico.keys()]) {
+      if (chave.startsWith(`${tenantId}:`)) {
+        this.cacheAdmin.delete(chave);
+        this.cachePublico.delete(chave);
+      }
+    }
+  }
+
+  async criar(input: CriarConvenioInput) {
+    const criado = await this.prisma.convenio.create({
       data: { ...this.montarDados(input), tenantId: requireTenantId() },
     });
+    this.invalidarCaches();
+    return criado;
   }
 
   async atualizar(id: string, input: AtualizarConvenioInput) {
     try {
-      return await this.prisma.convenio.update({
+      const atualizado = await this.prisma.convenio.update({
         where: { id },
         data: this.montarDados(input),
       });
+      this.invalidarCaches();
+      return atualizado;
     } catch (error) {
       throw this.tratarNaoEncontrado(error);
     }
@@ -64,16 +94,38 @@ export class ConveniosService {
   async remover(id: string): Promise<void> {
     try {
       await this.prisma.convenio.delete({ where: { id } });
+      this.invalidarCaches();
     } catch (error) {
       throw this.tratarNaoEncontrado(error);
     }
   }
 
-  listarAdmin() {
-    return this.prisma.convenio.findMany({
+  async listarAdmin() {
+    const tenantId = requireTenantId();
+    const chave = `${tenantId}:admin`;
+    const cached = this.cacheAdmin.get(chave);
+    if (cached && cached.expires > Date.now()) {
+      return cached.payload;
+    }
+
+    const itens = await this.prisma.convenio.findMany({
+      where: { tenantId },
       orderBy: { createdAt: 'desc' },
-      select: CAMPOS_LISTAGEM,
+      select: CAMPOS_LISTAGEM_ADMIN,
     });
+    const payload = itens.map((item) => ({
+      ...item,
+      descricao: '',
+      logoUrl: null,
+      link: null,
+      contato: null,
+      vigenciaInicio: null,
+      vigenciaFim: null,
+      destinoDeclaracao: null,
+      updatedAt: item.createdAt,
+    }));
+    this.cacheAdmin.set(chave, { expires: Date.now() + this.cacheTtlMs, payload });
+    return payload;
   }
 
   async buscarAdmin(id: string) {
@@ -84,8 +136,9 @@ export class ConveniosService {
     return convenio;
   }
 
-  listarPublico({ categoria, busca }: FiltroConveniosInput) {
-    const where: Prisma.ConvenioWhereInput = { ativo: true };
+  async listarPublico({ categoria, busca }: FiltroConveniosInput) {
+    const tenantId = requireTenantId();
+    const where: Prisma.ConvenioWhereInput = { tenantId, ativo: true };
     if (categoria) {
       where.categoria = categoria;
     }
@@ -95,11 +148,24 @@ export class ConveniosService {
         { descricao: { contains: busca, mode: 'insensitive' } },
       ];
     }
-    return this.prisma.convenio.findMany({
+
+    const chave = `${tenantId}:pub:${categoria ?? ''}`;
+    if (!busca) {
+      const cached = this.cachePublico.get(chave);
+      if (cached && cached.expires > Date.now()) {
+        return cached.payload;
+      }
+    }
+
+    const payload = await this.prisma.convenio.findMany({
       where,
       orderBy: { nome: 'asc' },
       select: CAMPOS_LISTAGEM,
     });
+    if (!busca) {
+      this.cachePublico.set(chave, { expires: Date.now() + this.cacheTtlMs, payload });
+    }
+    return payload;
   }
 
   async buscarPublico(id: string) {

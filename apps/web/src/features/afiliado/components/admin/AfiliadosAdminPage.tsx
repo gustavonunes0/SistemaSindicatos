@@ -123,10 +123,12 @@ export function AfiliadosAdminPage() {
         </p>
       )}
 
-      {isLoading && <EstadoCarregando mensagem="Carregando sindicalizados…" />}
+      {isLoading && !data && (
+        <EstadoCarregando mensagem="Carregando sindicalizados…" />
+      )}
       {isError && <p className="erro">Erro ao carregar sindicalizados.</p>}
 
-      {!isLoading && afiliados.length === 0 && (
+      {data && afiliados.length === 0 && (
         <div className="estado-vazio">
           <p>Nenhum sindicalizado neste filtro.</p>
         </div>

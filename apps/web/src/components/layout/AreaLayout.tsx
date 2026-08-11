@@ -4,6 +4,9 @@ import { LogoLink } from '../ui/Logo';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useLogout, useMe } from '../../features/auth/hooks';
+import { usePrefetchAfiliadosAdmin } from '../../features/afiliado/hooks';
+import { usePrefetchConveniosAdmin } from '../../features/convenios/hooks';
+import { usePrefetchNoticiasAdmin } from '../../features/noticias/hooks';
 
 type AreaTipo = 'admin' | 'afiliado';
 
@@ -52,6 +55,13 @@ const gruposAdmin: GrupoNav[] = [
   },
 ];
 
+function PrefetchAdmin() {
+  usePrefetchNoticiasAdmin();
+  usePrefetchConveniosAdmin();
+  usePrefetchAfiliadosAdmin();
+  return null;
+}
+
 export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLayoutProps) {
   const [menuAberto, setMenuAberto] = useState(false);
   const { data } = useMe();
@@ -79,6 +89,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
 
   return (
     <div className={`area-shell area-shell--${tipo}`}>
+      {tipo === 'admin' ? <PrefetchAdmin /> : null}
       <button
         type="button"
         className="area-menu-toggle"

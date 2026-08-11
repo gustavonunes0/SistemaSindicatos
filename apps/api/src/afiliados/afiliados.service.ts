@@ -11,16 +11,29 @@ import { requireTenantId } from '../tenant/tenant-context';
 
 const BCRYPT_ROUNDS = 10;
 
+type ListaCache = { expires: number; payload: unknown };
+
 @Injectable()
 export class AfiliadosService {
+  private readonly cacheLista = new Map<string, ListaCache>();
+  private readonly cacheTtlMs = 30_000;
+
   constructor(private readonly prisma: PrismaService) {}
+
+  private invalidarCacheLista(tenantId = requireTenantId()) {
+    for (const chave of this.cacheLista.keys()) {
+      if (chave.startsWith(`${tenantId}:`)) {
+        this.cacheLista.delete(chave);
+      }
+    }
+  }
 
   async cadastrar(input: CadastroAfiliadoInput) {
     const senhaHash = await bcrypt.hash(input.senha, BCRYPT_ROUNDS);
     const tenantId = requireTenantId();
 
     try {
-      return await this.prisma.$transaction(async (tx) => {
+      const criado = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: { tenantId, email: input.email, senhaHash, role: 'AFILIADO' },
         });
@@ -36,6 +49,8 @@ export class AfiliadosService {
           },
         });
       });
+      this.invalidarCacheLista(tenantId);
+      return criado;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
         throw new ConflictException('Email, CPF ou matrícula já cadastrado');
@@ -45,11 +60,19 @@ export class AfiliadosService {
   }
 
   async listar(filtro: FiltroAfiliadosInput) {
+    const tenantId = requireTenantId();
     const { status, busca, page, limit } = filtro;
     const termo = busca?.trim() ?? '';
+    const chave = `${tenantId}:${status ?? ''}:${termo}:${page}:${limit}`;
+    const cached = this.cacheLista.get(chave);
+    if (cached && cached.expires > Date.now()) {
+      return cached.payload;
+    }
+
     const cpfDigitos = termo.replace(/\D/g, '');
 
     const where: Prisma.AfiliadoWhereInput = {
+      tenantId,
       ...(status ? { status } : {}),
       ...(termo
         ? {
@@ -61,7 +84,7 @@ export class AfiliadosService {
         : {}),
     };
 
-    const [total, items] = await this.prisma.$transaction([
+    const [total, items] = await Promise.all([
       this.prisma.afiliado.count({ where }),
       this.prisma.afiliado.findMany({
         where,
@@ -84,17 +107,21 @@ export class AfiliadosService {
       }),
     ]);
 
-    return {
+    const payload = {
       items,
       total,
       page,
       totalPages: Math.max(1, Math.ceil(total / limit)),
     };
+    this.cacheLista.set(chave, { expires: Date.now() + this.cacheTtlMs, payload });
+    return payload;
   }
 
   async atualizarStatus(id: string, status: StatusAfiliado) {
     try {
-      return await this.prisma.afiliado.update({ where: { id }, data: { status } });
+      const atualizado = await this.prisma.afiliado.update({ where: { id }, data: { status } });
+      this.invalidarCacheLista(atualizado.tenantId);
+      return atualizado;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
         throw new NotFoundException('Afiliado não encontrado');

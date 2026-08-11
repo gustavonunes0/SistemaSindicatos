@@ -39,8 +39,8 @@ export function NoticiasAdminPage() {
         </button>
       }
     >
-      {isLoading && <EstadoCarregando />}
-      {isError && <p className="erro">Erro ao carregar as notícias.</p>}
+      {isLoading && !noticias && <EstadoCarregando />}
+      {isError && !noticias && <p className="erro">Erro ao carregar as notícias.</p>}
 
       {noticias && noticias.length === 0 && (
         <div className="estado-vazio">

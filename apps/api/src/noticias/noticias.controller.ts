@@ -57,6 +57,7 @@ export class NoticiasController {
 
   @Roles('ADMIN')
   @Get('admin')
+  @Header('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
   listarAdmin() {
     return this.noticiasService.listarAdmin();
   }

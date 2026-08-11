@@ -1,15 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AtualizarNoticiaInput, CriarNoticiaInput } from '@sindprf/types';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { gravarCacheNoticiasAdmin, lerCacheNoticiasAdmin, limparCachesAdmin } from '../admin/cache-admin';
 import * as noticiasApi from './api';
 import { gravarCacheNoticias, lerCacheNoticias, limparCacheNoticias } from './cache-local';
 
 const STALE_PUBLICO = 10 * 60 * 1000;
-const STALE_ADMIN = 60 * 1000;
 const GC_PUBLICO = 30 * 60 * 1000;
 
 export function useNoticias(page: number, limit = 9) {
-  const cache = lerCacheNoticias(page, limit);
+  const cache = useMemo(() => lerCacheNoticias(page, limit), [page, limit]);
 
   return useQuery({
     queryKey: ['noticias', 'publicas', page, limit],
@@ -37,10 +37,19 @@ export function useNoticia(slug: string) {
 }
 
 export function useNoticiasAdmin() {
+  const cache = useMemo(() => lerCacheNoticiasAdmin(), []);
   return useQuery({
     queryKey: ['noticias', 'admin'],
-    queryFn: noticiasApi.listarNoticiasAdmin,
-    staleTime: STALE_ADMIN,
+    queryFn: async () => {
+      const data = await noticiasApi.listarNoticiasAdmin();
+      gravarCacheNoticiasAdmin(data);
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    initialData: cache,
+    initialDataUpdatedAt: cache ? Date.now() - 60_000 : undefined,
+    placeholderData: (anterior) => anterior ?? cache,
   });
 }
 
@@ -56,6 +65,7 @@ function useInvalidarNoticias() {
   const queryClient = useQueryClient();
   return () => {
     limparCacheNoticias();
+    limparCachesAdmin();
     void queryClient.invalidateQueries({ queryKey: ['noticias'] });
     void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
   };
@@ -116,6 +126,21 @@ export function usePrefetchNoticias() {
         return data;
       },
       staleTime: STALE_PUBLICO,
+    });
+  }, [queryClient]);
+}
+
+export function usePrefetchNoticiasAdmin() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: ['noticias', 'admin'],
+      queryFn: async () => {
+        const data = await noticiasApi.listarNoticiasAdmin();
+        gravarCacheNoticiasAdmin(data);
+        return data;
+      },
+      staleTime: 5 * 60 * 1000,
     });
   }, [queryClient]);
 }

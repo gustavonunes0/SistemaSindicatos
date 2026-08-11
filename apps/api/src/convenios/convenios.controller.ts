@@ -34,6 +34,7 @@ export class ConveniosController {
   // ---- Gestão (ADMIN) ----
   @Roles('ADMIN')
   @Get('admin')
+  @Header('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
   listarAdmin() {
     return this.conveniosService.listarAdmin();
   }

@@ -24,7 +24,15 @@ const CAMPOS_LISTAGEM_PUBLICA = {
   updatedAt: true,
 } as const;
 
-const CAMPOS_LISTAGEM_ADMIN = CAMPOS_LISTAGEM_PUBLICA;
+/** Admin: tabela só precisa de título/status/data. */
+const CAMPOS_LISTAGEM_ADMIN = {
+  id: true,
+  titulo: true,
+  slug: true,
+  status: true,
+  publicadoEm: true,
+  createdAt: true,
+} as const;
 
 type ListaCache = {
   expires: number;
@@ -39,7 +47,7 @@ type ListaCache = {
 @Injectable()
 export class NoticiasService {
   private readonly cacheListagem = new Map<string, ListaCache>();
-  private readonly cacheTtlMs = 45_000;
+  private readonly cacheTtlMs = 120_000;
 
   constructor(
     private readonly prisma: PrismaService,
@@ -143,11 +151,33 @@ export class NoticiasService {
   }
 
   async listarAdmin() {
-    return this.prisma.noticia.findMany({
+    const tenantId = requireTenantId();
+    const chave = `${tenantId}:admin`;
+    const cached = this.cacheListagem.get(chave);
+    if (cached && cached.expires > Date.now()) {
+      return cached.payload.items;
+    }
+
+    const itens = await this.prisma.noticia.findMany({
+      where: { tenantId },
       orderBy: { createdAt: 'desc' },
       select: CAMPOS_LISTAGEM_ADMIN,
       take: 100,
     });
+
+    const items = itens.map((item) => ({
+      ...item,
+      capaUrl: null,
+      resumo: '',
+      autorId: '',
+      updatedAt: item.createdAt,
+    }));
+
+    this.cacheListagem.set(chave, {
+      expires: Date.now() + this.cacheTtlMs,
+      payload: { items, total: items.length, page: 1, totalPages: 1 },
+    });
+    return items;
   }
 
   async buscarAdmin(id: string) {

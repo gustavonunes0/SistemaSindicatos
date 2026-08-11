@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Header,
   HttpCode,
   HttpStatus,
   Param,
@@ -40,6 +41,7 @@ export class AfiliadosController {
 
   @Roles('ADMIN')
   @Get()
+  @Header('Cache-Control', 'private, max-age=15, stale-while-revalidate=30')
   listar(@Query(new ZodValidationPipe(filtroAfiliadosSchema)) query: FiltroAfiliadosInput) {
     return this.afiliadosService.listar(query);
   }

@@ -50,8 +50,12 @@ export const convenioSchema = z.object({
 });
 export type Convenio = z.infer<typeof convenioSchema>;
 
-/** Listagem — sem textoComplementar (campo longo só no detalhe). */
-export const convenioListagemSchema = convenioSchema.omit({ textoComplementar: true });
+/** Listagem — sem textoComplementar; descricao pode vir vazia no admin. */
+export const convenioListagemSchema = convenioSchema
+  .omit({ textoComplementar: true })
+  .extend({
+    descricao: z.string().default(''),
+  });
 export type ConvenioListagem = z.infer<typeof convenioListagemSchema>;
 
 const convenioCamposSchema = z.object({

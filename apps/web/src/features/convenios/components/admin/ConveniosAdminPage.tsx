@@ -40,8 +40,8 @@ export function ConveniosAdminPage() {
         </button>
       }
     >
-      {isLoading && <EstadoCarregando mensagem="Carregando convênios…" />}
-      {isError && (
+      {isLoading && !convenios && <EstadoCarregando mensagem="Carregando convênios…" />}
+      {isError && !convenios && (
         <p className="erro">Não foi possível carregar os convênios. Tente novamente.</p>
       )}
 

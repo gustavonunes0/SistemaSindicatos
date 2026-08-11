@@ -5,6 +5,12 @@ import type {
   EmitirDeclaracaoInput,
   FiltroConveniosInput,
 } from '@sindprf/types';
+import { useEffect, useMemo } from 'react';
+import {
+  gravarCacheConveniosAdmin,
+  lerCacheConveniosAdmin,
+  limparCachesAdmin,
+} from '../admin/cache-admin';
 import * as conveniosApi from './api';
 
 export function useConvenios(filtro: FiltroConveniosInput, enabled = true) {
@@ -35,10 +41,19 @@ export function useConvenio(id: string) {
 }
 
 export function useConveniosAdmin() {
+  const cache = useMemo(() => lerCacheConveniosAdmin(), []);
   return useQuery({
     queryKey: ['convenios', 'admin'],
-    queryFn: conveniosApi.listarConveniosAdmin,
-    staleTime: 60 * 1000,
+    queryFn: async () => {
+      const data = await conveniosApi.listarConveniosAdmin();
+      gravarCacheConveniosAdmin(data);
+      return data;
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    initialData: cache,
+    initialDataUpdatedAt: cache ? Date.now() - 60_000 : undefined,
+    placeholderData: (anterior) => anterior ?? cache,
   });
 }
 
@@ -52,7 +67,11 @@ export function useConvenioAdmin(id: string | undefined) {
 
 function useInvalidarConvenios() {
   const queryClient = useQueryClient();
-  return () => queryClient.invalidateQueries({ queryKey: ['convenios'] });
+  return () => {
+    limparCachesAdmin();
+    void queryClient.invalidateQueries({ queryKey: ['convenios'] });
+    void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
+  };
 }
 
 export function useCriarConvenio() {
@@ -85,4 +104,19 @@ export function useEmitirDeclaracao() {
     mutationFn: ({ id, ...input }: EmitirDeclaracaoInput & { id: string }) =>
       conveniosApi.emitirDeclaracao(id, input),
   });
+}
+
+export function usePrefetchConveniosAdmin() {
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    void queryClient.prefetchQuery({
+      queryKey: ['convenios', 'admin'],
+      queryFn: async () => {
+        const data = await conveniosApi.listarConveniosAdmin();
+        gravarCacheConveniosAdmin(data);
+        return data;
+      },
+      staleTime: 5 * 60 * 1000,
+    });
+  }, [queryClient]);
 }
