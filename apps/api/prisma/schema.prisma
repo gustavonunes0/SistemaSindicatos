@@ -45,6 +45,7 @@ model Tenant {
   pushSubscriptions    PushSubscription[]
   instagramPosts       InstagramPost[]
   convenios            Convenio[]
+  declaracoesEmitidas  DeclaracaoEmitida[]
   eleicoes             Eleicao[]
   membrosComissao      MembroComissaoEleitoral[]
   chapas               Chapa[]
@@ -184,6 +185,7 @@ model Afiliado {
   solicitacoes     SolicitacaoAluguel[]
   contestacoes     ContestacaoChapa[]
   linhasD8         LinhaD8[]
+  declaracoes      DeclaracaoEmitida[]
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, matricula])
@@ -339,9 +341,38 @@ model Convenio {
   updatedAt          DateTime           @updatedAt @db.Timestamptz
 
   tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  declaracoes DeclaracaoEmitida[]
 
   @@index([tenantId, categoria])
   @@map("convenios")
+}
+
+/// Declaração/autorização emitida em PDF — validável via QR Code no site.
+model DeclaracaoEmitida {
+  id                 String           @id @default(cuid())
+  tenantId           String
+  /// Código público curto (QR / URL). Único por tenant.
+  codigo             String
+  convenioId         String
+  afiliadoId         String
+  modelo             ModeloDeclaracao
+  destino            String
+  textoComplementar  String?          @db.Text
+  afiliadoNome       String
+  afiliadoCpf        String
+  dependenteNome     String?
+  dependenteCpf      String?
+  periodoInicio      DateTime?        @db.Timestamptz
+  periodoFim         DateTime?        @db.Timestamptz
+  emitidaEm          DateTime         @default(now()) @db.Timestamptz
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  convenio Convenio @relation(fields: [convenioId], references: [id], onDelete: Restrict)
+  afiliado Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, codigo])
+  @@index([tenantId, emitidaEm])
+  @@map("declaracoes_emitidas")
 }
 
 // =====================================================================

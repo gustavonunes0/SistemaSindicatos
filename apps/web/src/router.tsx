@@ -14,6 +14,9 @@ const DiretoriaPage = lazy(() =>
 const ContatoPage = lazy(() =>
   import('./pages/ContatoPage').then((m) => ({ default: m.ContatoPage })),
 );
+const ValidarDeclaracaoPage = lazy(() =>
+  import('./pages/ValidarDeclaracaoPage').then((m) => ({ default: m.ValidarDeclaracaoPage })),
+);
 const NoticiasPage = lazy(() =>
   import('./features/noticias/components/NoticiasPage').then((m) => ({
     default: m.NoticiasPage,
@@ -181,6 +184,7 @@ export const router = createBrowserRouter([
       { path: '/noticias/:slug', element: comSuspense(<NoticiaDetalhePage />) },
     ],
   },
+  { path: '/validar-declaracao/:codigo', element: comSuspense(<ValidarDeclaracaoPage />) },
   { path: '/login', element: comSuspense(<LoginPage />) },
   { path: '/cadastro', element: comSuspense(<CadastroAfiliadoPage />) },
   { path: '/esqueci-senha', element: comSuspense(<EsqueciSenhaPage />) },

@@ -136,3 +136,35 @@ export const emitirDeclaracaoSchema = z
     }
   });
 export type EmitirDeclaracaoInput = z.infer<typeof emitirDeclaracaoSchema>;
+
+export const declaracaoValidacaoSchema = z.object({
+  valida: z.literal(true),
+  codigo: z.string(),
+  modelo: modeloDeclaracaoSchema,
+  modeloRotulo: z.string(),
+  convenioNome: z.string(),
+  destino: z.string(),
+  afiliadoNome: z.string(),
+  afiliadoCpfMascarado: z.string(),
+  afiliadoStatus: z.enum(['PENDENTE', 'APROVADO', 'INATIVO']),
+  afiliadoAtivo: z.boolean(),
+  dependenteNome: z.string().nullable(),
+  dependenteCpfMascarado: z.string().nullable(),
+  periodoInicio: z.coerce.date().nullable(),
+  periodoFim: z.coerce.date().nullable(),
+  emitidaEm: z.coerce.date(),
+  sindicatoNome: z.string(),
+});
+export type DeclaracaoValidacao = z.infer<typeof declaracaoValidacaoSchema>;
+
+export const declaracaoInvalidaSchema = z.object({
+  valida: z.literal(false),
+  motivo: z.string(),
+});
+export type DeclaracaoInvalida = z.infer<typeof declaracaoInvalidaSchema>;
+
+export const declaracaoValidacaoRespostaSchema = z.discriminatedUnion('valida', [
+  declaracaoValidacaoSchema,
+  declaracaoInvalidaSchema,
+]);
+export type DeclaracaoValidacaoResposta = z.infer<typeof declaracaoValidacaoRespostaSchema>;

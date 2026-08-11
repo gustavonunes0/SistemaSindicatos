@@ -2266,6 +2266,171 @@ button.botao-primario {
   background: var(--azul-noite);
 }
 
+/* ============ Validação de declaração (QR) ============ */
+.validar-page {
+  min-height: 100vh;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--cor-primaria, #0b3d6b) 8%, transparent),
+      transparent 42%
+    ),
+    var(--cor-fundo, #e9ebee);
+  padding: 2rem 1rem 3rem;
+}
+
+.validar-shell {
+  width: min(100%, 34rem);
+  margin: 0 auto;
+}
+
+.validar-cabecalho {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.validar-cabecalho .logo {
+  margin: 0 auto 1rem;
+}
+
+.validar-eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cor-primaria, #0b3d6b);
+}
+
+.validar-cabecalho h1 {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: clamp(1.6rem, 4vw, 2rem);
+  color: var(--cor-texto, #1a1d23);
+}
+
+.validar-sub {
+  margin: 0.5rem 0 0;
+  color: var(--cor-texto-suave, #5a6472);
+  font-size: 0.95rem;
+}
+
+.validar-estado {
+  text-align: center;
+  color: var(--cor-texto-suave, #5a6472);
+}
+
+.validar-painel {
+  background: var(--cor-superficie, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  border-radius: 8px;
+  padding: 1.35rem 1.25rem 1.25rem;
+  border-top: 4px solid var(--cor-borda, #d3d7de);
+}
+
+.validar-painel--ok {
+  border-top-color: #1f7a4d;
+}
+
+.validar-painel--alerta {
+  border-top-color: #b8860b;
+}
+
+.validar-painel--erro {
+  border-top-color: #9b2c2c;
+}
+
+.validar-selo {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cor-primaria, #0b3d6b);
+}
+
+.validar-painel--ok .validar-selo {
+  color: #1f7a4d;
+}
+
+.validar-painel--alerta .validar-selo {
+  color: #8a6508;
+}
+
+.validar-painel--erro .validar-selo {
+  color: #9b2c2c;
+}
+
+.validar-painel h2 {
+  margin: 0 0 0.35rem;
+  font-family: var(--fonte-display);
+  font-size: 1.25rem;
+}
+
+.validar-destino {
+  margin: 0 0 1rem;
+  color: var(--cor-texto-suave, #5a6472);
+  font-size: 0.92rem;
+}
+
+.validar-alerta {
+  margin: 0 0 1rem;
+  padding: 0.65rem 0.75rem;
+  background: color-mix(in srgb, #b8860b 12%, #fff);
+  border-left: 3px solid #b8860b;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.validar-dados {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.validar-dados div {
+  display: grid;
+  gap: 0.15rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--cor-borda, #d3d7de);
+}
+
+.validar-dados dt {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--cor-texto-suave, #5a6472);
+}
+
+.validar-dados dd {
+  margin: 0;
+  font-size: 0.98rem;
+  color: var(--cor-texto, #1a1d23);
+}
+
+.validar-codigo,
+.validar-codigo-valor {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+}
+
+.validar-voltar {
+  margin: 1.5rem 0 0;
+  text-align: center;
+}
+
+.validar-voltar a {
+  color: var(--cor-primaria, #0b3d6b);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.validar-voltar a:hover {
+  text-decoration: underline;
+}
+
 .auth-card {
   background: var(--cor-superficie);
   border-radius: var(--raio-lg);

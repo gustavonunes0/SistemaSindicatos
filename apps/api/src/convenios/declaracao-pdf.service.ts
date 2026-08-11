@@ -3,6 +3,7 @@ import type { ModeloDeclaracao } from '@prisma/client';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import PDFDocument from 'pdfkit';
+import QRCode from 'qrcode';
 
 const CNPJ = '41.410.325/0001-20';
 const PRESIDENTE = 'Tatiane Vasques Monteiro';
@@ -33,6 +34,9 @@ export type DadosDeclaracaoPdf = {
   dependenteCpf?: string;
   periodoInicio?: Date;
   periodoFim?: Date;
+  /** URL absoluta da página pública de validação (QR Code). */
+  urlValidacao: string;
+  codigoValidacao: string;
 };
 
 function formatarCpf(cpf: string): string {
@@ -75,6 +79,7 @@ export class DeclaracaoPdfService {
     this.desenharCorpo(doc, dados);
     this.desenharDataLocal(doc);
     this.desenharAssinatura(doc);
+    await this.desenharValidacaoQr(doc, dados);
 
     doc.end();
     return pronto;
@@ -154,7 +159,6 @@ export class DeclaracaoPdfService {
       );
     }
 
-    // Layout padrão das declarações tipo UNI7 / Unidental.
     return (
       `DECLARO, para fins de comprovação junto ${destino}, nos Termos do Convênio ` +
       `firmado entre as partes, que ${nome}, CPF Nº ${cpf}, é associado(a) do SINDPRF-CE.`
@@ -196,5 +200,69 @@ export class DeclaracaoPdfService {
       .fontSize(11)
       .text('Presidente do SINDPRF-CE', { align: 'center' })
       .text(`CNPJ ${CNPJ}`, { align: 'center' });
+  }
+
+  private async desenharValidacaoQr(
+    doc: PDFKit.PDFDocument,
+    dados: DadosDeclaracaoPdf,
+  ): Promise<void> {
+    const qrPng = await QRCode.toBuffer(dados.urlValidacao, {
+      type: 'png',
+      width: 140,
+      margin: 1,
+      errorCorrectionLevel: 'M',
+    });
+
+    const margemEsq = doc.page.margins.left;
+    const margemDir = doc.page.margins.right;
+    const larguraUtil = doc.page.width - margemEsq - margemDir;
+    const qrSize = 88;
+    const blocoAltura = 108;
+    const yBase = doc.page.height - doc.page.margins.bottom - blocoAltura;
+
+    // Garante espaço: se a assinatura invadiu a área do QR, nova página.
+    if (doc.y > yBase - 12) {
+      doc.addPage();
+    }
+
+    const y = Math.max(doc.y + 28, yBase);
+
+    doc
+      .moveTo(margemEsq, y)
+      .lineTo(margemEsq + larguraUtil, y)
+      .strokeColor('#c8cdd4')
+      .lineWidth(0.5)
+      .stroke();
+
+    const yConteudo = y + 12;
+    doc.image(qrPng, margemEsq, yConteudo, { width: qrSize, height: qrSize });
+
+    const textoX = margemEsq + qrSize + 14;
+    const textoLargura = larguraUtil - qrSize - 14;
+
+    doc
+      .font('Times-Bold')
+      .fontSize(10)
+      .fillColor('#0b3d6b')
+      .text('Validação online', textoX, yConteudo, { width: textoLargura });
+
+    doc
+      .font('Times-Roman')
+      .fontSize(9)
+      .fillColor('#1a1d23')
+      .text(
+        'O estabelecimento pode escanear este QR Code para confirmar a autenticidade desta declaração no site do SINDPRF-CE.',
+        textoX,
+        doc.y + 4,
+        { width: textoLargura, lineGap: 2 },
+      );
+
+    doc
+      .font('Times-Roman')
+      .fontSize(8)
+      .fillColor('#5a6472')
+      .text(`Código: ${dados.codigoValidacao}`, textoX, doc.y + 6, {
+        width: textoLargura,
+      });
   }
 }

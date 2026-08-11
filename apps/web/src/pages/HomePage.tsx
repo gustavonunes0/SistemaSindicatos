@@ -41,7 +41,7 @@ export function HomePage() {
             <dl>
               <div>
                 <dt>Representação</dt>
-                <dd>Estados do Ceará</dd>
+                <dd>Estado do Ceará</dd>
               </div>
               <div>
                 <dt>Sede</dt>

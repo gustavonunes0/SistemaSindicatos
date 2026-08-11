@@ -45,6 +45,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   declare pushSubscription: TenantPrismaClient['pushSubscription'];
   declare instagramPost: TenantPrismaClient['instagramPost'];
   declare convenio: TenantPrismaClient['convenio'];
+  declare declaracaoEmitida: TenantPrismaClient['declaracaoEmitida'];
   declare eleicao: TenantPrismaClient['eleicao'];
   declare membroComissaoEleitoral: TenantPrismaClient['membroComissaoEleitoral'];
   declare chapa: TenantPrismaClient['chapa'];

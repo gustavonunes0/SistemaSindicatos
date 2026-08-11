@@ -21,7 +21,7 @@ import {
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
 } from '@sindprf/types';
-import { CurrentUser, Roles } from '../common/decorators';
+import { CurrentUser, Public, Roles } from '../common/decorators';
 import { AfiliadoAprovadoGuard } from '../common/guards/afiliado-aprovado.guard';
 import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -63,6 +63,13 @@ export class ConveniosController {
   @Delete(':id')
   remover(@Param('id') id: string) {
     return this.conveniosService.remover(id);
+  }
+
+  // ---- Validação pública (QR Code no PDF) ----
+  @Public()
+  @Get('declaracoes/:codigo')
+  validarDeclaracao(@Param('codigo') codigo: string) {
+    return this.conveniosService.validarDeclaracao(codigo);
   }
 
   // ---- Consulta (AFILIADO aprovado) ----

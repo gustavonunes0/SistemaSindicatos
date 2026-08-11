@@ -8,9 +8,12 @@ import { Prisma } from '@prisma/client';
 import type {
   AtualizarConvenioInput,
   CriarConvenioInput,
+  DeclaracaoValidacaoResposta,
   EmitirDeclaracaoInput,
   FiltroConveniosInput,
 } from '@sindprf/types';
+import { MODELO_DECLARACAO_ROTULO } from '@sindprf/types';
+import { randomBytes } from 'node:crypto';
 import type { RequestUser } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
@@ -60,7 +63,6 @@ export class ConveniosService {
     return convenio;
   }
 
-  // Afiliado só enxerga convênios ativos.
   listarPublico({ categoria, busca }: FiltroConveniosInput) {
     const where: Prisma.ConvenioWhereInput = { ativo: true };
     if (categoria) {
@@ -98,9 +100,11 @@ export class ConveniosService {
     convenioId: string,
     input: EmitirDeclaracaoInput,
   ): Promise<{ buffer: Buffer; nomeArquivo: string }> {
+    const tenantId = requireTenantId();
+
     const afiliado = await this.prisma.afiliado.findUnique({
       where: { userId: user.id },
-      select: { nome: true, cpf: true, status: true },
+      select: { id: true, nome: true, cpf: true, status: true },
     });
     if (!afiliado || afiliado.status !== 'APROVADO') {
       throw new ForbiddenException('Afiliação ainda não aprovada');
@@ -123,16 +127,39 @@ export class ConveniosService {
       }
     }
 
+    const codigo = await this.gerarCodigoUnico(tenantId);
+    const urlValidacao = await this.montarUrlValidacao(tenantId, codigo);
+
+    const registro = await this.prisma.declaracaoEmitida.create({
+      data: {
+        tenantId,
+        codigo,
+        convenioId: convenio.id,
+        afiliadoId: afiliado.id,
+        modelo: convenio.modeloDeclaracao,
+        destino: convenio.destinoDeclaracao,
+        textoComplementar: convenio.textoComplementar,
+        afiliadoNome: afiliado.nome,
+        afiliadoCpf: afiliado.cpf,
+        dependenteNome: input.dependenteNome?.trim() || null,
+        dependenteCpf: input.dependenteCpf ?? null,
+        periodoInicio: input.periodoInicio ?? null,
+        periodoFim: input.periodoFim ?? null,
+      },
+    });
+
     const buffer = await this.declaracaoPdf.gerar({
-      modelo: convenio.modeloDeclaracao,
-      destino: convenio.destinoDeclaracao,
-      textoComplementar: convenio.textoComplementar,
-      afiliadoNome: afiliado.nome,
-      afiliadoCpf: afiliado.cpf,
-      dependenteNome: input.dependenteNome,
-      dependenteCpf: input.dependenteCpf,
-      periodoInicio: input.periodoInicio,
-      periodoFim: input.periodoFim,
+      modelo: registro.modelo,
+      destino: registro.destino,
+      textoComplementar: registro.textoComplementar,
+      afiliadoNome: registro.afiliadoNome,
+      afiliadoCpf: registro.afiliadoCpf,
+      dependenteNome: registro.dependenteNome ?? undefined,
+      dependenteCpf: registro.dependenteCpf ?? undefined,
+      periodoInicio: registro.periodoInicio ?? undefined,
+      periodoFim: registro.periodoFim ?? undefined,
+      urlValidacao,
+      codigoValidacao: codigo,
     });
 
     const slug = convenio.nome
@@ -142,13 +169,97 @@ export class ConveniosService {
       .replace(/^-|-$/g, '')
       .toLowerCase()
       .slice(0, 40);
-    const nomeArquivo = `declaracao-${slug || 'convenio'}.pdf`;
+    const nomeArquivo = `declaracao-${slug || 'convenio'}-${codigo}.pdf`;
 
     return { buffer, nomeArquivo };
   }
 
+  async validarDeclaracao(codigoBruto: string): Promise<DeclaracaoValidacaoResposta> {
+    const codigo = codigoBruto.trim().toUpperCase();
+    if (!codigo || codigo.length < 6) {
+      return { valida: false, motivo: 'Código de validação inválido.' };
+    }
+
+    const registro = await this.prisma.declaracaoEmitida.findFirst({
+      where: { codigo },
+      include: {
+        convenio: { select: { nome: true } },
+        afiliado: { select: { status: true } },
+        tenant: { select: { nome: true } },
+      },
+    });
+
+    if (!registro) {
+      return { valida: false, motivo: 'Declaração não encontrada para este código.' };
+    }
+
+    const afiliadoAtivo = registro.afiliado.status === 'APROVADO';
+
+    return {
+      valida: true,
+      codigo: registro.codigo,
+      modelo: registro.modelo,
+      modeloRotulo: MODELO_DECLARACAO_ROTULO[registro.modelo as keyof typeof MODELO_DECLARACAO_ROTULO],
+      convenioNome: registro.convenio.nome,
+      destino: registro.destino,
+      afiliadoNome: registro.afiliadoNome,
+      afiliadoCpfMascarado: mascararCpf(registro.afiliadoCpf),
+      afiliadoStatus: registro.afiliado.status as 'PENDENTE' | 'APROVADO' | 'INATIVO',
+      afiliadoAtivo,
+      dependenteNome: registro.dependenteNome,
+      dependenteCpfMascarado: registro.dependenteCpf
+        ? mascararCpf(registro.dependenteCpf)
+        : null,
+      periodoInicio: registro.periodoInicio,
+      periodoFim: registro.periodoFim,
+      emitidaEm: registro.emitidaEm,
+      sindicatoNome: registro.tenant.nome,
+    };
+  }
+
+  private async gerarCodigoUnico(tenantId: string): Promise<string> {
+    for (let tentativa = 0; tentativa < 8; tentativa += 1) {
+      const codigo = randomBytes(5).toString('hex').toUpperCase().slice(0, 10);
+      const existe = await this.prisma.declaracaoEmitida.findFirst({
+        where: { tenantId, codigo },
+        select: { id: true },
+      });
+      if (!existe) return codigo;
+    }
+    throw new BadRequestException('Não foi possível gerar código de validação');
+  }
+
+  private async montarUrlValidacao(tenantId: string, codigo: string): Promise<string> {
+    const dominios = await this.prisma.tenantDomain.findMany({
+      where: { tenantId },
+      orderBy: [{ primario: 'desc' }, { createdAt: 'asc' }],
+      select: { host: true },
+    });
+
+    const ehLocal = (host: string) =>
+      host === 'localhost' || host.startsWith('127.') || host.endsWith('.local');
+
+    const publico = dominios.find((d) => !ehLocal(d.host.toLowerCase()));
+    const escolhido = publico ?? dominios[0];
+
+    let base: string | null = null;
+    if (escolhido?.host) {
+      const host = escolhido.host.toLowerCase();
+      base = `${ehLocal(host) ? 'http' : 'https'}://${host}`;
+    } else if (process.env.WEB_URL?.trim()) {
+      base = process.env.WEB_URL.trim().replace(/\/+$/, '');
+    }
+
+    if (!base) {
+      throw new BadRequestException(
+        'Não há domínio do sindicato cadastrado para gerar o QR Code de validação',
+      );
+    }
+
+    return `${base}/validar-declaracao/${codigo}`;
+  }
+
   private montarDados(input: AtualizarConvenioInput): Prisma.ConvenioUncheckedCreateInput {
-    // Só inclui as chaves presentes para não sobrescrever com undefined em update parcial.
     const dados: Prisma.ConvenioUncheckedCreateInput = {} as Prisma.ConvenioUncheckedCreateInput;
     if (input.nome !== undefined) dados.nome = input.nome;
     if (input.categoria !== undefined) dados.categoria = input.categoria;
@@ -172,4 +283,9 @@ export class ConveniosService {
     }
     return error;
   }
+}
+
+function mascararCpf(cpf: string): string {
+  const d = cpf.replace(/\D/g, '').padStart(11, '0').slice(-11);
+  return `***.${d.slice(3, 6)}.${d.slice(6, 9)}-**`;
 }

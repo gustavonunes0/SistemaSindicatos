@@ -13,6 +13,7 @@ const MODELS_COM_TENANT = new Set([
   'PushSubscription',
   'InstagramPost',
   'Convenio',
+  'DeclaracaoEmitida',
   'Eleicao',
   'MembroComissaoEleitoral',
   'Chapa',
