@@ -20,10 +20,11 @@ export function useNoticias(page: number, limit = 9) {
     },
     staleTime: STALE_PUBLICO,
     gcTime: GC_PUBLICO,
-    // Pinta na hora com o último resultado; revalida em background.
+    // Pinta na hora com sessionStorage; updatedAt=0 força revalidação (Ctrl+Shift+R atualiza).
     initialData: cache,
-    initialDataUpdatedAt: cache ? Date.now() - STALE_PUBLICO + 5_000 : undefined,
+    initialDataUpdatedAt: cache ? 0 : undefined,
     placeholderData: (anterior) => anterior ?? cache,
+    refetchOnMount: 'always',
   });
 }
 
@@ -48,8 +49,9 @@ export function useNoticiasAdmin() {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     initialData: cache,
-    initialDataUpdatedAt: cache ? Date.now() - 60_000 : undefined,
+    initialDataUpdatedAt: cache ? 0 : undefined,
     placeholderData: (anterior) => anterior ?? cache,
+    refetchOnMount: 'always',
   });
 }
 

@@ -52,8 +52,9 @@ export function useConveniosAdmin() {
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
     initialData: cache,
-    initialDataUpdatedAt: cache ? Date.now() - 60_000 : undefined,
+    initialDataUpdatedAt: cache ? 0 : undefined,
     placeholderData: (anterior) => anterior ?? cache,
+    refetchOnMount: 'always',
   });
 }
 

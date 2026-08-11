@@ -45,7 +45,8 @@ export function useAfiliadosAdmin(filtro: Partial<FiltroAfiliadosInput> = {}) {
     gcTime: 15 * 60 * 1000,
     placeholderData: keepPreviousData,
     initialData: cache,
-    initialDataUpdatedAt: cache ? Date.now() - 30_000 : undefined,
+    initialDataUpdatedAt: cache ? 0 : undefined,
+    refetchOnMount: 'always',
   });
 }
 
