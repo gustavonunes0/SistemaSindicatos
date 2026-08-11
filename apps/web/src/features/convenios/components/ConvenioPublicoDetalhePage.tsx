@@ -19,7 +19,7 @@ export function ConvenioPublicoDetalhePage() {
     description: convenio?.descricao?.slice(0, 160) ?? `Detalhes do convênio no ${marca.nomeCompleto}.`,
   });
 
-  if (isLoading) {
+  if (isLoading && !convenio) {
     return (
       <main className="convenio-publico-page">
         <div className="convenio-publico-corpo secao-inner">

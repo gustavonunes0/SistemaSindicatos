@@ -1,6 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AtualizarConvenioInput,
+  Convenio,
+  ConvenioListagem,
   CriarConvenioInput,
   EmitirDeclaracaoInput,
   FiltroConveniosInput,
@@ -13,10 +15,45 @@ import {
 } from '../admin/cache-admin';
 import * as conveniosApi from './api';
 
+function convenioDaListagem(item: ConvenioListagem): Convenio {
+  return { ...item, textoComplementar: null };
+}
+
+function acharConvenioNasListas(
+  queryClient: ReturnType<typeof useQueryClient>,
+  id: string,
+): Convenio | undefined {
+  const listas = queryClient.getQueriesData<ConvenioListagem[]>({
+    queryKey: ['convenios', 'lista'],
+  });
+  for (const [, lista] of listas) {
+    const achado = lista?.find((item) => item.id === id);
+    if (achado) return convenioDaListagem(achado);
+  }
+  return undefined;
+}
+
+function popularCacheDetalhe(
+  queryClient: ReturnType<typeof useQueryClient>,
+  lista: ConvenioListagem[],
+) {
+  for (const item of lista) {
+    const chave = ['convenios', 'detalhe', item.id] as const;
+    if (!queryClient.getQueryData(chave)) {
+      queryClient.setQueryData(chave, convenioDaListagem(item));
+    }
+  }
+}
+
 export function useConvenios(filtro: FiltroConveniosInput, enabled = true) {
+  const queryClient = useQueryClient();
   return useQuery({
     queryKey: ['convenios', 'lista', filtro],
-    queryFn: () => conveniosApi.listarConvenios(filtro),
+    queryFn: async () => {
+      const data = await conveniosApi.listarConvenios(filtro);
+      popularCacheDetalhe(queryClient, data);
+      return data;
+    },
     placeholderData: keepPreviousData,
     staleTime: 5 * 60 * 1000,
     enabled,
@@ -33,10 +70,31 @@ export function useCategoriasConvenios(enabled = true) {
 }
 
 export function useConvenio(id: string) {
+  const queryClient = useQueryClient();
+  const daLista = useMemo(
+    () => (id ? acharConvenioNasListas(queryClient, id) : undefined),
+    [id, queryClient],
+  );
+
   return useQuery({
     queryKey: ['convenios', 'detalhe', id],
     queryFn: () => conveniosApi.buscarConvenio(id),
-    staleTime: 2 * 60 * 1000,
+    enabled: Boolean(id),
+    staleTime: 5 * 60 * 1000,
+    placeholderData: () =>
+      queryClient.getQueryData<Convenio>(['convenios', 'detalhe', id]) ?? daLista,
+  });
+}
+
+export function prefetchConvenio(queryClient: ReturnType<typeof useQueryClient>, id: string) {
+  const daLista = acharConvenioNasListas(queryClient, id);
+  if (daLista && !queryClient.getQueryData(['convenios', 'detalhe', id])) {
+    queryClient.setQueryData(['convenios', 'detalhe', id], daLista);
+  }
+  return queryClient.prefetchQuery({
+    queryKey: ['convenios', 'detalhe', id],
+    queryFn: () => conveniosApi.buscarConvenio(id),
+    staleTime: 5 * 60 * 1000,
   });
 }
 

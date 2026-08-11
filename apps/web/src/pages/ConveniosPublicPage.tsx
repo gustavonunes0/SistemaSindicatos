@@ -1,13 +1,14 @@
 import type { ConvenioListagem } from '@sindprf/types';
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { EstadoCarregando } from '../components/ui/EstadoCarregando';
 import {
   CATEGORIAS_CONVENIO,
   normalizarCategoriaConvenio,
   type CategoriaConvenio,
 } from '../features/convenios/categorias';
-import { useConvenios } from '../features/convenios/hooks';
+import { prefetchConvenio, useConvenios } from '../features/convenios/hooks';
 import { urlDaApi } from '../lib/urls';
 import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
@@ -86,8 +87,13 @@ function IlustracaoCategoria({ categoria }: { categoria: CategoriaConvenio }): R
 
 export function ConveniosPublicPage() {
   const marca = useMarca();
+  const queryClient = useQueryClient();
   const { data: convenios, isLoading, isError } = useConvenios({});
   const [categoriaAtiva, setCategoriaAtiva] = useState<CategoriaConvenio | null>(null);
+
+  useEffect(() => {
+    void import('../features/convenios/components/ConvenioPublicoDetalhePage');
+  }, []);
 
   useSeo({
     title: `Convênios — ${marca.nome}`,
@@ -197,7 +203,16 @@ export function ConveniosPublicPage() {
                   <ul className="convenios-public-grade">
                     {listaAtiva.map((convenio) => (
                       <li key={convenio.id}>
-                        <Link to={`/convenios/${convenio.id}`} className="convenios-public-card">
+                        <Link
+                          to={`/convenios/${convenio.id}`}
+                          className="convenios-public-card"
+                          onPointerEnter={() => {
+                            void prefetchConvenio(queryClient, convenio.id);
+                          }}
+                          onFocus={() => {
+                            void prefetchConvenio(queryClient, convenio.id);
+                          }}
+                        >
                           <div className="convenios-public-logo" aria-hidden={!convenio.logoUrl}>
                             {convenio.logoUrl ? (
                               <img src={urlDaApi(convenio.logoUrl)} alt="" loading="lazy" />

@@ -169,10 +169,20 @@ export class ConveniosService {
   }
 
   async buscarPublico(id: string) {
-    const convenio = await this.prisma.convenio.findUnique({ where: { id } });
-    if (!convenio || !convenio.ativo) {
+    const tenantId = requireTenantId();
+    const chave = `${tenantId}:detalhe:${id}`;
+    const cached = this.cachePublico.get(chave);
+    if (cached && cached.expires > Date.now()) {
+      return cached.payload;
+    }
+
+    const convenio = await this.prisma.convenio.findFirst({
+      where: { id, tenantId, ativo: true },
+    });
+    if (!convenio) {
       throw new NotFoundException('Convênio não encontrado');
     }
+    this.cachePublico.set(chave, { expires: Date.now() + this.cacheTtlMs, payload: convenio });
     return convenio;
   }
 
