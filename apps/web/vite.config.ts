@@ -45,7 +45,8 @@ export default defineConfig({
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
         navigateFallback: '/index.html',
-        navigateFallbackDenylist: [/^\/uploads\//],
+        // Não tratar arquivos estáticos (PDF, imagens, etc.) como rotas da SPA.
+        navigateFallbackDenylist: [/^\/uploads\//, /\/[^/?]+\.[^/]+$/],
         importScripts: ['/sw-push.js'],
       },
       // Push precisa de SW; em localhost o navegador aceita sem HTTPS.

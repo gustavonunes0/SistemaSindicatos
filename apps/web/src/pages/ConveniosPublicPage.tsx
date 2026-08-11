@@ -46,7 +46,7 @@ export function ConveniosPublicPage() {
     <main className="convenios-public-page">
       <section className="convenios-public-hero" aria-labelledby="convenios-titulo">
         <div className="convenios-public-hero-inner">
-          <p className="eyebrow">Benefícios</p>
+          <p className="eyebrow convenios-public-hero-eyebrow">Benefícios</p>
           <h1 id="convenios-titulo">Convênios</h1>
           <span className="convenios-public-faixa" aria-hidden="true" />
           <p className="convenios-public-hero-texto">
