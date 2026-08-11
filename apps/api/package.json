@@ -10,7 +10,8 @@
     "lint": "eslint src prisma test",
     "test": "jest --config ./test/jest-e2e.json --runInBand",
     "d8:importar-inicial": "node --env-file=.env scripts/importar-d8-host.mjs",
-    "seed:convenios-declaracao": "tsx scripts/seed-convenios-declaracao.ts"
+    "seed:convenios-declaracao": "tsx scripts/seed-convenios-declaracao.ts",
+    "seed:convenios-educacao": "tsx scripts/seed-convenios-educacao.ts"
   },
   "prisma": {
     "seed": "prisma generate --schema=prisma/schema.prisma && tsx prisma/seed.ts"

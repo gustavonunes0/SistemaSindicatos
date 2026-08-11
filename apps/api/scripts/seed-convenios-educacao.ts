@@ -13,7 +13,9 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 const TENANT_SLUG = 'sindprf-ce';
-const LOGOS_DIR = join(process.cwd(), '..', '..', 'tmp-convenios-logos');
+/** Pasta com as PNGs. Na VPS: LOGOS_DIR=/tmp/convenios-logos */
+const LOGOS_DIR =
+  process.env.LOGOS_DIR?.trim() || join(process.cwd(), '..', '..', 'tmp-convenios-logos');
 const UPLOADS_DIR = join(process.cwd(), 'uploads');
 
 type ConvenioEducacao = {
@@ -183,7 +185,8 @@ async function encontrarExistente(tenantId: string, item: ConvenioEducacao) {
 
 async function main(): Promise<void> {
   const tenant = await prisma.tenant.findUniqueOrThrow({ where: { slug: TENANT_SLUG } });
-  console.log(`Tenant: ${tenant.nome} (${tenant.id})\n`);
+  console.log(`Tenant: ${tenant.nome} (${tenant.id})`);
+  console.log(`Logos:  ${LOGOS_DIR}\n`);
 
   for (const item of CONVENIOS) {
     console.log(`→ ${item.nome}`);
