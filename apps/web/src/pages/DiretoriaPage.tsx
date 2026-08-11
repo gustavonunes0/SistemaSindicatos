@@ -49,6 +49,7 @@ export function DiretoriaPage() {
   }
   const { destaques, demais } = separarExecutiva(executiva);
   const historicoUrl = diretoria.historicoUrl || HISTORICO_URL;
+  const estatutoUrl = marca.estatutoUrl ?? '/institucional/estatuto-sindprf-ce.pdf';
 
   return (
     <main className="diretoria-page">
@@ -127,6 +128,20 @@ export function DiretoriaPage() {
           </div>
         </div>
 
+        <aside className="diretoria-documento" aria-labelledby="diretoria-estatuto-titulo">
+            <div className="diretoria-documento-texto">
+              <p className="eyebrow">Normas</p>
+              <h2 id="diretoria-estatuto-titulo">Estatuto</h2>
+              <p>
+                Estatuto consolidado do {marca.nome} (setembro/2025), com as regras de organização,
+                direitos e deveres da categoria.
+              </p>
+            </div>
+            <a href={estatutoUrl} download="estatuto-sindprf-ce.pdf" className="botao-primario">
+              Baixar estatuto (PDF)
+            </a>
+          </aside>
+
         <section className="diretoria-historico" aria-labelledby="historico-titulo">
           <header className="diretoria-historico-cabecalho">
             <div>
@@ -193,15 +208,9 @@ export function DiretoriaPage() {
             <p>Baixe o estatuto e o histórico completo das diretorias em PDF.</p>
           </div>
           <div className="diretoria-rodape-acoes">
-            {marca.estatutoUrl ? (
-              <a
-                href={marca.estatutoUrl}
-                download="estatuto-sindprf-ce.pdf"
-                className="botao-primario"
-              >
-                Baixar estatuto
-              </a>
-            ) : null}
+            <a href={estatutoUrl} download="estatuto-sindprf-ce.pdf" className="botao-primario">
+              Baixar estatuto
+            </a>
             <a href={historicoUrl} download className="botao-secundario">
               Histórico das diretorias
             </a>

@@ -1304,6 +1304,47 @@ button.botao-primario {
   margin-top: 1.75rem;
 }
 
+.diretoria-documento {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.35rem 1.25rem;
+  background: var(--cor-superficie, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  border-left: 4px solid var(--cor-primaria, #0b3d6b);
+}
+
+@media (min-width: 720px) {
+  .diretoria-documento {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+}
+
+.diretoria-documento-texto .eyebrow {
+  margin: 0 0 0.35rem;
+}
+
+.diretoria-documento-texto h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+}
+
+.diretoria-documento-texto p {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.92rem;
+  color: var(--cor-texto-suave, #5a6472);
+  line-height: 1.45;
+}
+
+.diretoria-documento .botao-primario {
+  flex-shrink: 0;
+}
+
 .diretoria-historico {
   margin-top: 0.25rem;
   padding: 1.35rem 1.25rem;
