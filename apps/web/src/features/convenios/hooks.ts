@@ -12,6 +12,7 @@ export function useConvenios(filtro: FiltroConveniosInput, enabled = true) {
     queryKey: ['convenios', 'lista', filtro],
     queryFn: () => conveniosApi.listarConvenios(filtro),
     placeholderData: keepPreviousData,
+    staleTime: 5 * 60 * 1000,
     enabled,
   });
 }
@@ -29,6 +30,7 @@ export function useConvenio(id: string) {
   return useQuery({
     queryKey: ['convenios', 'detalhe', id],
     queryFn: () => conveniosApi.buscarConvenio(id),
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -36,6 +38,7 @@ export function useConveniosAdmin() {
   return useQuery({
     queryKey: ['convenios', 'admin'],
     queryFn: conveniosApi.listarConveniosAdmin,
+    staleTime: 60 * 1000,
   });
 }
 

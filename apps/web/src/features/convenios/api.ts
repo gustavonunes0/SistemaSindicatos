@@ -1,7 +1,9 @@
 import {
+  convenioListagemSchema,
   convenioSchema,
   type AtualizarConvenioInput,
   type Convenio,
+  type ConvenioListagem,
   type CriarConvenioInput,
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
@@ -9,9 +11,9 @@ import {
 import { z } from 'zod';
 import { api } from '../../lib/http';
 
-export async function listarConvenios(filtro: FiltroConveniosInput): Promise<Convenio[]> {
+export async function listarConvenios(filtro: FiltroConveniosInput): Promise<ConvenioListagem[]> {
   const { data } = await api.get('/convenios', { params: filtro });
-  return z.array(convenioSchema).parse(data);
+  return z.array(convenioListagemSchema).parse(data);
 }
 
 export async function buscarConvenio(id: string): Promise<Convenio> {
@@ -24,9 +26,9 @@ export async function listarCategorias(): Promise<string[]> {
   return z.array(z.string()).parse(data);
 }
 
-export async function listarConveniosAdmin(): Promise<Convenio[]> {
+export async function listarConveniosAdmin(): Promise<ConvenioListagem[]> {
   const { data } = await api.get('/convenios/admin');
-  return z.array(convenioSchema).parse(data);
+  return z.array(convenioListagemSchema).parse(data);
 }
 
 export async function buscarConvenioAdmin(id: string): Promise<Convenio> {

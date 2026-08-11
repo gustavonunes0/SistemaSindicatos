@@ -19,6 +19,24 @@ import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
 import { DeclaracaoPdfService } from './declaracao-pdf.service';
 
+const CAMPOS_LISTAGEM = {
+  id: true,
+  nome: true,
+  categoria: true,
+  descricao: true,
+  logoUrl: true,
+  link: true,
+  contato: true,
+  vigenciaInicio: true,
+  vigenciaFim: true,
+  ativo: true,
+  emiteDeclaracao: true,
+  modeloDeclaracao: true,
+  destinoDeclaracao: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 @Injectable()
 export class ConveniosService {
   constructor(
@@ -52,7 +70,10 @@ export class ConveniosService {
   }
 
   listarAdmin() {
-    return this.prisma.convenio.findMany({ orderBy: { createdAt: 'desc' } });
+    return this.prisma.convenio.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: CAMPOS_LISTAGEM,
+    });
   }
 
   async buscarAdmin(id: string) {
@@ -74,7 +95,11 @@ export class ConveniosService {
         { descricao: { contains: busca, mode: 'insensitive' } },
       ];
     }
-    return this.prisma.convenio.findMany({ where, orderBy: { nome: 'asc' } });
+    return this.prisma.convenio.findMany({
+      where,
+      orderBy: { nome: 'asc' },
+      select: CAMPOS_LISTAGEM,
+    });
   }
 
   async buscarPublico(id: string) {

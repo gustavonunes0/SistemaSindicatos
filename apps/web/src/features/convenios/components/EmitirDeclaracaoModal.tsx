@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   emitirDeclaracaoSchema,
-  type Convenio,
+  type ConvenioListagem,
   type EmitirDeclaracaoInput,
   type ModeloDeclaracao,
 } from '@sindprf/types';
@@ -69,7 +69,7 @@ function schemaPorModelo(modelo: ModeloDeclaracao | null, exigeBeneficiario: boo
 
 type EmitirDeclaracaoModalProps = {
   aberto: boolean;
-  convenio: Convenio;
+  convenio: ConvenioListagem;
   onFechar: () => void;
   /** No admin, permite emitir para si mesmo sem vínculo de afiliado aprovado. */
   modoAdmin?: boolean;

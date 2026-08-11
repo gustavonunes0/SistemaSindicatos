@@ -17,9 +17,13 @@ export function useLogin() {
 
   return useMutation({
     mutationFn: authApi.login,
-    onSuccess: async (sessao) => {
+    onSuccess: (sessao) => {
       setSession(sessao);
-      await queryClient.invalidateQueries();
+      // Evita invalidar o cache inteiro (notícias, convênios, etc.) no login.
+      void queryClient.prefetchQuery({
+        queryKey: ['auth', 'me'],
+        queryFn: authApi.buscarMe,
+      });
       navigate(areaPorRole(sessao.user.role), { replace: true });
     },
   });
@@ -50,8 +54,8 @@ export function useMe() {
     queryKey: ['auth', 'me'],
     queryFn: authApi.buscarMe,
     enabled: Boolean(accessToken),
-    staleTime: 15_000,
-    refetchOnWindowFocus: true,
+    staleTime: 5 * 60 * 1000,
+    refetchOnWindowFocus: false,
     refetchInterval: (query) =>
       query.state.data?.afiliado?.status === 'PENDENTE' ? 20_000 : false,
   });

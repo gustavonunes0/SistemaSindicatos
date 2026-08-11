@@ -1,8 +1,8 @@
-import type { Convenio } from '@sindprf/types';
+import type { ConvenioListagem } from '@sindprf/types';
 import { Link } from 'react-router-dom';
 import { urlDaApi } from '../../../lib/urls';
 
-export function ConvenioCard({ convenio }: { convenio: Convenio }) {
+export function ConvenioCard({ convenio }: { convenio: ConvenioListagem }) {
   return (
     <Link to={`/afiliado/convenios/${convenio.id}`} className="convenio-card">
       <div className="convenio-card-logo" aria-hidden={!convenio.logoUrl}>

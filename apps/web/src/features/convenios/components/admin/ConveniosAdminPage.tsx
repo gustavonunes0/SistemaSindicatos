@@ -1,4 +1,4 @@
-import type { Convenio } from '@sindprf/types';
+import type { ConvenioListagem } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
@@ -14,9 +14,9 @@ export function ConveniosAdminPage() {
   const remover = useRemoverConvenio();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalConvenio>(null);
-  const [emitirPara, setEmitirPara] = useState<Convenio | null>(null);
+  const [emitirPara, setEmitirPara] = useState<ConvenioListagem | null>(null);
 
-  const onRemover = (convenio: Convenio) => {
+  const onRemover = (convenio: ConvenioListagem) => {
     pedirConfirmacao({
       titulo: 'Excluir convênio?',
       descricao: `O convênio “${convenio.nome}” será removido permanentemente.`,

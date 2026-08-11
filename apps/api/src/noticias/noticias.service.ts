@@ -16,18 +16,13 @@ const CAMPOS_LISTAGEM = {
   titulo: true,
   slug: true,
   capaUrl: true,
-  conteudo: true,
+  resumo: true,
   status: true,
   publicadoEm: true,
   autorId: true,
   createdAt: true,
   updatedAt: true,
 } as const;
-
-function paraListagem<T extends { conteudo: string }>(noticia: T) {
-  const { conteudo, ...resto } = noticia;
-  return { ...resto, resumo: resumoDeConteudo(conteudo) };
-}
 
 @Injectable()
 export class NoticiasService {
@@ -43,6 +38,7 @@ export class NoticiasService {
         titulo: input.titulo,
         slug: await this.slugDisponivel(gerarSlug(input.titulo)),
         conteudo: input.conteudo,
+        resumo: resumoDeConteudo(input.conteudo),
         capaUrl: input.capaUrl ?? null,
         anexoUrl: input.anexoUrl ?? null,
         anexoNome: input.anexoNome ?? null,
@@ -72,6 +68,7 @@ export class NoticiasService {
     }
     if (input.conteudo !== undefined) {
       data.conteudo = input.conteudo;
+      data.resumo = resumoDeConteudo(input.conteudo);
     }
     if (input.capaUrl !== undefined) {
       data.capaUrl = input.capaUrl;
@@ -114,11 +111,11 @@ export class NoticiasService {
   }
 
   async listarAdmin() {
-    const itens = await this.prisma.noticia.findMany({
+    return this.prisma.noticia.findMany({
       orderBy: { createdAt: 'desc' },
       select: CAMPOS_LISTAGEM,
+      take: 100,
     });
-    return itens.map(paraListagem);
   }
 
   async buscarAdmin(id: string) {
@@ -142,7 +139,7 @@ export class NoticiasService {
       this.prisma.noticia.count({ where }),
     ]);
     return {
-      items: items.map(paraListagem),
+      items,
       total,
       page,
       totalPages: Math.max(1, Math.ceil(total / limit)),

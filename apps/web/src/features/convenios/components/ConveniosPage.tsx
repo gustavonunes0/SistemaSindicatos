@@ -4,17 +4,21 @@ import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useDebounce } from '../../../lib/useDebounce';
 import { AguardandoAprovacao } from '../../afiliado/components/AguardandoAprovacao';
 import { useMe } from '../../auth/hooks';
+import { useAuthStore } from '../../auth/store';
 import { useCategoriasConvenios, useConvenios } from '../hooks';
 import { ConvenioCard } from './ConvenioCard';
 
 export function ConveniosPage() {
+  const accessToken = useAuthStore((state) => state.accessToken);
   const { data: me, isLoading: carregandoMe } = useMe();
   const aprovado = me?.afiliado?.status === 'APROVADO';
   const [busca, setBusca] = useState('');
   const [categoria, setCategoria] = useState('');
   const buscaDebounced = useDebounce(busca.trim(), 350);
 
-  const { data: categorias } = useCategoriasConvenios(aprovado);
+  // Dispara em paralelo com /me (não espera aprovação para iniciar o fetch).
+  const podeBuscar = Boolean(accessToken);
+  const { data: categorias } = useCategoriasConvenios(podeBuscar);
   const {
     data: convenios,
     isLoading,
@@ -24,7 +28,7 @@ export function ConveniosPage() {
       busca: buscaDebounced || undefined,
       categoria: categoria || undefined,
     },
-    aprovado,
+    podeBuscar,
   );
 
   const temFiltro = Boolean(buscaDebounced || categoria);

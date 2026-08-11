@@ -190,6 +190,8 @@ model Afiliado {
   @@unique([tenantId, cpf])
   @@unique([tenantId, matricula])
   @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, nome])
   @@map("afiliados")
 }
 
@@ -257,6 +259,8 @@ model Noticia {
   anexoUrl    String?
   anexoNome   String?
   conteudo    String        @db.Text
+  /// Texto plano curto para listagens (evita carregar o HTML completo).
+  resumo      String        @default("")
   status      StatusNoticia @default(RASCUNHO)
   publicadoEm DateTime?     @db.Timestamptz
   autorId     String

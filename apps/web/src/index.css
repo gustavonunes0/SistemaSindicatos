@@ -4445,24 +4445,156 @@ textarea {
   padding: 1.75rem 1rem 3rem;
   display: flex;
   flex-direction: column;
-  gap: 2.25rem;
+  gap: 1.5rem;
 }
 
-.convenios-public-grupo-cabecalho {
-  margin-bottom: 1.25rem;
-  max-width: 40rem;
+.convenios-public-instrucao {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
 }
 
-.convenios-public-grupo-cabecalho h2 {
-  margin: 0 0 0.4rem;
-  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
+.convenios-public-categorias {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 560px) {
+  .convenios-public-categorias {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .convenios-public-categorias {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.convenios-public-categoria {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  width: 100%;
+  margin: 0;
+  padding: 1rem 1.1rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--cor-texto);
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  border-top: var(--faixa-altura) solid transparent;
+  transition:
+    border-color var(--transicao),
+    transform var(--transicao),
+    box-shadow var(--transicao);
+}
+
+.convenios-public-categoria:hover {
+  border-color: color-mix(in srgb, var(--cor-primaria) 28%, var(--cor-borda));
+}
+
+.convenios-public-categoria:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+}
+
+.convenios-public-categoria.is-ativa {
+  border-color: var(--cor-primaria);
+  border-top-color: var(--amarelo-faixa);
+  box-shadow: 0 8px 22px rgb(7 31 56 / 8%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .convenios-public-categoria:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.convenios-public-categoria-icone {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: var(--raio);
+  background: color-mix(in srgb, var(--azul-placa) 12%, var(--cor-superficie));
   color: var(--cor-primaria);
 }
 
-.convenios-public-grupo-cabecalho p {
-  margin: 0;
-  color: var(--cor-texto-suave);
+.convenios-public-categoria-icone svg {
+  width: 1.35rem;
+  height: 1.35rem;
+}
+
+.convenios-public-categoria-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.convenios-public-categoria-texto strong {
+  font-family: var(--fonte-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.convenios-public-categoria-texto span {
   font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.convenios-public-painel {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.25rem 1.15rem 1.35rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  border-top: var(--faixa-altura) solid var(--amarelo-faixa);
+  animation: surgir 260ms ease-out both;
+}
+
+.convenios-public-painel-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.convenios-public-painel-titulo {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-width: 0;
+}
+
+.convenios-public-painel-titulo h2 {
+  margin: 0;
+  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+  color: var(--cor-primaria);
+}
+
+.convenios-public-painel-titulo p {
+  margin: 0.15rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.convenios-public-vazio-selecao {
+  margin: 0;
+  padding: 1.1rem 1.15rem;
+  border: 1px dashed var(--cor-borda);
+  border-radius: var(--raio);
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  text-align: center;
 }
 
 .convenios-public-lista {
@@ -4585,7 +4717,8 @@ textarea {
 }
 
 .convenios-public-hero-inner > *,
-.convenios-public-grupo,
+.convenios-public-categorias,
+.convenios-public-instrucao,
 .convenios-public-rodape {
   animation: surgir 260ms ease-out both;
 }
@@ -4607,24 +4740,36 @@ textarea {
   animation-delay: 140ms;
 }
 
-.convenios-public-grupo:nth-child(1) {
+.convenios-public-instrucao {
   animation-delay: 160ms;
 }
 
-.convenios-public-grupo:nth-child(2) {
+.convenios-public-categorias {
   animation-delay: 200ms;
 }
 
-.convenios-public-grupo:nth-child(3) {
+.convenios-public-categoria:nth-child(1) {
+  animation: surgir 260ms ease-out both;
+  animation-delay: 200ms;
+}
+
+.convenios-public-categoria:nth-child(2) {
+  animation: surgir 260ms ease-out both;
   animation-delay: 240ms;
 }
 
-.convenios-public-grupo:nth-child(4) {
+.convenios-public-categoria:nth-child(3) {
+  animation: surgir 260ms ease-out both;
   animation-delay: 280ms;
 }
 
-.convenios-public-rodape {
+.convenios-public-categoria:nth-child(4) {
+  animation: surgir 260ms ease-out both;
   animation-delay: 320ms;
+}
+
+.convenios-public-rodape {
+  animation-delay: 280ms;
 }
 
 .sobre-oferta-link {
