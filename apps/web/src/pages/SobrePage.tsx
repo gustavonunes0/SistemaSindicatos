@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { marca } from '../lib/marca';
+import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 const ofertas = [
@@ -22,9 +22,11 @@ const ofertas = [
 ] as const;
 
 export function SobrePage() {
+  const marca = useMarca();
+
   useSeo({
     title: `Sobre — ${marca.nome}`,
-    description: `História, missão e diretoria do ${marca.nomeCompleto}.`,
+    description: `História, missão, estatuto e diretoria do ${marca.nomeCompleto}.`,
   });
 
   return (
@@ -86,6 +88,26 @@ export function SobrePage() {
             ))}
           </ul>
         </section>
+
+        {marca.estatutoUrl ? (
+          <aside className="sobre-documento" aria-labelledby="estatuto-titulo">
+            <div className="sobre-documento-texto">
+              <p className="eyebrow">Normas</p>
+              <h2 id="estatuto-titulo">Estatuto</h2>
+              <p>
+                Estatuto consolidado do {marca.nome} (setembro/2025), com as regras de organização,
+                direitos e deveres da categoria.
+              </p>
+            </div>
+            <a
+              href={marca.estatutoUrl}
+              download="estatuto-sindprf-ce.pdf"
+              className="botao-primario"
+            >
+              Baixar estatuto (PDF)
+            </a>
+          </aside>
+        ) : null}
 
         <section className="sobre-institucional" aria-label="Institucional">
           <div className="sobre-painel">

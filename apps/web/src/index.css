@@ -839,6 +839,47 @@ button.botao-primario {
   line-height: 1.5;
 }
 
+.sobre-documento {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 1.35rem 1.25rem;
+  background: var(--cor-superficie, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  border-left: 4px solid var(--cor-primaria, #0b3d6b);
+}
+
+@media (min-width: 720px) {
+  .sobre-documento {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding: 1.5rem 1.5rem;
+  }
+}
+
+.sobre-documento-texto .eyebrow {
+  margin: 0 0 0.35rem;
+}
+
+.sobre-documento-texto h2 {
+  margin: 0 0 0.4rem;
+  font-size: 1.25rem;
+}
+
+.sobre-documento-texto p {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.92rem;
+  color: var(--cor-texto-suave, #5a6472);
+  line-height: 1.45;
+}
+
+.sobre-documento .botao-primario {
+  flex-shrink: 0;
+}
+
 .sobre-institucional {
   display: grid;
   gap: 1.25rem;
@@ -1048,6 +1089,57 @@ button.botao-primario {
   gap: 2.75rem;
 }
 
+.diretoria-atual {
+  position: relative;
+  padding: 1.5rem 1.25rem 1.75rem;
+  background: var(--cor-superficie, #fff);
+  border: 1px solid var(--cor-borda, #d3d7de);
+  border-top: 4px solid var(--amarelo-faixa, #f4b301);
+  box-shadow: 0 10px 28px rgb(11 61 107 / 0.08);
+}
+
+@media (min-width: 720px) {
+  .diretoria-atual {
+    padding: 1.75rem 1.75rem 2rem;
+  }
+}
+
+.diretoria-atual-selo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--cor-borda, #d3d7de);
+}
+
+.diretoria-atual-badge {
+  display: inline-block;
+  padding: 0.28rem 0.65rem;
+  background: var(--cor-primaria, #0b3d6b);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.diretoria-atual-meta {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--cor-texto-suave, #5a6472);
+}
+
+.diretoria-atual-meta strong {
+  color: var(--cor-primaria, #0b3d6b);
+  font-weight: 700;
+}
+
+.diretoria-atual .diretoria-secao-cabecalho h2 {
+  font-size: clamp(1.35rem, 2.8vw, 1.7rem);
+}
+
 .diretoria-secao-cabecalho {
   margin-bottom: 1.35rem;
   max-width: 40rem;
@@ -1083,17 +1175,22 @@ button.botao-primario {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  padding: 1.15rem 1.2rem 1.2rem;
-  background: var(--cor-superficie);
+  padding: 1.25rem 1.25rem 1.3rem;
+  background:
+    linear-gradient(
+      165deg,
+      color-mix(in srgb, var(--cor-primaria, #0b3d6b) 9%, #fff) 0%,
+      var(--cor-superficie, #fff) 48%
+    );
   border: var(--borda-fina);
-  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+  border-left: 4px solid var(--cor-primaria, #0b3d6b);
   border-radius: var(--raio);
   transition: border-color var(--transicao), transform var(--transicao);
 }
 
 @media (prefers-reduced-motion: no-preference) {
   .diretoria-destaque:hover {
-    border-left-color: var(--cor-primaria);
+    border-left-color: var(--amarelo-faixa, #f4b301);
     transform: translateY(-1px);
   }
 }
@@ -1108,7 +1205,7 @@ button.botao-primario {
 
 .diretoria-destaque-nome {
   font-family: var(--fonte-display);
-  font-size: clamp(1.2rem, 2.4vw, 1.45rem);
+  font-size: clamp(1.3rem, 2.6vw, 1.6rem);
   font-weight: 700;
   color: var(--cor-primaria);
   line-height: 1.2;
@@ -1203,13 +1300,48 @@ button.botao-primario {
   line-height: 1.3;
 }
 
+.diretoria-atual .diretoria-conselhos {
+  margin-top: 1.75rem;
+}
+
 .diretoria-historico {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
+  padding: 1.35rem 1.25rem;
+  background: color-mix(in srgb, var(--cor-fundo, #e9ebee) 65%, #fff);
+  border: 1px dashed var(--cor-borda, #d3d7de);
+}
+
+.diretoria-historico-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.25rem;
+  margin-bottom: 0;
+}
+
+.diretoria-historico-cabecalho .eyebrow {
+  margin: 0 0 0.35rem;
+  color: var(--cor-texto-suave, #5a6472);
+}
+
+.diretoria-historico-cabecalho h2 {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.1rem, 2vw, 1.3rem);
+  color: var(--cor-texto-suave, #5a6472);
+  font-weight: 650;
+}
+
+.diretoria-historico-cabecalho p {
+  margin: 0;
+  max-width: 36rem;
+  font-size: 0.88rem;
+  color: var(--cor-texto-suave, #5a6472);
 }
 
 .diretoria-historico-lista {
   list-style: none;
-  margin: 0;
+  margin: 1.15rem 0 0;
   padding: 0;
   display: flex;
   flex-direction: column;
