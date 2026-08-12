@@ -41,11 +41,12 @@ services:
     container_name: sindprf-api
     restart: unless-stopped
     ports:
-      - "${API_PORT:-3001}:3000"
+      - "${API_PORT:-3002}:3000"
     environment:
       DATABASE_URL: ${DATABASE_URL:?Defina DATABASE_URL no .env (Supabase ou Postgres)}
       DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL:?Defina DATABASE_URL no .env (Supabase ou Postgres)}}
       PORT: "3000"
+      PERF_LOG_MS: ${PERF_LOG_MS:-700}
       JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET no .env}
       WEB_URL: ${WEB_URL:?Defina WEB_URL no .env}
       TENANT_SEED_HOSTS: ${TENANT_SEED_HOSTS:-}

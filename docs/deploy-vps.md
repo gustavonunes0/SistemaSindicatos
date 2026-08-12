@@ -16,7 +16,7 @@ Referência visual do que já ocupa a VPS (`187.127.42.128`):
 | Serviço | Porta no host |
 |---------|----------------|
 | Web (nginx do front) | **8081** |
-| API (Nest) | **3001** |
+| API (Nest) | **3002** |
 
 ---
 
@@ -26,7 +26,7 @@ Referência visual do que já ocupa a VPS (`187.127.42.128`):
 |------|--------|--------|-------------|
 | `sindprf.stellarsolucoes.com.br` | Site do cliente SINDPRF-CE | `sindprf-ce` (`SINDICATO`) | web `:8081` |
 | `sindigest.stellarsolucoes.com.br` | Painel Stellar (SUPERADMIN) | `sindigest` (`PLATAFORMA`) | web `:8081` |
-| `apisindigest.stellarsolucoes.com.br` | API compartilhada | — | api `:3001` |
+| `apisindigest.stellarsolucoes.com.br` | API compartilhada | — | api `:3002` |
 
 O **mesmo** container web serve os dois hosts. O tenant é resolvido pelo hostname (`X-Tenant-Host` / Host).  
 `tipo === PLATAFORMA` → router do painel; `SINDICATO` → site público + áreas do sindicato.
@@ -47,13 +47,26 @@ No DNS de `stellarsolucoes.com.br` (A ou CNAME → IP da VPS `187.127.42.128`):
 
 ## 2. `.env` na raiz do projeto (VPS)
 
+> **O `.env` não é versionado.** Ele vive só na VPS. Se aparecer no `git status`,
+> algo está errado — veja a seção "Segredos" abaixo.
+
 ```env
-# Supabase (as mesmas strings que já funcionam)
-DATABASE_URL=...pooler...?pgbouncer=true
-DIRECT_URL=...   # sem pgbouncer, para migrations
+# Supabase.
+#
+# NÃO use `?pgbouncer=true` na porta 5432. A 5432 é o pooler em modo SESSION,
+# que suporta prepared statements; a flag desliga esse recurso e faz cada
+# consulta custar ~5x mais (medido: 722ms com a flag, 146ms sem). A flag só é
+# necessária na porta 6543 (modo TRANSACTION).
+#
+# Prefira a região sa-east-1 (São Paulo): cada consulta é um round-trip, e um
+# banco em us-west-2 custa ~140ms contra ~15ms em São Paulo.
+#
+# Para medir o seu: node scripts/medir-latencia-banco.mjs
+DATABASE_URL=...pooler...:5432/postgres
+DIRECT_URL=...   # mesma string, usada nas migrations
 
 WEB_PORT=8081
-API_PORT=3001
+API_PORT=3002
 
 WEB_URL=https://sindprf.stellarsolucoes.com.br
 VITE_API_URL=https://apisindigest.stellarsolucoes.com.br
@@ -78,12 +91,29 @@ Alinhe com `.env.example` da raiz. Se `TENANT_SEED_HOSTS` ainda tiver `sindigest
 
 ```bash
 cd /opt/SistemaSindicatos   # ou caminho do repo
+
+# O .env deixou de ser versionado. Se ele ainda estiver rastreado nesta cópia,
+# o pull tentará removê-lo — guarde uma cópia antes de qualquer coisa.
+cp .env ~/env-backup-$(date +%F)
+
 git pull
-# confira .env (PLATFORM_SEED_HOSTS, TENANT_SEED_HOSTS separados)
+cp ~/env-backup-$(date +%F) .env   # só se o pull tiver removido/alterado
+
+# confira .env (PLATFORM_SEED_HOSTS e TENANT_SEED_HOSTS separados,
+# DATABASE_URL sem `?pgbouncer=true`)
 
 docker compose up --build -d
 docker compose exec api npx prisma migrate deploy
 docker compose exec api npx prisma db seed
+```
+
+### Só mudou o `.env` (sem mudança de código)
+
+Não precisa rebuildar; basta recriar o container da API para reler as variáveis:
+
+```bash
+docker compose up -d --force-recreate api
+docker compose logs -f api
 ```
 
 Validar mapeamento no Supabase (SQL Editor):
@@ -147,7 +177,7 @@ Mesmo padrão do Baturité (`http://187.127.42.128:PORTA`).
 | Domain Names | `apisindigest.stellarsolucoes.com.br` |
 | Scheme | `http` |
 | Forward Hostname / IP | `187.127.42.128` |
-| Forward Port | `3002` (ou o valor de `API_PORT` no `.env`) |
+| Forward Port | `3002` (precisa ser igual ao `API_PORT` do `.env`) |
 | SSL | Let’s Encrypt + Force SSL |
 
 > Se a porta do NPM ≠ `API_PORT`, o browser mostra “CORS” / `ERR_FAILED` (na verdade é 502 sem header CORS).
@@ -199,6 +229,43 @@ docker compose up -d --force-recreate api
 2. NPM: novo Proxy Host → `187.127.42.128:8081`
 3. `INSERT` em `tenant_domains` **do tenant do sindicato** (não da plataforma)
 4. API continua em `apisindigest...` (o front manda `X-Tenant-Host`)
+
+---
+
+## Segredos
+
+O `.env` **não** entra no Git (regra em `.gitignore`). Ele é criado a partir do
+`.env.example` diretamente na VPS.
+
+Se algum `.env` já foi versionado, adicionar a regra ao `.gitignore` não basta —
+o arquivo continua rastreado e o conteúdo permanece no histórico. É preciso:
+
+```bash
+git rm --cached .env apps/api/.env apps/web/.env
+git commit -m "chore: remove .env do versionamento"
+```
+
+E, principalmente, **rotacionar tudo que foi exposto**: senha do banco no
+Supabase, `JWT_SECRET` (invalida as sessões ativas), chaves VAPID e
+`SEED_ADMIN_SENHA`. Reescrever o histórico não substitui a rotação: qualquer
+clone ou fork feito antes ainda carrega os valores antigos.
+
+---
+
+## Diagnosticar lentidão
+
+A API mede cada requisição e registra as que passam do limite, separando tempo
+de banco de tempo de aplicação:
+
+```
+WARN [Perf] PATCH /eleicoes/x/chapas/y/homologar 480ms
+            (banco 470ms em 2 consultas, app 10ms) mais lenta: Chapa.update 240ms
+```
+
+O limite padrão é 700ms; ajuste com `PERF_LOG_MS` no `.env` (em ms) e recrie a
+API. Se o tempo estiver quase todo em "banco" com poucas consultas, o problema é
+latência de rede até o Supabase — confira região e a flag `pgbouncer`
+(seção 2) com `node scripts/medir-latencia-banco.mjs`.
 
 ---
 

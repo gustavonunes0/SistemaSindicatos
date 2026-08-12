@@ -39,6 +39,7 @@ services:
       DATABASE_URL: ${DATABASE_URL}
       DIRECT_URL: ${DIRECT_URL:-${DATABASE_URL}}
       PORT: "3000"
+      PERF_LOG_MS: ${PERF_LOG_MS:-700}
       JWT_SECRET: ${JWT_SECRET:-dev-secret-troque-em-producao}
       WEB_URL: http://localhost:5173
       INSTAGRAM_MOCK: ${INSTAGRAM_MOCK:-true}

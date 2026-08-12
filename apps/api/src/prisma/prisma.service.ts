@@ -1,9 +1,10 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
+import { criarPerfilExtension } from './perfil.extension';
 import { criarTenantExtension } from './tenant.extension';
 
 function criarClient() {
-  return new PrismaClient().$extends(criarTenantExtension());
+  return new PrismaClient().$extends(criarTenantExtension()).$extends(criarPerfilExtension());
 }
 
 export type TenantPrismaClient = ReturnType<typeof criarClient>;

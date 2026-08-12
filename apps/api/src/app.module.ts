@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { BalancetesModule } from './balancetes/balancetes.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
+import { PerfilInterceptor } from './common/perfil.interceptor';
 import { ConveniosModule } from './convenios/convenios.module';
 import { ContatoModule } from './contato/contato.module';
 import { D8Module } from './d8/d8.module';
@@ -55,6 +56,8 @@ import { PlataformaModule } from './plataforma/plataforma.module';
   controllers: [AppController],
   providers: [
     TenantMiddleware,
+    // Antes do tenant: mede a requisição inteira, inclusive a resolução de tenant.
+    { provide: APP_INTERCEPTOR, useClass: PerfilInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TenantAlsInterceptor },
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },

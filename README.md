@@ -66,13 +66,13 @@ O erro `Cannot find module '@sindprf/types'` acontece quando o Nest builda sem c
 
 Guia completo: **[`docs/deploy-vps.md`](docs/deploy-vps.md)**.
 
-Hosts Stellar (portas **8081** / **3001** — fora do Baturité em 8080/3000):
+Hosts Stellar (portas **8081** / **3002** — fora do Baturité em 8080/3000):
 
 | Host | Destino |
 |------|---------|
 | `sindprf.stellarsolucoes.com.br` | web `:8081` |
 | `sindigest.stellarsolucoes.com.br` | web `:8081` |
-| `apisindigest.stellarsolucoes.com.br` | api `:3001` |
+| `apisindigest.stellarsolucoes.com.br` | api `:3002` |
 
 ```bash
 cp .env.example .env   # Supabase + URLs acima

@@ -1,0 +1,19 @@
+# Normaliza fim de linha no repositório.
+* text=auto eol=lf
+
+# Scripts executados dentro de containers Linux: CRLF quebra o shebang
+# ("exec: not found"). Nunca converter para CRLF no checkout do Windows.
+*.sh text eol=lf
+Dockerfile* text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binários — não tocar.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
