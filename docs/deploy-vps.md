@@ -173,6 +173,24 @@ proxy_set_header X-Tenant-Host $http_x_tenant_host;
 5. Login plataforma: `superadmin@sindigest.local` + `SEED_ADMIN_SENHA`
 6. Login sindicato: `admin@sindprf.local`
 
+### Formulário de contato (e-mail gratuito)
+
+No `.env` da VPS, defina o destino e um provedor:
+
+```env
+CONTATO_DESTINO_EMAIL=seu-email@outlook.com
+RESEND_API_KEY=re_xxxxxxxx   # https://resend.com — plano free
+RESEND_FROM=SINDPRF-CE <onboarding@resend.dev>
+```
+
+Com `onboarding@resend.dev`, o Resend só entrega no e-mail da conta. Depois de verificar domínio próprio, pode mudar `RESEND_FROM`.
+
+Alternativa SMTP (Outlook/Gmail) — veja `.env.example`. Reinicie a API após alterar:
+
+```bash
+docker compose up -d --force-recreate api
+```
+
 ---
 
 ## 6. Depois: domínio próprio do cliente

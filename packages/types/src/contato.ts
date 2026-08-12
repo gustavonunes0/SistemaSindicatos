@@ -35,7 +35,7 @@ export type EnviarContatoInput = z.infer<typeof enviarContatoSchema>;
 
 export const enviarContatoResultadoSchema = z.object({
   enviado: z.boolean(),
-  modo: z.enum(['smtp', 'registrado']),
+  modo: z.enum(['smtp', 'resend', 'registrado']),
   message: z.string(),
 });
 export type EnviarContatoResultado = z.infer<typeof enviarContatoResultadoSchema>;
