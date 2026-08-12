@@ -3,6 +3,7 @@ import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarDataHora } from '../../../lib/datas';
 import { useEleicao, useResultado } from '../hooks';
+import { ResultadoChapas } from './ResultadoChapas';
 
 export function EleicaoResultadoPage() {
   const { id = '' } = useParams();
@@ -12,41 +13,50 @@ export function EleicaoResultadoPage() {
   return (
     <AreaLayout
       tipo="afiliado"
-      titulo={eleicao ? `Resultado — ${eleicao.titulo}` : 'Resultado'}
-      acoes={<Link to="/afiliado/eleicoes">← Eleições</Link>}
+      titulo={eleicao ? eleicao.titulo : 'Resultado'}
+      descricao="Apuração da urna eletrônica"
+      acoes={
+        <Link to="/afiliado/eleicoes" className="botao-link-acao">
+          ← Eleições
+        </Link>
+      }
     >
       {isLoading && <EstadoCarregando mensagem="Carregando resultado…" />}
       {isError && (
-        <p className="erro">O resultado ainda não está disponível para esta eleição.</p>
+        <div className="estado-vazio">
+          <p>O resultado desta eleição ainda não foi divulgado.</p>
+        </div>
       )}
 
       {resultado && (
-        <>
-          <p className="dash-secao-ajuda">
-            {resultado.porAclamacao
-              ? 'Resultado por aclamação — sem escrutínio secreto.'
-              : `Apuração eletrônica em ${formatarDataHora(resultado.apuradoEm)} — o resultado oficial soma os votos presenciais apurados pela Comissão Eleitoral.`}
-          </p>
+        <section className="resultado-painel">
+          <header className="resultado-painel-cabecalho">
+            <p className="eyebrow">Apuração</p>
+            <h2>
+              {resultado.porAclamacao ? 'Chapa eleita por aclamação' : 'Votos por chapa'}
+            </h2>
+            <p className="resultado-painel-texto">
+              {resultado.porAclamacao
+                ? 'Havia uma única chapa homologada, declarada eleita sem escrutínio secreto (Art. 38 do Estatuto).'
+                : `Apurado em ${formatarDataHora(resultado.apuradoEm)}. O resultado oficial soma os votos presenciais conferidos pela Comissão Eleitoral.`}
+            </p>
+          </header>
 
-          {resultado.resultados.map((item) => (
-            <div className="resultado-linha" key={item.chapaId}>
-              <div className="resultado-linha-topo">
-                <span>
-                  Chapa {item.numero} — {item.nome}
-                </span>
-                <span>
-                  {item.totalVotos} votos ({item.percentual.toFixed(1)}%)
-                </span>
+          {!resultado.porAclamacao && (
+            <dl className="resultado-painel-numeros">
+              <div>
+                <dt>Votos na urna eletrônica</dt>
+                <dd>{resultado.totalVotos}</dd>
               </div>
-              <div className="resultado-barra-trilho">
-                <div
-                  className="resultado-barra-preenchimento"
-                  style={{ width: `${item.percentual}%` }}
-                />
+              <div>
+                <dt>Chapas apuradas</dt>
+                <dd>{resultado.resultados.length}</dd>
               </div>
-            </div>
-          ))}
-        </>
+            </dl>
+          )}
+
+          <ResultadoChapas resultado={resultado} />
+        </section>
       )}
     </AreaLayout>
   );

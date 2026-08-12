@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 
 type TutorialEtapa = {
@@ -111,72 +111,72 @@ const TUTORIAIS: Tutorial[] = [
           'Informe Início da votação e Fim da votação (o fim precisa ser depois do início).',
           'Opcional: datas de inscrição de chapas — são só informativas; o cadastro de chapas no admin não fica bloqueado por elas.',
           'Clique em Criar eleição. O status inicial será Agendada.',
-          'Na lista, clique em Gerenciar para abrir o detalhe.',
+          'Na lista, clique em Gerenciar para abrir o detalhe da eleição.',
         ],
       },
       {
         titulo: '2. Cadastrar chapas e candidatos',
         passos: [
-          'Na seção Chapas, clique em Nova chapa (só funciona enquanto a eleição está Agendada).',
+          'Na aba Chapas, clique em Nova chapa (só funciona enquanto a eleição está Agendada).',
           'Informe Número (inteiro ≥ 1, único na eleição), Nome da chapa e, se quiser, Slogan.',
           'Clique em Cadastrar chapa. A chapa nasce como Aguardando homologação.',
-          'No card da chapa, em Candidatos, clique em + Candidato.',
+          'No card da chapa, clique em Adicionar candidato.',
           'Preencha Nome, Cargo (ex.: Presidente, Vice-presidente) e, se quiser, Foto (URL).',
-          'Repita para todas as chapas e candidatos. Depois que a votação abrir, não dá mais para alterar chapas nem candidatos.',
+          'Repita para todas as chapas. Depois que a urna abrir, chapas e candidatos ficam travados.',
         ],
       },
       {
         titulo: '3. Homologar as chapas',
         passos: [
-          'Em cada chapa com status Aguardando homologação, preencha Justificativa da decisão (mínimo 5 caracteres).',
-          'Clique em Homologar (vira Homologada) ou Não homologar (vira Não homologada).',
-          'Ao decidir, o sistema grava a justificativa e abre prazo de 3 dias úteis para contestação (pula sábado e domingo; não considera feriados).',
-          'Confira no topo: quantas chapas estão homologadas e quantas pendentes.',
+          'Ainda na aba Chapas, em cada chapa Aguardando homologação preencha Justificativa da decisão (mínimo 5 caracteres).',
+          'Clique em Homologar ou Não homologar.',
+          'A decisão grava a justificativa e abre prazo de 3 dias úteis para contestação (pula sábado e domingo; não considera feriados).',
+          'A pendência "Homologação decidida" no cartão da fase atual só fica verde quando nenhuma chapa está aguardando.',
         ],
       },
       {
-        titulo: '4. Contestações (impugnações e recursos)',
+        titulo: '4. Julgar impugnações e recursos',
         passos: [
-          'Quem cria a contestação é o afiliado, no prazo de 3 dias úteis após a homologação.',
-          'Chapa Homologada → afiliado pode Impugnar; chapa Não homologada → afiliado pode Recorrer.',
-          'No painel Impugnações e recursos, abra cada item com status Aberta.',
-          'Escreva a Decisão e clique em Deferir ou Indeferir.',
-          'Deferir impugnação torna a chapa Não homologada; deferir recurso torna a chapa Homologada.',
+          'Quem registra a contestação é o filiado, no prazo de 3 dias úteis após a homologação.',
+          'Chapa homologada → o filiado pode Impugnar; chapa não homologada → pode Recorrer.',
+          'Na aba Impugnações, cada item mostra a chapa contestada e o motivo.',
+          'Escreva a Decisão da Comissão e clique em Deferir ou Indeferir.',
+          'Deferir impugnação derruba a homologação; deferir recurso homologa a chapa.',
         ],
       },
       {
-        titulo: '5. Comissão Eleitoral e elegíveis',
+        titulo: '5. Definir eleitores e registrar a Comissão',
         passos: [
-          'Em Comissão Eleitoral, informe o ID do usuário ADMIN, escolha Titular ou Suplente e clique em Adicionar. Isso é registro/auditoria — não muda permissões.',
-          'Em Elegíveis, clique em Sincronizar aprovados para incluir todos os afiliados aprovados que ainda não estão na lista (não remove quem já está).',
-          'Ajuste manualmente: use Incluir afiliado aprovado ou Remover, conforme quem aderiu ao voto eletrônico (Art. 38 §3º).',
-          'Não é possível remover quem já votou. Use as abas Todos / Já votaram / Pendentes e a busca por nome ou matrícula.',
+          'Na aba Eleitores, clique em Sincronizar aprovados para incluir todos os filiados aprovados que ainda não estão na lista.',
+          'Ajuste a lista: inclua pelo seletor ou remova quem não aderiu ao voto eletrônico (Art. 38 §3º). Quem já votou não pode ser removido.',
+          'Use as abas Todos / Já votaram / Pendentes e a busca por nome ou matrícula.',
+          'Na aba Comissão, escolha o administrador pelo e-mail, marque Titular ou Suplente e clique em Adicionar. É registro de auditoria — não muda permissões.',
         ],
       },
       {
-        titulo: '6. Abrir votação ou aclamação',
+        titulo: '6. Abrir a urna (ou declarar aclamação)',
         passos: [
-          'Antes de abrir: nenhuma chapa pode estar Aguardando homologação, e não pode haver contestação Aberta ainda dentro do prazo.',
-          'Na seção Ação desta fase, clique em Abrir votação e confirme. A eleição passa para Aberta.',
-          'Alternativa: se houver exatamente 1 chapa Homologada, use Resolver por aclamação — a eleição vai direto para Apurada · aclamação, sem urna.',
+          'No cartão da fase atual, confira as quatro pendências: chapas cadastradas, homologação decidida, contestações resolvidas e lista de eleitores.',
+          'Com tudo verde, clique em Abrir votação e confirme. A eleição passa para Aberta.',
+          'Chapa única: se só uma chapa foi homologada, aparece o bloco Chapa única — clique em Declarar eleita por aclamação e a eleição vai direto para apurada, sem urna (Art. 38).',
           'A abertura é sempre manual. O sistema pode encerrar sozinho depois do horário de Fim, mas nunca abre sozinho.',
         ],
       },
       {
         titulo: '7. Encerrar e apurar',
         passos: [
-          'Com a eleição Aberta, clique em Encerrar votação quando for fechar as urnas (ou aguarde o fim do prazo).',
-          'Com status Encerrada, clique em Apurar votos.',
-          'O Resultado eletrônico mostra os votos por chapa homologada. Some manualmente os votos presenciais da Comissão para a proclamação oficial.',
-          'Editar ou excluir a eleição só é possível enquanto ela estiver Agendada.',
+          'Com a eleição Aberta, acompanhe a barra de comparecimento na aba Eleitores.',
+          'Clique em Encerrar votação quando fechar as urnas (ou aguarde o fim do prazo).',
+          'Com status Encerrada, clique em Apurar votos. O resultado passa a aparecer para os filiados.',
+          'Some os votos presenciais conferidos pela Comissão ao resultado eletrônico para a proclamação oficial.',
         ],
       },
     ],
     dicas: [
-      'Linha do tempo no topo: Preparação → Votação → Encerrada → Apurada.',
-      'Não há resultado parcial enquanto a votação está Aberta — nem para o admin.',
-      'O painel de contestações não mostra o nome da chapa; cruze pelo motivo e pela data.',
-      'Sincronizar elegíveis traz todos os aprovados — revise a lista antes de abrir a urna.',
+      'Linha do tempo no topo: Preparação → Votação → Urnas fechadas → Apurada.',
+      'Não há resultado parcial enquanto a votação está Aberta — nem para o administrador.',
+      'Editar ou excluir a eleição só é possível enquanto ela estiver Agendada.',
+      'O filiado vê a cédula só se estiver na lista de eleitores; ao votar ele recebe um protocolo que comprova o comparecimento sem revelar o voto.',
     ],
   },
   {
@@ -229,9 +229,18 @@ const TUTORIAIS: Tutorial[] = [
 const GRUPOS = ['Operação', 'Financeiro', 'Conteúdo'] as const;
 
 export function TutoriaisAdminPage() {
+  const [parametros] = useSearchParams();
   const [filtroGrupo, setFiltroGrupo] = useState<'todos' | (typeof GRUPOS)[number]>('todos');
   const [busca, setBusca] = useState('');
   const [abertoId, setAbertoId] = useState<string | null>(TUTORIAIS[0]?.id ?? null);
+
+  // Permite chegar direto no tutorial certo a partir de outra tela (?tutorial=eleicoes).
+  const tutorialPedido = parametros.get('tutorial');
+  useEffect(() => {
+    if (tutorialPedido && TUTORIAIS.some((item) => item.id === tutorialPedido)) {
+      setAbertoId(tutorialPedido);
+    }
+  }, [tutorialPedido]);
 
   const filtrados = useMemo(() => {
     const termo = busca.trim().toLowerCase();

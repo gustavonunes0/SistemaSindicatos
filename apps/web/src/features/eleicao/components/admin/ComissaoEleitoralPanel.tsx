@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
+import type { MembroComissao } from '@sindprf/types';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import {
   useAdicionarMembroComissao,
+  useAdministradores,
   useComissao,
   useRemoverMembroComissao,
 } from '../../hooks';
@@ -13,20 +15,28 @@ type ComissaoEleitoralPanelProps = {
 
 export function ComissaoEleitoralPanel({ eleicaoId }: ComissaoEleitoralPanelProps) {
   const { data: membros, isLoading } = useComissao(eleicaoId);
+  const { data: administradores } = useAdministradores();
   const adicionar = useAdicionarMembroComissao(eleicaoId);
   const remover = useRemoverMembroComissao(eleicaoId);
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [userId, setUserId] = useState('');
   const [titular, setTitular] = useState(true);
 
-  const titulares = useMemo(
-    () => (membros ?? []).filter((membro) => membro.titular),
-    [membros],
-  );
-  const suplentes = useMemo(
-    () => (membros ?? []).filter((membro) => !membro.titular),
-    [membros],
-  );
+  const titulares = (membros ?? []).filter((membro) => membro.titular);
+  const suplentes = (membros ?? []).filter((membro) => !membro.titular);
+
+  const disponiveis = useMemo(() => {
+    const jaNaComissao = new Set((membros ?? []).map((membro) => membro.userId));
+    return (administradores ?? []).filter((admin) => !jaNaComissao.has(admin.id));
+  }, [administradores, membros]);
+
+  const confirmarRemocao = (membro: MembroComissao) =>
+    pedirConfirmacao({
+      titulo: membro.titular ? 'Remover titular?' : 'Remover suplente?',
+      descricao: `${membro.email} deixará de constar na Comissão Eleitoral desta eleição.`,
+      confirmarRotulo: 'Remover',
+      onConfirmar: () => remover.mutateAsync(membro.userId),
+    });
 
   return (
     <section className="eleicao-admin-bloco" aria-labelledby="eleicao-comissao-titulo">
@@ -34,49 +44,41 @@ export function ComissaoEleitoralPanel({ eleicaoId }: ComissaoEleitoralPanelProp
         <div>
           <h2 id="eleicao-comissao-titulo">Comissão Eleitoral</h2>
           <p>
-            Registro dos administradores designados como membros da Comissão Eleitoral desta
-            eleição (Art. 38 §4º), para auditoria — não altera permissões de acesso.
+            Registro dos administradores designados para conduzir esta eleição (Art. 38 §4º). Serve
+            como trilha de auditoria — não altera permissões de acesso.
           </p>
-        </div>
-      </div>
-
-      <div className="eleicao-painel-metricas eleicao-painel-metricas--compacta">
-        <div className="eleicao-painel-metrica">
-          <span className="eleicao-painel-metrica-rotulo">Membros</span>
-          <strong>{membros?.length ?? 0}</strong>
-        </div>
-        <div className="eleicao-painel-metrica">
-          <span className="eleicao-painel-metrica-rotulo">Titulares</span>
-          <strong>{titulares.length}</strong>
-        </div>
-        <div className="eleicao-painel-metrica">
-          <span className="eleicao-painel-metrica-rotulo">Suplentes</span>
-          <strong>{suplentes.length}</strong>
         </div>
       </div>
 
       <div className="eleicao-painel-ferramentas">
         <form
-          className="eleicao-painel-incluir eleicao-painel-incluir--comissao"
+          className="eleicao-painel-incluir"
           onSubmit={(evento) => {
             evento.preventDefault();
-            if (!userId.trim()) return;
-            adicionar.mutate(
-              { userId: userId.trim(), titular },
-              { onSuccess: () => setUserId('') },
-            );
+            if (!userId) return;
+            adicionar.mutate({ userId, titular }, { onSuccess: () => setUserId('') });
           }}
         >
           <label>
             Designar administrador
-            <input
-              type="text"
+            <select
               value={userId}
               onChange={(evento) => setUserId(evento.target.value)}
-              placeholder="ID do usuário com perfil ADMIN"
-              autoComplete="off"
-            />
+              disabled={disponiveis.length === 0}
+            >
+              <option value="">
+                {disponiveis.length === 0
+                  ? 'Todos os administradores já estão na comissão'
+                  : 'Selecione um administrador…'}
+              </option>
+              {disponiveis.map((admin) => (
+                <option key={admin.id} value={admin.id}>
+                  {admin.email}
+                </option>
+              ))}
+            </select>
           </label>
+
           <fieldset className="eleicao-painel-papel">
             <legend>Papel</legend>
             <label className={titular ? 'ativo' : undefined}>
@@ -98,19 +100,13 @@ export function ComissaoEleitoralPanel({ eleicaoId }: ComissaoEleitoralPanelProp
               Suplente
             </label>
           </fieldset>
-          <button
-            type="submit"
-            className="botao-secundario"
-            disabled={adicionar.isPending || !userId.trim()}
-          >
+
+          <button type="submit" className="botao-secundario" disabled={adicionar.isPending || !userId}>
             {adicionar.isPending ? 'Adicionando…' : 'Adicionar'}
           </button>
         </form>
         {adicionar.isError && (
-          <p className="erro">
-            Não foi possível adicionar. Confira se o ID existe, é ADMIN e ainda não está na
-            comissão.
-          </p>
+          <p className="erro">Não foi possível adicionar este administrador. Tente novamente.</p>
         )}
       </div>
 
@@ -118,81 +114,65 @@ export function ComissaoEleitoralPanel({ eleicaoId }: ComissaoEleitoralPanelProp
 
       {membros && membros.length === 0 && (
         <div className="eleicao-admin-vazio">
-          <p>Nenhum membro designado ainda. Informe o ID de um administrador para começar.</p>
+          <p>Nenhum membro designado ainda. Escolha um administrador acima para começar.</p>
         </div>
       )}
 
       {membros && membros.length > 0 && (
         <div className="eleicao-comissao-grupos">
-          <div className="eleicao-comissao-grupo">
-            <h3>Titulares</h3>
-            {titulares.length === 0 ? (
-              <p className="eleicao-admin-resumo">Nenhum titular designado.</p>
-            ) : (
-              <ul className="eleicao-comissao-lista">
-                {titulares.map((membro) => (
-                  <li key={membro.userId}>
-                    <div className="eleicao-comissao-membro">
-                      <span className="badge badge-chapa-homologada">Titular</span>
-                      <strong>{membro.email}</strong>
-                    </div>
-                    <button
-                      type="button"
-                      className="botao-perigo"
-                      disabled={remover.isPending}
-                      onClick={() =>
-                        pedirConfirmacao({
-                          titulo: 'Remover titular?',
-                          descricao: `${membro.email} deixará de constar na Comissão Eleitoral desta eleição.`,
-                          confirmarRotulo: 'Remover',
-                          onConfirmar: () => remover.mutateAsync(membro.userId),
-                        })
-                      }
-                    >
-                      Remover
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <div className="eleicao-comissao-grupo">
-            <h3>Suplentes</h3>
-            {suplentes.length === 0 ? (
-              <p className="eleicao-admin-resumo">Nenhum suplente designado.</p>
-            ) : (
-              <ul className="eleicao-comissao-lista">
-                {suplentes.map((membro) => (
-                  <li key={membro.userId}>
-                    <div className="eleicao-comissao-membro">
-                      <span className="badge badge-eleicao-agendada">Suplente</span>
-                      <strong>{membro.email}</strong>
-                    </div>
-                    <button
-                      type="button"
-                      className="botao-perigo"
-                      disabled={remover.isPending}
-                      onClick={() =>
-                        pedirConfirmacao({
-                          titulo: 'Remover suplente?',
-                          descricao: `${membro.email} deixará de constar na Comissão Eleitoral desta eleição.`,
-                          confirmarRotulo: 'Remover',
-                          onConfirmar: () => remover.mutateAsync(membro.userId),
-                        })
-                      }
-                    >
-                      Remover
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
+          <GrupoComissao
+            titulo="Titulares"
+            membros={titulares}
+            vazio="Nenhum titular designado."
+            removendo={remover.isPending}
+            onRemover={confirmarRemocao}
+          />
+          <GrupoComissao
+            titulo="Suplentes"
+            membros={suplentes}
+            vazio="Nenhum suplente designado."
+            removendo={remover.isPending}
+            onRemover={confirmarRemocao}
+          />
         </div>
       )}
 
       {modalConfirmacao}
     </section>
+  );
+}
+
+type GrupoComissaoProps = {
+  titulo: string;
+  membros: MembroComissao[];
+  vazio: string;
+  removendo: boolean;
+  onRemover: (membro: MembroComissao) => void;
+};
+
+function GrupoComissao({ titulo, membros, vazio, removendo, onRemover }: GrupoComissaoProps) {
+  return (
+    <div className="eleicao-comissao-grupo">
+      <h3>{titulo}</h3>
+      {membros.length === 0 ? (
+        <p className="eleicao-admin-resumo">{vazio}</p>
+      ) : (
+        <ul className="eleicao-comissao-lista">
+          {membros.map((membro) => (
+            <li key={membro.userId}>
+              <strong>{membro.email}</strong>
+              <button
+                type="button"
+                className="botao-link-acao botao-link-acao--perigo"
+                disabled={removendo}
+                onClick={() => onRemover(membro)}
+              >
+                Remover
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

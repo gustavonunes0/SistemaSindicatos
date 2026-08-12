@@ -64,11 +64,10 @@ export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
     <section className="eleicao-admin-bloco" aria-labelledby="eleicao-elegiveis-titulo">
       <div className="eleicao-admin-bloco-cabecalho">
         <div>
-          <h2 id="eleicao-elegiveis-titulo">Elegíveis</h2>
+          <h2 id="eleicao-elegiveis-titulo">Eleitores</h2>
           <p>
-            Quem vota eletronicamente nesta eleição. A sincronização inclui todo sindicalizado aprovado
-            — ajuste manualmente para refletir apenas quem manifestou adesão ao voto eletrônico
-            (Art. 38 §3º do Estatuto).
+            Quem pode votar pela urna eletrônica. Sincronizar traz todos os filiados aprovados —
+            depois remova quem não aderiu ao voto eletrônico (Art. 38 §3º do Estatuto).
           </p>
         </div>
         <button
@@ -104,12 +103,12 @@ export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
           <strong>{pendentes}</strong>
         </div>
         <div className="eleicao-painel-metrica eleicao-painel-metrica--progresso">
-          <div className="eleicao-admin-metrica-topo">
+          <div className="eleicao-painel-metrica-topo">
             <span className="eleicao-painel-metrica-rotulo">Comparecimento</span>
             <strong>{percentual}%</strong>
           </div>
           <div
-            className="eleicao-admin-progresso"
+            className="eleicao-progresso"
             role="progressbar"
             aria-valuenow={percentual}
             aria-valuemin={0}
@@ -254,7 +253,7 @@ export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
                       <td className="tabela-acoes">
                         <button
                           type="button"
-                          className="botao-perigo"
+                          className="botao-link-acao botao-link-acao--perigo"
                           disabled={remover.isPending || elegivel.compareceu}
                           title={
                             elegivel.compareceu

@@ -136,6 +136,14 @@ button.botao-primario {
   color: var(--azul-noite);
 }
 
+.botao-link-acao--perigo {
+  color: var(--cor-erro);
+}
+
+.botao-link-acao--perigo:hover {
+  color: var(--cor-erro);
+}
+
 .botao-perigo {
   background: transparent;
   color: var(--cor-erro);
@@ -5883,115 +5891,213 @@ textarea {
   color: var(--cor-primaria);
 }
 
+.eleicao-admin-item-cta::after {
+  content: ' →';
+}
+
 /* ---- Admin: detalhe da eleição ---- */
-.eleicao-admin-status {
+/* Linha do tempo das fases: Preparação → Votação → Urnas fechadas → Apurada. */
+.eleicao-fases {
+  list-style: none;
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.25rem;
   display: grid;
-  gap: 1.15rem;
-  margin-bottom: 1.25rem;
-  padding: 1.15rem 1.25rem;
+  gap: 1rem;
   background: var(--cor-superficie);
   border: var(--borda-fina);
   border-radius: var(--raio-lg);
 }
 
-.eleicao-admin-fases {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.35rem;
+@media (min-width: 760px) {
+  .eleicao-fases {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
 }
 
-.eleicao-admin-fase {
-  display: flex;
-  flex-direction: column;
+.eleicao-fase-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
   align-items: center;
-  gap: 0.4rem;
-  text-align: center;
+  column-gap: 0.6rem;
+  row-gap: 0.1rem;
   position: relative;
 }
 
-.eleicao-admin-fase:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: 0.45rem;
-  left: calc(50% + 0.7rem);
-  width: calc(100% - 1.4rem);
-  height: 2px;
-  background: var(--cor-borda);
+@media (min-width: 760px) {
+  .eleicao-fase-item {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    padding-top: 1.35rem;
+  }
+
+  .eleicao-fase-item::before {
+    content: '';
+    position: absolute;
+    top: 0.4rem;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--cor-borda);
+  }
+
+  .eleicao-fase-item--concluida::before,
+  .eleicao-fase-item--atual::before {
+    background: var(--cor-primaria);
+  }
 }
 
-.eleicao-admin-fase--concluida:not(:last-child)::after,
-.eleicao-admin-fase--atual:not(:last-child)::after {
-  background: var(--cor-primaria);
-}
-
-.eleicao-admin-fase-marca {
-  width: 0.9rem;
-  height: 0.9rem;
+.eleicao-fase-marca {
+  width: 0.85rem;
+  height: 0.85rem;
   border-radius: 50%;
   border: 2px solid var(--cor-borda);
   background: var(--cor-superficie);
-  z-index: 1;
+  grid-row: span 2;
 }
 
-.eleicao-admin-fase--concluida .eleicao-admin-fase-marca,
-.eleicao-admin-fase--atual .eleicao-admin-fase-marca {
+@media (min-width: 760px) {
+  .eleicao-fase-marca {
+    position: absolute;
+    top: 0;
+    left: 0;
+    grid-row: auto;
+  }
+}
+
+.eleicao-fase-item--concluida .eleicao-fase-marca,
+.eleicao-fase-item--atual .eleicao-fase-marca {
   border-color: var(--cor-primaria);
   background: var(--cor-primaria);
 }
 
-.eleicao-admin-fase--atual .eleicao-admin-fase-marca {
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cor-primaria) 22%, transparent);
+.eleicao-fase-item--atual .eleicao-fase-marca {
+  border-color: var(--amarelo-faixa);
+  background: var(--amarelo-faixa);
 }
 
-.eleicao-admin-fase-rotulo {
+.eleicao-fase-rotulo {
   font-size: 0.72rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
   color: var(--cor-texto-suave);
 }
 
-.eleicao-admin-fase--atual .eleicao-admin-fase-rotulo,
-.eleicao-admin-fase--concluida .eleicao-admin-fase-rotulo {
+.eleicao-fase-item--concluida .eleicao-fase-rotulo,
+.eleicao-fase-item--atual .eleicao-fase-rotulo {
   color: var(--cor-primaria);
 }
 
-.eleicao-admin-metricas {
-  display: grid;
-  gap: 0.85rem;
-  grid-template-columns: 1fr;
-  padding-top: 0.85rem;
-  border-top: var(--borda-fina);
+.eleicao-fase-ajuda {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.35;
 }
 
-@media (min-width: 720px) {
-  .eleicao-admin-metricas {
-    grid-template-columns: auto auto 1fr;
-    align-items: end;
+.eleicao-fase-item--pendente .eleicao-fase-ajuda {
+  opacity: 0.65;
+}
+
+/* Cartão da fase atual: o que fazer agora e o que falta para poder fazer. */
+.eleicao-passo {
+  margin-bottom: 1.25rem;
+  padding: 1.25rem 1.35rem;
+  background: color-mix(in srgb, var(--cor-primaria) 5%, var(--cor-superficie));
+  border: var(--borda-fina);
+  border-left: 3px solid var(--amarelo-faixa);
+  border-radius: var(--raio-lg);
+}
+
+.eleicao-passo-cabecalho .eyebrow {
+  margin-bottom: 0.5rem;
+}
+
+.eleicao-passo-cabecalho h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.eleicao-passo-texto {
+  margin: 0.4rem 0 0;
+  max-width: 66ch;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+.eleicao-passo-checklist {
+  list-style: none;
+  margin: 1.1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+@media (min-width: 860px) {
+  .eleicao-passo-checklist {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
-.eleicao-admin-metrica {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+.eleicao-passo-item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
 }
 
-.eleicao-admin-metrica--larga {
-  min-width: 0;
+.eleicao-passo-item-marca {
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  font-size: 0.8rem;
+  font-weight: 700;
+  background: #fff3cd;
+  color: #8a5a00;
 }
 
-.eleicao-admin-metrica-topo {
+.eleicao-passo-item--pronto .eleicao-passo-item-marca {
+  background: #d8f3dc;
+  color: var(--cor-sucesso);
+}
+
+.eleicao-passo-item-texto {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: start;
+  font-size: var(--texto-sm);
+}
+
+.eleicao-passo-item-texto span {
+  color: var(--cor-texto-suave);
+  line-height: 1.4;
+}
+
+.eleicao-passo-comparecimento {
+  margin-top: 1.1rem;
+  padding: 0.85rem 1rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+}
+
+.eleicao-passo-comparecimento-topo {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.35rem 0.75rem;
+  gap: 0.3rem 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: var(--texto-sm);
 }
 
-.eleicao-admin-metrica-rotulo {
+.eleicao-metrica-rotulo {
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -5999,18 +6105,14 @@ textarea {
   color: var(--cor-texto-suave);
 }
 
-.eleicao-admin-metrica strong {
-  font-size: var(--texto-sm);
-}
-
-.eleicao-admin-progresso {
+.eleicao-progresso {
   height: 0.55rem;
   border-radius: 999px;
   background: #eceef1;
   overflow: hidden;
 }
 
-.eleicao-admin-progresso > span {
+.eleicao-progresso > span {
   display: block;
   height: 100%;
   background: var(--cor-primaria);
@@ -6018,17 +6120,91 @@ textarea {
   transition: width 200ms ease-out;
 }
 
-.eleicao-admin-acoes,
-.eleicao-admin-resultado {
-  margin-bottom: 1.25rem;
-  padding: 1.15rem 1.25rem;
-  background: color-mix(in srgb, var(--cor-primaria) 5%, var(--cor-superficie));
-  border: var(--borda-fina);
-  border-left: 3px solid var(--amarelo-faixa);
-  border-radius: var(--raio-lg);
+.eleicao-passo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.1rem;
 }
 
-.eleicao-admin-acoes-cabecalho h2,
+.eleicao-passo-bloqueio {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.eleicao-passo-alternativa {
+  margin-top: 1.1rem;
+  padding-top: 1rem;
+  border-top: var(--borda-fina);
+}
+
+.eleicao-passo-alternativa h3 {
+  margin: 0 0 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.eleicao-passo-alternativa p {
+  margin: 0 0 0.75rem;
+  max-width: 66ch;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+/* Abas de gestão: chapas, eleitores, impugnações e comissão. */
+.eleicao-abas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.35rem;
+  border-bottom: var(--borda-fina);
+}
+
+.eleicao-aba {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  background: transparent;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.eleicao-aba:hover:not(:disabled) {
+  background: var(--cor-superficie);
+  color: var(--cor-primaria);
+}
+
+.eleicao-aba--ativa,
+.eleicao-aba--ativa:hover:not(:disabled) {
+  background: var(--cor-superficie);
+  border-color: var(--cor-borda);
+  border-bottom-color: var(--amarelo-faixa);
+  color: var(--cor-primaria);
+}
+
+.eleicao-aba-contador {
+  padding: 0.05rem 0.4rem;
+  border-radius: 999px;
+  background: var(--cor-fundo);
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.eleicao-aba--ativa .eleicao-aba-contador {
+  background: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-superficie));
+}
+
 .eleicao-admin-bloco-cabecalho h2 {
   margin: 0;
   font-family: var(--fonte-display);
@@ -6037,24 +6213,12 @@ textarea {
   letter-spacing: -0.02em;
 }
 
-.eleicao-admin-acoes-cabecalho p,
 .eleicao-admin-bloco-cabecalho p {
   margin: 0.35rem 0 0;
-  max-width: 62ch;
+  max-width: 66ch;
   font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
   line-height: 1.45;
-}
-
-.eleicao-admin-acoes-botoes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: 0.95rem;
-}
-
-.eleicao-admin-resultado-lista {
-  margin-top: 1rem;
 }
 
 .eleicao-admin-bloco {
@@ -6091,18 +6255,6 @@ textarea {
   margin: 0 0 0.75rem;
   font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
-}
-
-.eleicao-admin-form-inline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.eleicao-admin-form-inline label {
-  flex: 1 1 220px;
 }
 
 .eleicao-admin-voto {
@@ -6173,6 +6325,15 @@ textarea {
   color: var(--cor-texto-suave);
 }
 
+.eleicao-painel-metrica-topo {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
 .eleicao-painel-metrica strong {
   font-size: 1.25rem;
   color: var(--cor-primaria);
@@ -6196,16 +6357,6 @@ textarea {
 
 .eleicao-painel-incluir label {
   flex: 1 1 240px;
-}
-
-.eleicao-painel-incluir--comissao {
-  align-items: stretch;
-}
-
-@media (min-width: 720px) {
-  .eleicao-painel-incluir--comissao {
-    align-items: flex-end;
-  }
 }
 
 .eleicao-painel-papel {
@@ -6288,6 +6439,10 @@ textarea {
   color: var(--cor-texto-suave);
 }
 
+.eleicao-painel > .eleicao-admin-bloco {
+  margin-bottom: 0;
+}
+
 .eleicao-comissao-grupos {
   display: grid;
   gap: 1rem;
@@ -6336,25 +6491,14 @@ textarea {
   border-radius: var(--raio);
 }
 
-.eleicao-comissao-membro {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0.35rem;
+.eleicao-comissao-lista strong {
   min-width: 0;
-}
-
-.eleicao-comissao-membro strong {
   word-break: break-word;
+  font-size: var(--texto-sm);
 }
 
-.eleicao-admin-paineis {
-  display: grid;
-  gap: 1.25rem;
-}
-
-.eleicao-admin-contestacoes,
-.eleicao-admin-comissao {
+/* ---- Impugnações e recursos ---- */
+.eleicao-contestacoes {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -6363,14 +6507,14 @@ textarea {
   gap: 0.75rem;
 }
 
-.eleicao-admin-contestacao {
+.eleicao-contestacao {
   padding: 0.95rem 1rem;
   border: var(--borda-fina);
   border-radius: var(--raio);
   background: var(--cor-fundo);
 }
 
-.eleicao-admin-contestacao-topo {
+.eleicao-contestacao-topo {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -6379,54 +6523,70 @@ textarea {
   margin-bottom: 0.55rem;
 }
 
-.eleicao-admin-contestacao-topo strong {
+.eleicao-contestacao-topo strong {
   display: block;
+  color: var(--cor-primaria);
 }
 
-.eleicao-admin-contestacao-topo time {
+.eleicao-contestacao-alvo {
+  display: block;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+}
+
+.eleicao-contestacao-topo time {
   display: block;
   margin-top: 0.15rem;
   font-size: 0.8rem;
   color: var(--cor-texto-suave);
 }
 
-.eleicao-admin-contestacao-motivo {
-  margin: 0 0 0.75rem;
+.eleicao-contestacao-motivo {
+  margin: 0 0 0.85rem;
+  padding-left: 0.75rem;
+  border-left: 2px solid var(--cor-borda);
   font-size: var(--texto-sm);
+  line-height: 1.5;
+}
+
+.eleicao-contestacao-decisao {
+  display: grid;
+  gap: 0.65rem;
+  padding-top: 0.85rem;
+  border-top: var(--borda-fina);
+}
+
+.eleicao-contestacao-decisao-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.eleicao-contestacao-resolvida {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
   line-height: 1.45;
 }
 
-.eleicao-admin-comissao li {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 0;
-  border-bottom: var(--borda-fina);
-}
-
-.eleicao-admin-comissao li:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.eleicao-admin-comissao strong {
-  display: block;
-}
-
-.eleicao-admin-comissao span {
-  font-size: 0.8rem;
-  color: var(--cor-texto-suave);
-}
-
 @media (max-width: 639px) {
-  .eleicao-admin-fase-rotulo {
-    font-size: 0.62rem;
-  }
-
   .eleicao-admin-item-meta {
     grid-template-columns: 1fr;
   }
+}
+
+/* ---- Filiado: lista de eleições ---- */
+.eleicoes-secao {
+  margin-bottom: 1.75rem;
+}
+
+.eleicoes-secao-titulo {
+  margin: 0 0 0.85rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
 }
 
 .eleicoes-grid {
@@ -6444,17 +6604,23 @@ textarea {
 .eleicao-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
   padding: 1.25rem;
   background: var(--cor-superficie);
   border: var(--borda-fina);
+  border-left: 3px solid var(--cor-borda);
   border-radius: var(--raio-lg);
   text-decoration: none;
   color: inherit;
+  transition: border-color var(--transicao);
 }
 
 .eleicao-card:hover {
   border-color: var(--cor-primaria);
+}
+
+.eleicao-card--destaque {
+  border-left-color: var(--amarelo-faixa);
 }
 
 .eleicao-card-cabecalho {
@@ -6462,6 +6628,378 @@ textarea {
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.5rem;
+}
+
+.eleicao-card-titulo {
+  font-family: var(--fonte-display);
+  font-size: 1.15rem;
+  color: var(--cor-primaria);
+  letter-spacing: -0.02em;
+}
+
+.eleicao-card-descricao {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.5;
+}
+
+.eleicao-card-periodo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1.25rem;
+  margin: 0;
+}
+
+.eleicao-card-periodo dt {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.eleicao-card-periodo dd {
+  margin: 0.1rem 0 0;
+  font-size: var(--texto-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.eleicao-card-cta {
+  margin-top: auto;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.eleicao-card-cta::after {
+  content: ' →';
+}
+
+/* ---- Filiado: cabine de votação ---- */
+.voto-situacao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: var(--borda-fina);
+}
+
+.voto-situacao-janela {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.voto-aviso {
+  padding: 1.25rem 1.35rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-left: 3px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+}
+
+.voto-aviso--bloqueado {
+  border-left-color: var(--cor-erro);
+}
+
+.voto-aviso--espera {
+  border-left-color: var(--amarelo-faixa);
+}
+
+.voto-aviso-titulo {
+  margin: 0;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+
+.voto-aviso-texto {
+  margin: 0.45rem 0 0;
+  max-width: 62ch;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.55;
+}
+
+.voto-situacao .botao-secundario {
+  margin-left: auto;
+}
+
+.voto-cedula {
+  padding: 1.35rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.voto-cedula-cabecalho h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  letter-spacing: -0.02em;
+}
+
+.voto-cedula-texto {
+  margin: 0.5rem 0 0;
+  max-width: 62ch;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.55;
+}
+
+.voto-cedula-vazio {
+  margin: 1.25rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.voto-chapas {
+  list-style: none;
+  margin: 1.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.voto-chapa {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.1rem;
+  background: var(--cor-fundo);
+  border: 2px solid var(--cor-borda);
+  border-radius: var(--raio-lg);
+  color: inherit;
+  font-family: var(--fonte-base);
+  font-size: var(--texto-base);
+  font-weight: 400;
+  text-align: left;
+  transition: border-color var(--transicao), background var(--transicao);
+}
+
+button.voto-chapa {
+  cursor: pointer;
+}
+
+button.voto-chapa:hover:not(:disabled) {
+  background: var(--cor-superficie);
+  border-color: color-mix(in srgb, var(--cor-primaria) 45%, var(--cor-borda));
+}
+
+.voto-chapa--selecionada,
+button.voto-chapa--selecionada:hover:not(:disabled) {
+  background: var(--cor-superficie);
+  border-color: var(--cor-primaria);
+}
+
+.voto-chapa--info {
+  grid-template-columns: auto 1fr;
+  cursor: default;
+}
+
+/* O número em bloco escuro é a assinatura da cédula — remete à urna oficial. */
+.voto-chapa-numero {
+  display: grid;
+  place-items: center;
+  min-width: 3.25rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--azul-noite);
+  color: #fff;
+  border-radius: var(--raio);
+  font-family: var(--fonte-display);
+  font-size: 1.6rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+.voto-chapa--selecionada .voto-chapa-numero {
+  background: var(--cor-primaria);
+  box-shadow: inset 0 -3px 0 var(--amarelo-faixa);
+}
+
+.voto-chapa-corpo {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.voto-chapa-rotulo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.voto-chapa-nome {
+  font-family: var(--fonte-display);
+  font-size: 1.2rem;
+  color: var(--cor-primaria);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.voto-chapa-slogan {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.voto-chapa-candidatos {
+  list-style: none;
+  margin: 0.55rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.voto-chapa-candidatos > * {
+  display: grid;
+  grid-template-columns: minmax(7rem, 9rem) 1fr;
+  gap: 0.5rem;
+  font-size: var(--texto-sm);
+}
+
+.voto-chapa-candidato-cargo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+  padding-top: 0.15rem;
+}
+
+.voto-chapa-candidato-nome {
+  font-weight: 600;
+}
+
+.voto-chapa-contestar {
+  margin-top: 0.65rem;
+  justify-self: start;
+}
+
+.voto-chapa-marca {
+  width: 1.35rem;
+  height: 1.35rem;
+  border-radius: 50%;
+  border: 2px solid var(--cor-borda);
+  background: var(--cor-superficie);
+}
+
+.voto-chapa--selecionada .voto-chapa-marca {
+  border-color: var(--cor-primaria);
+  background: var(--cor-primaria);
+  box-shadow: inset 0 0 0 3px var(--cor-superficie);
+}
+
+/* Barra de confirmação: fica sempre visível durante a escolha. */
+.voto-barra {
+  position: sticky;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding: 0.95rem 1.15rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-top: 3px solid var(--amarelo-faixa);
+  border-radius: var(--raio-lg);
+  box-shadow: 0 -6px 18px rgb(7 31 56 / 8%);
+}
+
+.voto-barra-escolha {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0;
+  min-width: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.voto-barra-escolha strong {
+  color: var(--cor-primaria);
+  font-size: var(--texto-base);
+}
+
+.voto-chapas-info {
+  margin-top: 1.75rem;
+}
+
+.voto-chapas-info h2 {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.voto-comprovante {
+  padding: 1.35rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-left: 3px solid var(--cor-sucesso);
+  border-radius: var(--raio-lg);
+}
+
+.voto-comprovante h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+
+.voto-comprovante-data {
+  margin: 0.35rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.voto-comprovante-protocolo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 1.1rem 0 0;
+  padding: 0.85rem 1rem;
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+}
+
+.voto-comprovante-protocolo-rotulo {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.voto-comprovante-protocolo code {
+  flex: 1 1 14rem;
+  min-width: 0;
+  font-size: 0.9rem;
+  word-break: break-all;
+}
+
+.voto-comprovante-ajuda {
+  margin: 0.85rem 0 0;
+  max-width: 62ch;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.55;
 }
 
 .chapas-grid {
@@ -6480,45 +7018,61 @@ textarea {
 .chapa-card {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.7rem;
   padding: 1.25rem;
-  background: var(--cor-superficie);
-  border: 2px solid var(--cor-borda);
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
   border-radius: var(--raio-lg);
   text-align: left;
 }
 
-.chapa-card--admin {
-  background: var(--cor-fundo);
-  border-width: 1px;
-}
-
-.chapa-card--selecionavel {
-  cursor: pointer;
-}
-
-.chapa-card--selecionada {
-  border-color: var(--cor-primaria);
-  box-shadow: 0 0 0 1px var(--cor-primaria);
-}
-
 .chapa-card-cabecalho {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 0.75rem;
 }
 
 .chapa-card-numero {
+  display: grid;
+  place-items: center;
+  min-width: 2.6rem;
+  padding: 0.35rem 0.5rem;
+  background: var(--azul-noite);
+  color: #fff;
+  border-radius: var(--raio);
+  font-family: var(--fonte-display);
+  font-size: 1.2rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.chapa-card-identificacao {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.chapa-card-rotulo {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   color: var(--cor-texto-suave);
 }
 
 .chapa-card-nome {
   font-family: var(--fonte-display);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   color: var(--cor-primaria);
   letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.chapa-card-ajuda {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
 }
 
 .chapa-card-slogan {
@@ -6585,42 +7139,165 @@ textarea {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.4rem;
 }
 
 .candidatos-lista li {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.5rem;
+  align-items: baseline;
+  gap: 0.35rem 0.75rem;
   font-size: 0.9rem;
 }
 
+.candidato-identificacao {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
 .candidato-cargo {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.candidato-nome {
+  font-weight: 600;
+}
+
+/* ---- Resultado / apuração ---- */
+.resultado-painel {
+  padding: 1.35rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.resultado-painel-cabecalho h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  letter-spacing: -0.02em;
+}
+
+.resultado-painel-texto {
+  margin: 0.45rem 0 0;
+  max-width: 66ch;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.55;
+}
+
+.resultado-painel-numeros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0.9rem 1rem;
+  background: var(--cor-fundo);
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+}
+
+.resultado-painel-numeros dt {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.resultado-painel-numeros dd {
+  margin: 0.1rem 0 0;
+  font-family: var(--fonte-display);
+  font-size: 1.4rem;
+  color: var(--cor-primaria);
+  font-variant-numeric: tabular-nums;
+}
+
+.resultado-lista {
+  list-style: none;
+  margin: 1.35rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.resultado-vazio {
+  margin: 1rem 0 0;
+  font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
 }
 
 .resultado-linha {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 1rem;
-}
-
-.resultado-linha:last-child {
-  margin-bottom: 0;
+  display: grid;
+  gap: 0.45rem;
 }
 
 .resultado-linha-topo {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 0.75rem;
+  align-items: flex-end;
+  gap: 0.5rem 0.75rem;
+}
+
+.resultado-linha-chapa {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.resultado-linha-numero {
+  display: grid;
+  place-items: center;
+  min-width: 2.3rem;
+  padding: 0.25rem 0.45rem;
+  background: var(--azul-noite);
+  color: #fff;
+  border-radius: var(--raio);
+  font-family: var(--fonte-display);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.resultado-linha-chapa strong {
+  display: block;
+  color: var(--cor-primaria);
+}
+
+.resultado-linha-rotulo {
+  display: block;
+  font-size: 0.68rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.resultado-linha-votos {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
   font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.resultado-linha-votos strong {
+  font-family: var(--fonte-display);
+  font-size: 1.35rem;
+  color: var(--cor-primaria);
+  font-variant-numeric: tabular-nums;
 }
 
 .resultado-barra-trilho {
   height: 0.6rem;
-  border-radius: var(--raio);
+  border-radius: 999px;
   background: #eceef1;
   overflow: hidden;
 }
@@ -6628,11 +7305,143 @@ textarea {
 .resultado-barra-preenchimento {
   height: 100%;
   background: var(--cor-primaria);
-  border-radius: var(--raio);
+  border-radius: inherit;
+  transition: width 220ms ease-out;
+}
+
+.resultado-linha--lider .resultado-barra-preenchimento {
+  background: var(--amarelo-faixa);
+}
+
+.resultado-linha-marca {
+  margin: 0;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-primaria);
+}
+
+/* ---- Admin: roteiro da eleição ---- */
+.eleicao-roteiro {
+  margin-bottom: 1.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-left: 3px solid var(--amarelo-faixa);
+  border-radius: var(--raio-lg);
+  overflow: hidden;
+}
+
+.eleicao-roteiro-cabecalho {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 1.1rem 1.25rem;
+  background: transparent;
+  border: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.eleicao-roteiro-cabecalho:hover:not(:disabled) {
+  background: var(--cor-fundo);
+}
+
+.eleicao-roteiro-cabecalho > span:first-child {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.eleicao-roteiro-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.eleicao-roteiro-cabecalho strong {
+  font-family: var(--fonte-display);
+  font-size: 1.15rem;
+  color: var(--cor-primaria);
+  letter-spacing: -0.02em;
+}
+
+.eleicao-roteiro-resumo {
+  font-size: var(--texto-sm);
+  font-weight: 400;
+  color: var(--cor-texto-suave);
+}
+
+.eleicao-roteiro-sinal {
+  flex: none;
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--cor-texto-suave);
+}
+
+.eleicao-roteiro-corpo {
+  display: grid;
+  justify-items: start;
+  gap: 1rem;
+  padding: 0 1.25rem 1.25rem;
+}
+
+.eleicao-roteiro-etapas {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 860px) {
+  .eleicao-roteiro-etapas {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem 1.5rem;
+  }
+}
+
+.eleicao-roteiro-etapas li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.7rem;
+}
+
+.eleicao-roteiro-etapas li > span:last-child {
+  display: grid;
+  gap: 0.1rem;
+  font-size: var(--texto-sm);
+}
+
+.eleicao-roteiro-etapas strong {
+  color: var(--cor-primaria);
+}
+
+.eleicao-roteiro-etapas span span {
+  color: var(--cor-texto-suave);
+  line-height: 1.45;
+}
+
+.eleicao-roteiro-numero {
+  display: grid;
+  place-items: center;
+  width: 1.6rem;
+  height: 1.6rem;
+  background: var(--azul-noite);
+  color: #fff;
+  border-radius: 50%;
+  font-family: var(--fonte-display);
+  font-size: 0.85rem;
+  font-weight: 700;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .eleicao-admin-progresso > span {
+  .eleicao-progresso > span,
+  .resultado-barra-preenchimento {
     transition: none;
   }
 }

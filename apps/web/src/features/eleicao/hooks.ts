@@ -239,6 +239,13 @@ export function useComissao(eleicaoId: string) {
   });
 }
 
+export function useAdministradores() {
+  return useQuery({
+    queryKey: ['eleicoes', 'admin', 'usuarios'],
+    queryFn: eleicaoApi.listarAdministradores,
+  });
+}
+
 export function useAdicionarMembroComissao(eleicaoId: string) {
   const queryClient = useQueryClient();
   return useMutation({

@@ -1,4 +1,5 @@
 import {
+  administradorResumoSchema,
   chapaSchema,
   comprovanteVotoSchema,
   contestacaoSchema,
@@ -10,6 +11,7 @@ import {
   meuStatusVotacaoSchema,
   resultadoEleicaoSchema,
   type AdicionarMembroComissaoInput,
+  type AdministradorResumo,
   type AtualizarCandidatoInput,
   type AtualizarChapaInput,
   type AtualizarEleicaoInput,
@@ -188,6 +190,11 @@ export async function resolverContestacao(
 export async function listarComissao(eleicaoId: string): Promise<MembroComissao[]> {
   const { data } = await api.get(`/eleicoes/${eleicaoId}/comissao`);
   return z.array(membroComissaoSchema).parse(data);
+}
+
+export async function listarAdministradores(): Promise<AdministradorResumo[]> {
+  const { data } = await api.get('/eleicoes/admin/usuarios');
+  return z.array(administradorResumoSchema).parse(data);
 }
 
 export async function adicionarMembroComissao(

@@ -115,6 +115,13 @@ export const membroComissaoSchema = z.object({
 });
 export type MembroComissao = z.infer<typeof membroComissaoSchema>;
 
+/** Administradores elegíveis a compor a Comissão Eleitoral. */
+export const administradorResumoSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+});
+export type AdministradorResumo = z.infer<typeof administradorResumoSchema>;
+
 export const adicionarMembroComissaoSchema = z.object({
   userId: z.string(),
   titular: z.boolean().default(true),

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
+import type { StatusEleicao } from '@sindprf/types';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
@@ -7,72 +8,53 @@ import { formatarDataHora } from '../../../../lib/datas';
 import {
   useAbrirEleicao,
   useApurarEleicao,
+  useContestacoes,
   useEleicaoAdmin,
   useEncerrarEleicao,
-  useHomologarChapa,
-  useRemoverCandidato,
-  useRemoverChapa,
   useRemoverEleicao,
   useResolverAclamacao,
   useResultado,
 } from '../../hooks';
-import { CandidatoFormModal } from './CandidatoFormModal';
-import { ChapaFormModal } from './ChapaFormModal';
+import { rotuloStatusEleicaoCurto } from '../../rotulos';
+import { ResultadoChapas } from '../ResultadoChapas';
+import { ChapasAdminPanel } from './ChapasAdminPanel';
 import { ComissaoEleitoralPanel } from './ComissaoEleitoralPanel';
 import { ContestacoesAdminPanel } from './ContestacoesAdminPanel';
 import { ElegiveisAdminPanel } from './ElegiveisAdminPanel';
 import { EleicaoFormModal } from './EleicaoFormModal';
 
-const rotuloStatus = {
-  AGENDADA: 'Agendada',
-  ABERTA: 'Aberta',
-  ENCERRADA: 'Encerrada',
-  APURADA: 'Apurada',
-} as const;
+type AbaId = 'chapas' | 'eleitores' | 'contestacoes' | 'comissao';
 
-const rotuloChapaStatus = {
-  INSCRITA: 'Aguardando homologação',
-  HOMOLOGADA: 'Homologada',
-  NAO_HOMOLOGADA: 'Não homologada',
-} as const;
+const fases: { id: StatusEleicao; rotulo: string; ajuda: string }[] = [
+  { id: 'AGENDADA', rotulo: 'Preparação', ajuda: 'Chapas, homologação e eleitores' },
+  { id: 'ABERTA', rotulo: 'Votação', ajuda: 'Urna eletrônica aberta' },
+  { id: 'ENCERRADA', rotulo: 'Urnas fechadas', ajuda: 'Aguardando apuração' },
+  { id: 'APURADA', rotulo: 'Apurada', ajuda: 'Resultado divulgado' },
+];
 
-const fases = [
-  { id: 'AGENDADA', rotulo: 'Preparação' },
-  { id: 'ABERTA', rotulo: 'Votação' },
-  { id: 'ENCERRADA', rotulo: 'Encerrada' },
-  { id: 'APURADA', rotulo: 'Apurada' },
-] as const;
-
-type ModalChapa =
-  | { modo: 'criar' }
-  | { modo: 'editar'; chapa: import('@sindprf/types').Chapa }
-  | null;
-
-type ModalCandidato =
-  | { modo: 'criar'; chapaId: string }
-  | { modo: 'editar'; chapaId: string; candidato: import('@sindprf/types').Candidato }
-  | null;
+type ItemPreparo = {
+  rotulo: string;
+  pronto: boolean;
+  ajuda: string;
+  aba: AbaId;
+};
 
 export function EleicaoDetalheAdminPage() {
   const { id } = useParams<{ id: string }>();
   const eleicaoId = id!;
   const navigate = useNavigate();
   const { data: eleicao, isLoading, isError } = useEleicaoAdmin(eleicaoId);
+  const { data: contestacoes } = useContestacoes(eleicaoId);
+  const { data: resultado } = useResultado(eleicaoId, eleicao?.status === 'APURADA');
   const abrir = useAbrirEleicao(eleicaoId);
   const encerrar = useEncerrarEleicao(eleicaoId);
   const apurar = useApurarEleicao(eleicaoId);
   const aclamacao = useResolverAclamacao(eleicaoId);
   const removerEleicao = useRemoverEleicao();
-  const homologar = useHomologarChapa(eleicaoId);
-  const removerChapa = useRemoverChapa(eleicaoId);
-  const removerCandidato = useRemoverCandidato(eleicaoId);
-  const { data: resultado } = useResultado(eleicaoId, eleicao?.status === 'APURADA');
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   const [modalEleicao, setModalEleicao] = useState(false);
-  const [modalChapa, setModalChapa] = useState<ModalChapa>(null);
-  const [modalCandidato, setModalCandidato] = useState<ModalCandidato>(null);
-  const [justificativas, setJustificativas] = useState<Record<string, string>>({});
+  const [aba, setAba] = useState<AbaId | null>(null);
   const [erroAcao, setErroAcao] = useState<string | null>(null);
 
   if (isLoading) {
@@ -85,7 +67,15 @@ export function EleicaoDetalheAdminPage() {
 
   if (isError || !eleicao) {
     return (
-      <AreaLayout tipo="admin" titulo="Eleição" acoes={<Link to="/admin/eleicoes">← Eleições</Link>}>
+      <AreaLayout
+        tipo="admin"
+        titulo="Eleição"
+        acoes={
+          <Link to="/admin/eleicoes" className="botao-link-acao">
+            ← Eleições
+          </Link>
+        }
+      >
         <p className="erro">Não foi possível carregar esta eleição.</p>
       </AreaLayout>
     );
@@ -93,12 +83,54 @@ export function EleicaoDetalheAdminPage() {
 
   const chapasHomologadas = eleicao.chapas.filter((chapa) => chapa.status === 'HOMOLOGADA');
   const chapasPendentes = eleicao.chapas.filter((chapa) => chapa.status === 'INSCRITA').length;
+  const contestacoesPendentes = (contestacoes ?? []).filter((contestacao) => {
+    if (contestacao.status !== 'ABERTA') return false;
+    const chapa = eleicao.chapas.find((item) => item.id === contestacao.chapaId);
+    return Boolean(chapa?.prazoContestacaoFim && new Date() <= chapa.prazoContestacaoFim);
+  }).length;
+
+  const preparo: ItemPreparo[] = [
+    {
+      rotulo: 'Chapas cadastradas',
+      pronto: eleicao.chapas.length > 0,
+      ajuda: 'Cadastre as chapas concorrentes e seus candidatos.',
+      aba: 'chapas',
+    },
+    {
+      rotulo: 'Homologação decidida',
+      pronto: chapasPendentes === 0,
+      ajuda: `${chapasPendentes} chapa${chapasPendentes === 1 ? '' : 's'} aguardando decisão da Comissão.`,
+      aba: 'chapas',
+    },
+    {
+      rotulo: 'Impugnações e recursos resolvidos',
+      pronto: contestacoesPendentes === 0,
+      ajuda: `${contestacoesPendentes} contestação${contestacoesPendentes === 1 ? '' : 'ões'} em aberto dentro do prazo.`,
+      aba: 'contestacoes',
+    },
+    {
+      rotulo: 'Lista de eleitores definida',
+      pronto: eleicao.totalElegiveis > 0,
+      ajuda: 'Sincronize os aprovados e deixe só quem aderiu ao voto eletrônico.',
+      aba: 'eleitores',
+    },
+  ];
+
+  const prontoParaAbrir = preparo.every((item) => item.pronto);
   const podeAclamacao = eleicao.status === 'AGENDADA' && chapasHomologadas.length === 1;
   const percentualComparecimento =
     eleicao.totalElegiveis > 0
       ? Math.min(100, Math.round((eleicao.totalComparecimentos / eleicao.totalElegiveis) * 100))
       : 0;
   const indiceFase = fases.findIndex((fase) => fase.id === eleicao.status);
+  const abaAtiva = aba ?? (eleicao.status === 'ABERTA' ? 'eleitores' : 'chapas');
+
+  const abas: { id: AbaId; rotulo: string; contador?: number }[] = [
+    { id: 'chapas', rotulo: 'Chapas', contador: eleicao.chapas.length },
+    { id: 'eleitores', rotulo: 'Eleitores', contador: eleicao.totalElegiveis },
+    { id: 'contestacoes', rotulo: 'Impugnações', contador: contestacoes?.length ?? 0 },
+    { id: 'comissao', rotulo: 'Comissão' },
+  ];
 
   const executarAcao = async (acao: () => Promise<unknown>) => {
     setErroAcao(null);
@@ -106,7 +138,7 @@ export function EleicaoDetalheAdminPage() {
       await acao();
     } catch {
       setErroAcao(
-        'Não foi possível concluir a ação. Verifique se todas as chapas foram homologadas e se não há contestações em aberto.',
+        'A ação não foi concluída. Confira as pendências acima e tente de novo — o servidor recusa a abertura enquanto houver chapa sem homologação ou contestação no prazo.',
       );
     }
   };
@@ -115,15 +147,22 @@ export function EleicaoDetalheAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo={eleicao.titulo}
-      descricao={`${formatarDataHora(eleicao.inicio)} até ${formatarDataHora(eleicao.fim)}`}
+      descricao={`Votação de ${formatarDataHora(eleicao.inicio)} até ${formatarDataHora(eleicao.fim)}`}
       acoes={
         <>
           <Link to="/admin/eleicoes" className="botao-link-acao">
             ← Eleições
           </Link>
+          <Link to="/admin/tutoriais?tutorial=eleicoes" className="botao-secundario">
+            Passo a passo
+          </Link>
           {eleicao.status === 'AGENDADA' && (
             <>
-              <button type="button" className="botao-secundario" onClick={() => setModalEleicao(true)}>
+              <button
+                type="button"
+                className="botao-secundario"
+                onClick={() => setModalEleicao(true)}
+              >
                 Editar
               </button>
               <button
@@ -148,44 +187,86 @@ export function EleicaoDetalheAdminPage() {
         </>
       }
     >
-      <section className="eleicao-admin-status" aria-label="Situação da eleição">
-        <ol className="eleicao-admin-fases">
-          {fases.map((fase, indice) => {
-            const estado =
-              indice < indiceFase ? 'concluida' : indice === indiceFase ? 'atual' : 'pendente';
-            return (
-              <li key={fase.id} className={`eleicao-admin-fase eleicao-admin-fase--${estado}`}>
-                <span className="eleicao-admin-fase-marca" aria-hidden="true" />
-                <span className="eleicao-admin-fase-rotulo">{fase.rotulo}</span>
-              </li>
-            );
-          })}
-        </ol>
+      <ol className="eleicao-fases" aria-label="Fases da eleição">
+        {fases.map((fase, indice) => {
+          const estado =
+            indice < indiceFase ? 'concluida' : indice === indiceFase ? 'atual' : 'pendente';
+          return (
+            <li key={fase.id} className={`eleicao-fase-item eleicao-fase-item--${estado}`}>
+              <span className="eleicao-fase-marca" aria-hidden="true" />
+              <span className="eleicao-fase-rotulo">{fase.rotulo}</span>
+              <span className="eleicao-fase-ajuda">{fase.ajuda}</span>
+              {estado === 'atual' && <span className="visually-hidden">(fase atual)</span>}
+            </li>
+          );
+        })}
+      </ol>
 
-        <div className="eleicao-admin-metricas">
-          <div className="eleicao-admin-metrica">
-            <span className="eleicao-admin-metrica-rotulo">Status</span>
-            <span className={`badge badge-eleicao-${eleicao.status.toLowerCase()}`}>
-              {rotuloStatus[eleicao.status]}
-              {eleicao.resolvidaPorAclamacao ? ' · aclamação' : ''}
-            </span>
-          </div>
-          <div className="eleicao-admin-metrica">
-            <span className="eleicao-admin-metrica-rotulo">Chapas</span>
-            <strong>
-              {chapasHomologadas.length} homologada{chapasHomologadas.length === 1 ? '' : 's'}
-              {chapasPendentes > 0 ? ` · ${chapasPendentes} pendente${chapasPendentes === 1 ? '' : 's'}` : ''}
-            </strong>
-          </div>
-          <div className="eleicao-admin-metrica eleicao-admin-metrica--larga">
-            <div className="eleicao-admin-metrica-topo">
-              <span className="eleicao-admin-metrica-rotulo">Comparecimento eletrônico</span>
+      <section className="eleicao-passo" aria-labelledby="eleicao-passo-titulo">
+        <div className="eleicao-passo-cabecalho">
+          <p className="eyebrow">
+            Fase atual · {rotuloStatusEleicaoCurto[eleicao.status]}
+            {eleicao.resolvidaPorAclamacao ? ' por aclamação' : ''}
+          </p>
+          <h2 id="eleicao-passo-titulo">
+            {eleicao.status === 'AGENDADA' && 'Abrir a votação'}
+            {eleicao.status === 'ABERTA' && 'Acompanhar o comparecimento'}
+            {eleicao.status === 'ENCERRADA' && 'Apurar os votos'}
+            {eleicao.status === 'APURADA' && 'Proclamar o resultado'}
+          </h2>
+          <p className="eleicao-passo-texto">
+            {eleicao.status === 'AGENDADA' &&
+              'Resolva as pendências abaixo. A urna só abre por decisão da Comissão — o sistema nunca abre sozinho.'}
+            {eleicao.status === 'ABERTA' &&
+              'Os eleitores da lista já podem votar. Não há resultado parcial nesta fase, nem para o administrador.'}
+            {eleicao.status === 'ENCERRADA' &&
+              'A urna está fechada. Apure quando a Comissão Eleitoral estiver reunida — a contagem é registrada e não muda depois.'}
+            {eleicao.status === 'APURADA' &&
+              'Some os votos presenciais conferidos pela Comissão ao resultado eletrônico abaixo para a proclamação oficial.'}
+          </p>
+        </div>
+
+        {eleicao.status === 'AGENDADA' && (
+          <ul className="eleicao-passo-checklist">
+            {preparo.map((item) => (
+              <li
+                key={item.rotulo}
+                className={`eleicao-passo-item ${item.pronto ? 'eleicao-passo-item--pronto' : ''}`}
+              >
+                <span className="eleicao-passo-item-marca" aria-hidden="true">
+                  {item.pronto ? '✓' : '!'}
+                </span>
+                <span className="eleicao-passo-item-texto">
+                  <strong>{item.rotulo}</strong>
+                  {!item.pronto && (
+                    <>
+                      <span>{item.ajuda}</span>
+                      <button
+                        type="button"
+                        className="botao-link-acao"
+                        onClick={() => setAba(item.aba)}
+                      >
+                        Resolver agora
+                      </button>
+                    </>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {(eleicao.status === 'ABERTA' || eleicao.status === 'ENCERRADA') && (
+          <div className="eleicao-passo-comparecimento">
+            <div className="eleicao-passo-comparecimento-topo">
+              <span className="eleicao-metrica-rotulo">Comparecimento eletrônico</span>
               <strong>
-                {eleicao.totalComparecimentos} de {eleicao.totalElegiveis} ({percentualComparecimento}%)
+                {eleicao.totalComparecimentos} de {eleicao.totalElegiveis} eleitores (
+                {percentualComparecimento}%)
               </strong>
             </div>
             <div
-              className="eleicao-admin-progresso"
+              className="eleicao-progresso"
               role="progressbar"
               aria-valuenow={percentualComparecimento}
               aria-valuemin={0}
@@ -195,38 +276,22 @@ export function EleicaoDetalheAdminPage() {
               <span style={{ width: `${percentualComparecimento}%` }} />
             </div>
           </div>
-        </div>
-      </section>
+        )}
 
-      {(eleicao.status === 'AGENDADA' ||
-        eleicao.status === 'ABERTA' ||
-        eleicao.status === 'ENCERRADA') && (
-        <section className="eleicao-admin-acoes" aria-labelledby="eleicao-acoes-titulo">
-          <div className="eleicao-admin-acoes-cabecalho">
-            <h2 id="eleicao-acoes-titulo">Ação desta fase</h2>
-            <p>
-              {eleicao.status === 'AGENDADA' &&
-                'Homologue as chapas e confirme a lista de elegíveis antes de abrir a votação.'}
-              {eleicao.status === 'ABERTA' &&
-                'A votação eletrônica está liberada para afiliados elegíveis.'}
-              {eleicao.status === 'ENCERRADA' &&
-                'As urnas eletrônicas estão fechadas. Apure os votos quando a Comissão estiver pronta.'}
-            </p>
-          </div>
+        {erroAcao && <p className="erro">{erroAcao}</p>}
 
-          {erroAcao && <p className="erro">{erroAcao}</p>}
-
-          <div className="eleicao-admin-acoes-botoes">
+        {eleicao.status !== 'APURADA' && (
+          <div className="eleicao-passo-acoes">
             {eleicao.status === 'AGENDADA' && (
               <button
                 type="button"
                 className="botao-primario"
-                disabled={abrir.isPending}
+                disabled={abrir.isPending || !prontoParaAbrir}
                 onClick={() =>
                   pedirConfirmacao({
                     titulo: 'Abrir votação?',
                     descricao:
-                      'A partir de agora, afiliados elegíveis poderão votar. Confirme que todas as chapas foram homologadas.',
+                      'A partir de agora os eleitores da lista podem votar, e chapas e candidatos ficam travados.',
                     confirmarRotulo: 'Abrir votação',
                     tom: 'primario',
                     onConfirmar: () => executarAcao(() => abrir.mutateAsync()),
@@ -234,26 +299,6 @@ export function EleicaoDetalheAdminPage() {
                 }
               >
                 Abrir votação
-              </button>
-            )}
-
-            {podeAclamacao && (
-              <button
-                type="button"
-                className="botao-secundario"
-                disabled={aclamacao.isPending}
-                onClick={() =>
-                  pedirConfirmacao({
-                    titulo: 'Resolver por aclamação?',
-                    descricao: `Só há uma chapa homologada (${chapasHomologadas[0]!.nome}). Ela será declarada eleita por aclamação, sem votação secreta (Art. 38 do Estatuto).`,
-                    confirmarRotulo: 'Resolver por aclamação',
-                    tom: 'primario',
-                    onConfirmar: () =>
-                      executarAcao(() => aclamacao.mutateAsync(chapasHomologadas[0]!.id)),
-                  })
-                }
-              >
-                Resolver por aclamação
               </button>
             )}
 
@@ -265,8 +310,8 @@ export function EleicaoDetalheAdminPage() {
                 onClick={() =>
                   pedirConfirmacao({
                     titulo: 'Encerrar votação?',
-                    descricao: 'Nenhum afiliado poderá votar depois disso.',
-                    confirmarRotulo: 'Encerrar',
+                    descricao: 'Ninguém mais consegue votar depois disso.',
+                    confirmarRotulo: 'Encerrar votação',
                     onConfirmar: () => executarAcao(() => encerrar.mutateAsync()),
                   })
                 }
@@ -284,8 +329,8 @@ export function EleicaoDetalheAdminPage() {
                   pedirConfirmacao({
                     titulo: 'Apurar votos?',
                     descricao:
-                      'Conta os votos eletrônicos por chapa. Some manualmente com os votos presenciais para a proclamação oficial.',
-                    confirmarRotulo: 'Apurar',
+                      'Conta os votos eletrônicos por chapa e divulga o resultado aos filiados. A contagem não pode ser refeita.',
+                    confirmarRotulo: 'Apurar votos',
                     tom: 'primario',
                     onConfirmar: () => executarAcao(() => apurar.mutateAsync()),
                   })
@@ -294,251 +339,98 @@ export function EleicaoDetalheAdminPage() {
                 Apurar votos
               </button>
             )}
-          </div>
-        </section>
-      )}
 
-      {eleicao.status === 'APURADA' && resultado && (
-        <section className="eleicao-admin-resultado" aria-labelledby="eleicao-resultado-titulo">
-          <div className="eleicao-admin-acoes-cabecalho">
-            <h2 id="eleicao-resultado-titulo">Resultado eletrônico</h2>
-            <p>
-              {resultado.porAclamacao
-                ? 'Resultado por aclamação — sem escrutínio secreto.'
-                : 'Apuração eletrônica — o resultado oficial soma os votos presenciais apurados pela Comissão Eleitoral.'}
-            </p>
-          </div>
-          <div className="eleicao-admin-resultado-lista">
-            {resultado.resultados.map((item) => (
-              <div className="resultado-linha" key={item.chapaId}>
-                <div className="resultado-linha-topo">
-                  <span>
-                    Chapa {item.numero} — {item.nome}
-                  </span>
-                  <span>
-                    {item.totalVotos} votos ({item.percentual.toFixed(1)}%)
-                  </span>
-                </div>
-                <div className="resultado-barra-trilho">
-                  <div
-                    className="resultado-barra-preenchimento"
-                    style={{ width: `${item.percentual}%` }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-
-      <section className="eleicao-admin-bloco" aria-labelledby="eleicao-chapas-titulo">
-        <div className="eleicao-admin-bloco-cabecalho">
-          <div>
-            <h2 id="eleicao-chapas-titulo">Chapas</h2>
-            <p>Inscrição, composição e homologação das chapas concorrentes.</p>
-          </div>
-          {eleicao.status === 'AGENDADA' && (
-            <button
-              type="button"
-              className="botao-secundario"
-              onClick={() => setModalChapa({ modo: 'criar' })}
-            >
-              Nova chapa
-            </button>
-          )}
-        </div>
-
-        {eleicao.chapas.length === 0 && (
-          <div className="eleicao-admin-vazio">
-            <p>Nenhuma chapa cadastrada ainda.</p>
-            {eleicao.status === 'AGENDADA' && (
-              <button
-                type="button"
-                className="botao-primario"
-                onClick={() => setModalChapa({ modo: 'criar' })}
-              >
-                Cadastrar a primeira chapa
-              </button>
+            {eleicao.status === 'AGENDADA' && !prontoParaAbrir && (
+              <p className="eleicao-passo-bloqueio">
+                Resolva as pendências marcadas para liberar a abertura.
+              </p>
             )}
           </div>
         )}
 
-        <div className="chapas-grid">
-          {eleicao.chapas.map((chapa) => (
-            <article className="chapa-card chapa-card--admin" key={chapa.id}>
-              <div className="chapa-card-cabecalho">
-                <span className="chapa-card-numero">Chapa {chapa.numero}</span>
-                <span className={`badge badge-chapa-${chapa.status.toLowerCase()}`}>
-                  {rotuloChapaStatus[chapa.status]}
-                </span>
-              </div>
-              <strong className="chapa-card-nome">{chapa.nome}</strong>
-              {chapa.slogan && <p className="chapa-card-slogan">{chapa.slogan}</p>}
-
-              <div className="chapa-card-secao">
-                <h3 className="chapa-card-secao-titulo">Candidatos</h3>
-                {chapa.candidatos.length === 0 ? (
-                  <p className="chapa-card-vazio">Nenhum candidato nesta chapa.</p>
-                ) : (
-                  <ul className="candidatos-lista">
-                    {chapa.candidatos.map((candidato) => (
-                      <li key={candidato.id}>
-                        <span>
-                          {candidato.nome}{' '}
-                          <span className="candidato-cargo">— {candidato.cargo}</span>
-                        </span>
-                        {eleicao.status === 'AGENDADA' && (
-                          <span className="tabela-acoes">
-                            <button
-                              type="button"
-                              className="botao-link-acao"
-                              onClick={() =>
-                                setModalCandidato({
-                                  modo: 'editar',
-                                  chapaId: chapa.id,
-                                  candidato,
-                                })
-                              }
-                            >
-                              Editar
-                            </button>
-                            <button
-                              type="button"
-                              className="botao-link"
-                              onClick={() =>
-                                removerCandidato.mutate({
-                                  chapaId: chapa.id,
-                                  candidatoId: candidato.id,
-                                })
-                              }
-                            >
-                              Remover
-                            </button>
-                          </span>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {eleicao.status === 'AGENDADA' && (
-                  <button
-                    type="button"
-                    className="botao-link-acao"
-                    onClick={() => setModalCandidato({ modo: 'criar', chapaId: chapa.id })}
-                  >
-                    + Candidato
-                  </button>
-                )}
-              </div>
-
-              {chapa.status === 'INSCRITA' && (
-                <div className="chapa-card-homologacao">
-                  <label>
-                    Justificativa da decisão
-                    <input
-                      type="text"
-                      value={justificativas[chapa.id] ?? ''}
-                      onChange={(evento) =>
-                        setJustificativas((atual) => ({
-                          ...atual,
-                          [chapa.id]: evento.target.value,
-                        }))
-                      }
-                      placeholder="Motivo da homologação ou indeferimento"
-                    />
-                  </label>
-                  <div className="chapa-card-homologacao-acoes">
-                    <button
-                      type="button"
-                      className="botao-primario"
-                      disabled={homologar.isPending || !justificativas[chapa.id]?.trim()}
-                      onClick={() =>
-                        homologar.mutate({
-                          chapaId: chapa.id,
-                          status: 'HOMOLOGADA',
-                          justificativa: justificativas[chapa.id]!.trim(),
-                        })
-                      }
-                    >
-                      Homologar
-                    </button>
-                    <button
-                      type="button"
-                      className="botao-perigo"
-                      disabled={homologar.isPending || !justificativas[chapa.id]?.trim()}
-                      onClick={() =>
-                        homologar.mutate({
-                          chapaId: chapa.id,
-                          status: 'NAO_HOMOLOGADA',
-                          justificativa: justificativas[chapa.id]!.trim(),
-                        })
-                      }
-                    >
-                      Não homologar
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {chapa.status !== 'INSCRITA' && chapa.justificativaHomologacao && (
-                <p className="chapa-card-justificativa">
-                  Justificativa: {chapa.justificativaHomologacao}
-                </p>
-              )}
-
-              {eleicao.status === 'AGENDADA' && (
-                <div className="chapa-card-rodape">
-                  <button
-                    type="button"
-                    className="botao-link-acao"
-                    onClick={() => setModalChapa({ modo: 'editar', chapa })}
-                  >
-                    Editar chapa
-                  </button>
-                  <button
-                    type="button"
-                    className="botao-perigo"
-                    onClick={() =>
-                      pedirConfirmacao({
-                        titulo: 'Excluir chapa?',
-                        descricao: `A chapa "${chapa.nome}" e seus candidatos serão removidos.`,
-                        confirmarRotulo: 'Excluir',
-                        onConfirmar: () => removerChapa.mutateAsync(chapa.id),
-                      })
-                    }
-                  >
-                    Excluir chapa
-                  </button>
-                </div>
-              )}
-            </article>
-          ))}
-        </div>
+        {podeAclamacao && (
+          <div className="eleicao-passo-alternativa">
+            <h3>Chapa única</h3>
+            <p>
+              Só a chapa {chapasHomologadas[0]!.numero} — {chapasHomologadas[0]!.nome} foi homologada.
+              Pelo Art. 38 do Estatuto ela pode ser declarada eleita por aclamação em Assembleia, sem
+              urna.
+            </p>
+            <button
+              type="button"
+              className="botao-secundario"
+              disabled={aclamacao.isPending}
+              onClick={() =>
+                pedirConfirmacao({
+                  titulo: 'Declarar eleita por aclamação?',
+                  descricao: `A chapa "${chapasHomologadas[0]!.nome}" será declarada eleita e a eleição passa direto para apurada, sem votação.`,
+                  confirmarRotulo: 'Declarar eleita',
+                  tom: 'primario',
+                  onConfirmar: () =>
+                    executarAcao(() => aclamacao.mutateAsync(chapasHomologadas[0]!.id)),
+                })
+              }
+            >
+              Declarar eleita por aclamação
+            </button>
+          </div>
+        )}
       </section>
 
-      <div className="eleicao-admin-paineis">
-        <ElegiveisAdminPanel eleicaoId={eleicaoId} />
-        <ContestacoesAdminPanel eleicaoId={eleicaoId} />
-        <ComissaoEleitoralPanel eleicaoId={eleicaoId} />
+      {eleicao.status === 'APURADA' && resultado && (
+        <section className="eleicao-admin-bloco" aria-labelledby="eleicao-resultado-titulo">
+          <div className="eleicao-admin-bloco-cabecalho">
+            <div>
+              <h2 id="eleicao-resultado-titulo">Resultado eletrônico</h2>
+              <p>
+                {resultado.porAclamacao
+                  ? 'Eleição resolvida por aclamação — sem escrutínio secreto.'
+                  : `Apurado em ${formatarDataHora(resultado.apuradoEm)} · ${resultado.totalVotos} votos na urna eletrônica.`}
+              </p>
+            </div>
+          </div>
+          <ResultadoChapas resultado={resultado} />
+        </section>
+      )}
+
+      <div className="eleicao-abas" role="tablist" aria-label="Gestão da eleição">
+        {abas.map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            role="tab"
+            id={`aba-${item.id}`}
+            aria-selected={abaAtiva === item.id}
+            aria-controls={`painel-${item.id}`}
+            className={`eleicao-aba ${abaAtiva === item.id ? 'eleicao-aba--ativa' : ''}`}
+            onClick={() => setAba(item.id)}
+          >
+            {item.rotulo}
+            {item.contador !== undefined && (
+              <span className="eleicao-aba-contador">{item.contador}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      <div
+        role="tabpanel"
+        id={`painel-${abaAtiva}`}
+        aria-labelledby={`aba-${abaAtiva}`}
+        className="eleicao-painel"
+      >
+        {abaAtiva === 'chapas' && <ChapasAdminPanel eleicao={eleicao} />}
+        {abaAtiva === 'eleitores' && <ElegiveisAdminPanel eleicaoId={eleicaoId} />}
+        {abaAtiva === 'contestacoes' && (
+          <ContestacoesAdminPanel eleicaoId={eleicaoId} chapas={eleicao.chapas} />
+        )}
+        {abaAtiva === 'comissao' && <ComissaoEleitoralPanel eleicaoId={eleicaoId} />}
       </div>
 
       <EleicaoFormModal
         aberto={modalEleicao}
         id={eleicaoId}
         onFechar={() => setModalEleicao(false)}
-      />
-      <ChapaFormModal
-        aberto={modalChapa !== null}
-        eleicaoId={eleicaoId}
-        chapa={modalChapa?.modo === 'editar' ? modalChapa.chapa : undefined}
-        onFechar={() => setModalChapa(null)}
-      />
-      <CandidatoFormModal
-        aberto={modalCandidato !== null}
-        eleicaoId={eleicaoId}
-        chapaId={modalCandidato?.chapaId ?? ''}
-        candidato={modalCandidato?.modo === 'editar' ? modalCandidato.candidato : undefined}
-        onFechar={() => setModalCandidato(null)}
       />
       {modalConfirmacao}
     </AreaLayout>

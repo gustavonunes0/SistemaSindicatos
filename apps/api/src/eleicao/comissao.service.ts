@@ -1,6 +1,10 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import type { AdicionarMembroComissaoInput, MembroComissao } from '@sindprf/types';
+import type {
+  AdicionarMembroComissaoInput,
+  AdministradorResumo,
+  MembroComissao,
+} from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
 
@@ -19,6 +23,15 @@ export class ComissaoService {
       email: membro.user.email,
       titular: membro.titular,
     }));
+  }
+
+  /** Candidatos a membro da comissão — o front escolhe por e-mail, não por ID. */
+  async listarAdministradores(): Promise<AdministradorResumo[]> {
+    return this.prisma.user.findMany({
+      where: { role: 'ADMIN' },
+      select: { id: true, email: true },
+      orderBy: { email: 'asc' },
+    });
   }
 
   async adicionar(eleicaoId: string, input: AdicionarMembroComissaoInput): Promise<MembroComissao> {

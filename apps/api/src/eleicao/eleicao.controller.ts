@@ -59,6 +59,12 @@ export class EleicaoController {
     return this.eleicaoService.listarAdmin();
   }
 
+  // Precisa vir antes de 'admin/:id' para não ser capturado como um id.
+  @Get('admin/usuarios')
+  listarAdministradores() {
+    return this.comissaoService.listarAdministradores();
+  }
+
   @Get('admin/:id')
   buscarAdmin(@Param('id') id: string) {
     return this.eleicaoService.buscarAdminDetalhe(id);
