@@ -106,8 +106,10 @@ export class ImoveisService {
   }
 
   async adicionarFotos(id: string, urls: string[]) {
-    await this.buscarAdmin(id);
-    const ordemBase = await this.prisma.fotoImovel.count({ where: { imovelId: id } });
+    const [, ordemBase] = await Promise.all([
+      this.buscarAdmin(id),
+      this.prisma.fotoImovel.count({ where: { imovelId: id } }),
+    ]);
     const tenantId = requireTenantId();
     await this.prisma.fotoImovel.createMany({
       data: urls.map((url, indice) => ({
@@ -121,21 +123,22 @@ export class ImoveisService {
   }
 
   async removerFoto(imovelId: string, fotoId: string): Promise<void> {
-    const foto = await this.prisma.fotoImovel.findFirst({
+    const { count } = await this.prisma.fotoImovel.deleteMany({
       where: { id: fotoId, imovelId },
     });
-    if (!foto) {
+    if (count === 0) {
       throw new NotFoundException('Foto não encontrada');
     }
-    await this.prisma.fotoImovel.delete({ where: { id: fotoId } });
   }
 
   async consultarDisponibilidade(imovelId: string, consulta: ConsultaDisponibilidadeInput) {
-    await this.buscarPublico(imovelId);
-    const periodos = await this.prisma.periodo.findMany({
-      where: { imovelId, ...whereSobreposicao(consulta.inicio, consulta.fim) },
-      orderBy: { inicio: 'asc' },
-    });
+    const [, periodos] = await Promise.all([
+      this.buscarPublico(imovelId),
+      this.prisma.periodo.findMany({
+        where: { imovelId, ...whereSobreposicao(consulta.inicio, consulta.fim) },
+        orderBy: { inicio: 'asc' },
+      }),
+    ]);
     return {
       disponivel: periodos.length === 0,
       periodos: periodos.map(serializarPeriodo),
@@ -143,10 +146,13 @@ export class ImoveisService {
   }
 
   async criarPeriodo(imovelId: string, input: CriarPeriodoInput) {
-    await this.buscarAdmin(imovelId);
-    const conflitos = await this.prisma.periodo.findMany({
-      where: { imovelId, ...whereSobreposicao(input.inicio, input.fim) },
-    });
+    const [, conflitos] = await Promise.all([
+      this.buscarAdmin(imovelId),
+      this.prisma.periodo.findMany({
+        where: { imovelId, ...whereSobreposicao(input.inicio, input.fim) },
+        select: { id: true },
+      }),
+    ]);
     if (conflitos.length > 0) {
       throw new ConflictException('O intervalo sobrepõe um período já cadastrado');
     }
@@ -163,21 +169,22 @@ export class ImoveisService {
   }
 
   async removerPeriodo(imovelId: string, periodoId: string): Promise<void> {
-    const periodo = await this.prisma.periodo.findFirst({
+    const { count } = await this.prisma.periodo.deleteMany({
       where: { id: periodoId, imovelId },
     });
-    if (!periodo) {
+    if (count === 0) {
       throw new NotFoundException('Período não encontrado');
     }
-    await this.prisma.periodo.delete({ where: { id: periodoId } });
   }
 
   async listarPeriodos(imovelId: string) {
-    await this.buscarAdmin(imovelId);
-    const periodos = await this.prisma.periodo.findMany({
-      where: { imovelId },
-      orderBy: { inicio: 'asc' },
-    });
+    const [, periodos] = await Promise.all([
+      this.buscarAdmin(imovelId),
+      this.prisma.periodo.findMany({
+        where: { imovelId },
+        orderBy: { inicio: 'asc' },
+      }),
+    ]);
     return periodos.map(serializarPeriodo);
   }
 

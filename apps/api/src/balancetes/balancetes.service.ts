@@ -15,7 +15,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
 import { parseTextoBalancete } from './balancete-parser';
 
-const LOTE = 100;
+/** `createMany` cabe num único INSERT; lotes maiores = menos viagens ao banco. */
+const LOTE = 500;
 
 function paraNumero(valor: unknown): number {
   return Number(valor);
@@ -110,21 +111,13 @@ export class BalancetesService {
 
     const { competenciaAno, competenciaMes } = parseado;
 
-    const existente = await this.prisma.importacaoBalancete.findUnique({
-      where: {
-        tenantId_competenciaAno_competenciaMes: {
-          tenantId: requireTenantId(),
-          competenciaAno,
-          competenciaMes,
-        },
-      },
+    const tenantId = requireTenantId();
+
+    // Substitui a competência sem precisar consultar antes; linhas caem por cascade.
+    await this.prisma.importacaoBalancete.deleteMany({
+      where: { tenantId, competenciaAno, competenciaMes },
     });
 
-    if (existente) {
-      await this.prisma.importacaoBalancete.delete({ where: { id: existente.id } });
-    }
-
-    const tenantId = requireTenantId();
     const importacao = await this.prisma.importacaoBalancete.create({
       data: {
         tenantId,

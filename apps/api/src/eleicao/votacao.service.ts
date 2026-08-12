@@ -44,9 +44,29 @@ export class VotacaoService {
   // Comparecimento é a garantia real contra requisições concorrentes —
   // a checagem de elegibilidade abaixo é só uma otimização de UX.
   async votar(userId: string, eleicaoId: string, chapaId: string): Promise<ComprovanteVoto> {
-    const afiliado = await this.buscarAfiliadoAprovado(userId);
+    // Nenhuma das quatro checagens depende do resultado das outras.
+    const [afiliado, eleicao, elegivel, chapa] = await Promise.all([
+      this.prisma.afiliado.findUnique({
+        where: { userId },
+        select: { id: true, status: true },
+      }),
+      this.prisma.eleicao.findUnique({
+        where: { id: eleicaoId },
+        select: { status: true, inicio: true, fim: true },
+      }),
+      this.prisma.elegivel.findFirst({
+        where: { eleicaoId, afiliado: { userId } },
+        select: { id: true },
+      }),
+      this.prisma.chapa.findFirst({
+        where: { id: chapaId, eleicaoId },
+        select: { status: true },
+      }),
+    ]);
 
-    const eleicao = await this.prisma.eleicao.findUnique({ where: { id: eleicaoId } });
+    if (afiliado?.status !== 'APROVADO') {
+      throw new ForbiddenException('Afiliação ainda não aprovada');
+    }
     if (!eleicao) {
       throw new NotFoundException('Eleição não encontrada');
     }
@@ -59,14 +79,9 @@ export class VotacaoService {
       throw new ConflictException('Fora da janela de votação');
     }
 
-    const elegivel = await this.prisma.elegivel.findUnique({
-      where: { eleicaoId_afiliadoId: { eleicaoId, afiliadoId: afiliado.id } },
-    });
     if (!elegivel) {
       throw new ForbiddenException('Você não está na lista de elegíveis desta eleição');
     }
-
-    const chapa = await this.prisma.chapa.findFirst({ where: { id: chapaId, eleicaoId } });
     if (!chapa) {
       throw new NotFoundException('Chapa não encontrada nesta eleição');
     }
@@ -75,16 +90,16 @@ export class VotacaoService {
     }
 
     const protocolo = randomBytes(16).toString('hex');
+    const tenantId = requireTenantId();
 
     try {
-      const comparecimento = await this.prisma.$transaction(async (tx) => {
-        const tenantId = requireTenantId();
-        const registro = await tx.comparecimento.create({
+      // Mesma transação atômica; tabelas seguem sem relação entre si.
+      const [comparecimento] = await this.prisma.$transaction([
+        this.prisma.comparecimento.create({
           data: { tenantId, eleicaoId, afiliadoId: afiliado.id, protocolo },
-        });
-        await tx.voto.create({ data: { tenantId, eleicaoId, chapaId } });
-        return registro;
-      });
+        }),
+        this.prisma.voto.create({ data: { tenantId, eleicaoId, chapaId } }),
+      ]);
 
       this.logger.log(`Comparecimento registrado na eleição ${eleicaoId} (protocolo ${protocolo})`);
 

@@ -9,13 +9,17 @@ import type {
   ImportarD8Resultado,
   TipoD8,
 } from '@sindprf/types';
+import { Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
 import { parseTextoD8, type D8Parseado, type LinhaD8Parseada } from './d8-parser';
 
 const BCRYPT_ROUNDS = 10;
+/** Lote das gravações agrupadas (updates em transação). */
 const LOTE = 100;
+/** `createMany` cabe num único INSERT; lotes maiores = menos viagens ao banco. */
+const LOTE_INSERT = 1000;
 
 type ResumoImport = {
   totalLinhas: number;
@@ -153,7 +157,7 @@ export class D8Service {
     });
 
     if (existente) {
-      await this.prisma.linhaD8.deleteMany({ where: { importacaoId: existente.id } });
+      // LinhaD8.importacao é onDelete: Cascade — as linhas somem junto.
       await this.prisma.importacaoD8.delete({ where: { id: existente.id } });
     }
 
@@ -180,7 +184,7 @@ export class D8Service {
       afiliadosCpf.map((a: { id: string; cpf: string }) => [a.cpf, a.id]),
     );
 
-    for (const lote of emLotes(parseado.linhas, LOTE)) {
+    for (const lote of emLotes(parseado.linhas, LOTE_INSERT)) {
       await this.prisma.linhaD8.createMany({
         data: lote.map((linha) => ({
           tenantId,
@@ -196,16 +200,12 @@ export class D8Service {
       });
     }
 
-    const inativados = await this.inativarAusentes(
-      parseado.competenciaAno,
-      parseado.competenciaMes,
-    );
+    const [inativados, semDesconto] = await Promise.all([
+      this.inativarAusentes(parseado.competenciaAno, parseado.competenciaMes),
+      this.contarSemDesconto(parseado.competenciaAno, parseado.competenciaMes),
+    ]);
 
     const semCadastro = parseado.linhas.length - vinculados;
-    const semDesconto = await this.contarSemDesconto(
-      parseado.competenciaAno,
-      parseado.competenciaMes,
-    );
 
     const resumo: ResumoImport = {
       totalLinhas: parseado.linhas.length,
@@ -314,13 +314,29 @@ export class D8Service {
     }
 
     for (const lote of emLotes(paraAtualizar, LOTE)) {
-      await Promise.all(
-        lote.map(async (linha) => {
-          const afiliado = porCpf.get(linha.cpf) ?? porMatricula.get(linha.matricula);
-          if (!afiliado) return;
+      const alvos = lote
+        .map((linha) => ({
+          linha,
+          afiliado: porCpf.get(linha.cpf) ?? porMatricula.get(linha.matricula),
+        }))
+        .filter((item): item is { linha: LinhaD8Parseada; afiliado: AfiliadoMatch } =>
+          Boolean(item.afiliado),
+        );
 
-          const matriculaMudou = afiliado.matricula !== linha.matricula;
-          await this.prisma.afiliado.update({
+      // bcrypt é CPU-bound: gera todos os hashes antes de montar o lote de escrita.
+      const novasSenhas = new Map<string, string>();
+      await Promise.all(
+        alvos
+          .filter(({ linha, afiliado }) => afiliado.matricula !== linha.matricula)
+          .map(async ({ linha, afiliado }) => {
+            novasSenhas.set(afiliado.userId, await bcrypt.hash(linha.matricula, BCRYPT_ROUNDS));
+          }),
+      );
+
+      const operacoes: Prisma.PrismaPromise<unknown>[] = [];
+      for (const { linha, afiliado } of alvos) {
+        operacoes.push(
+          this.prisma.afiliado.update({
             where: { id: afiliado.id },
             data: {
               nome: linha.nome,
@@ -329,21 +345,23 @@ export class D8Service {
               categoria: tipo,
               status: 'APROVADO',
             },
-          });
+          }),
+        );
+        const senhaHash = novasSenhas.get(afiliado.userId);
+        if (senhaHash) {
+          operacoes.push(
+            this.prisma.user.update({ where: { id: afiliado.userId }, data: { senhaHash } }),
+          );
+        }
+      }
 
-          if (matriculaMudou) {
-            const senhaHash = await bcrypt.hash(linha.matricula, BCRYPT_ROUNDS);
-            await this.prisma.user.update({
-              where: { id: afiliado.userId },
-              data: { senhaHash },
-            });
-          }
-        }),
-      );
+      if (operacoes.length > 0) {
+        await this.prisma.$transaction(operacoes);
+      }
     }
 
     const tenantId = requireTenantId();
-    for (const lote of emLotes(paraCriar, LOTE)) {
+    for (const lote of emLotes(paraCriar, LOTE_INSERT)) {
       const usersData = await Promise.all(
         lote.map(async (linha) => ({
           tenantId,

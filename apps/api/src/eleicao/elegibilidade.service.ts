@@ -9,11 +9,13 @@ export class ElegibilidadeService {
   constructor(private readonly prisma: PrismaService) {}
 
   async sincronizar(eleicaoId: string): Promise<{ incluidos: number }> {
-    await this.garantirEleicaoExiste(eleicaoId);
-    const aprovados = await this.prisma.afiliado.findMany({
-      where: { status: 'APROVADO' },
-      select: { id: true },
-    });
+    const [, aprovados] = await Promise.all([
+      this.garantirEleicaoExiste(eleicaoId),
+      this.prisma.afiliado.findMany({
+        where: { status: 'APROVADO' },
+        select: { id: true },
+      }),
+    ]);
     const tenantId = requireTenantId();
     const resultado = await this.prisma.elegivel.createMany({
       data: aprovados.map((afiliado) => ({ tenantId, eleicaoId, afiliadoId: afiliado.id })),
@@ -23,8 +25,8 @@ export class ElegibilidadeService {
   }
 
   async listar(eleicaoId: string): Promise<ElegivelResumo[]> {
-    await this.garantirEleicaoExiste(eleicaoId);
-    const [elegiveis, compareceram] = await Promise.all([
+    const [, elegiveis, compareceram] = await Promise.all([
+      this.garantirEleicaoExiste(eleicaoId),
       this.prisma.elegivel.findMany({
         where: { eleicaoId },
         include: { afiliado: { select: { nome: true, matricula: true } } },
@@ -46,8 +48,13 @@ export class ElegibilidadeService {
   }
 
   async incluir(eleicaoId: string, input: IncluirElegivelInput): Promise<void> {
-    await this.garantirEleicaoExiste(eleicaoId);
-    const afiliado = await this.prisma.afiliado.findUnique({ where: { id: input.afiliadoId } });
+    const [, afiliado] = await Promise.all([
+      this.garantirEleicaoExiste(eleicaoId),
+      this.prisma.afiliado.findUnique({
+        where: { id: input.afiliadoId },
+        select: { id: true },
+      }),
+    ]);
     if (!afiliado) {
       throw new NotFoundException('Afiliado não encontrado');
     }
@@ -64,13 +71,16 @@ export class ElegibilidadeService {
   }
 
   async remover(eleicaoId: string, afiliadoId: string): Promise<void> {
-    const elegivel = await this.prisma.elegivel.findUnique({
-      where: { eleicaoId_afiliadoId: { eleicaoId, afiliadoId } },
-    });
-    if (!elegivel) {
-      throw new NotFoundException('Afiliado não está na lista de elegíveis');
+    try {
+      await this.prisma.elegivel.delete({
+        where: { eleicaoId_afiliadoId: { eleicaoId, afiliadoId } },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException('Afiliado não está na lista de elegíveis');
+      }
+      throw error;
     }
-    await this.prisma.elegivel.delete({ where: { id: elegivel.id } });
   }
 
   private async garantirEleicaoExiste(eleicaoId: string): Promise<void> {

@@ -33,6 +33,7 @@ export class AfiliadosService {
     const tenantId = requireTenantId();
 
     try {
+      // Afiliado guarda a FK de User, então o create precisa ser encadeado.
       const criado = await this.prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
           data: { tenantId, email: input.email, senhaHash, role: 'AFILIADO' },

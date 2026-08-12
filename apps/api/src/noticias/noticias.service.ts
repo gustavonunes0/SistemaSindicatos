@@ -236,17 +236,32 @@ export class NoticiasService {
     return noticia;
   }
 
+  /**
+   * Uma única consulta traz a família de slugs; o sufixo livre é achado em
+   * memória. Antes era um findUnique por tentativa, sem limite de iterações.
+   */
   private async slugDisponivel(slugBase: string, ignorarId?: string): Promise<string> {
     const tenantId = requireTenantId();
-    let slug = slugBase || 'noticia';
+    const base = slugBase || 'noticia';
+
+    const ocupados = await this.prisma.noticia.findMany({
+      where: {
+        tenantId,
+        slug: { startsWith: base },
+        ...(ignorarId ? { id: { not: ignorarId } } : {}),
+      },
+      select: { slug: true },
+    });
+
+    const usados = new Set(ocupados.map((noticia) => noticia.slug));
+    if (!usados.has(base)) {
+      return base;
+    }
     for (let sufixo = 2; ; sufixo++) {
-      const existente = await this.prisma.noticia.findUnique({
-        where: { tenantId_slug: { tenantId, slug } },
-      });
-      if (!existente || existente.id === ignorarId) {
-        return slug;
+      const candidato = `${base}-${sufixo}`;
+      if (!usados.has(candidato)) {
+        return candidato;
       }
-      slug = `${slugBase}-${sufixo}`;
     }
   }
 }

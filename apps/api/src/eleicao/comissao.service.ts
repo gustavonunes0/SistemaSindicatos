@@ -60,12 +60,15 @@ export class ComissaoService {
   }
 
   async remover(eleicaoId: string, userId: string): Promise<void> {
-    const membro = await this.prisma.membroComissaoEleitoral.findUnique({
-      where: { eleicaoId_userId: { eleicaoId, userId } },
-    });
-    if (!membro) {
-      throw new NotFoundException('Membro não encontrado nesta comissão');
+    try {
+      await this.prisma.membroComissaoEleitoral.delete({
+        where: { eleicaoId_userId: { eleicaoId, userId } },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException('Membro não encontrado nesta comissão');
+      }
+      throw error;
     }
-    await this.prisma.membroComissaoEleitoral.delete({ where: { id: membro.id } });
   }
 }

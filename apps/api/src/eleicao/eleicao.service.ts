@@ -52,11 +52,6 @@ export class EleicaoService {
   }
 
   async atualizar(id: string, input: AtualizarEleicaoInput) {
-    const eleicao = await this.buscarOuFalhar(id);
-    if (eleicao.status !== 'AGENDADA') {
-      throw new ConflictException('Só é possível editar uma eleição enquanto AGENDADA');
-    }
-
     const dados: Prisma.EleicaoUpdateInput = {};
     if (input.titulo !== undefined) dados.titulo = input.titulo;
     if (input.descricao !== undefined) dados.descricao = input.descricao;
@@ -65,16 +60,31 @@ export class EleicaoService {
     if (input.inscricaoInicio !== undefined) dados.inscricaoInicio = input.inscricaoInicio;
     if (input.inscricaoFim !== undefined) dados.inscricaoFim = input.inscricaoFim;
 
-    const atualizada = await this.prisma.eleicao.update({ where: { id }, data: dados });
-    return serializarEleicaoResumo(atualizada);
+    try {
+      const atualizada = await this.prisma.eleicao.update({
+        where: { id, status: 'AGENDADA' },
+        data: dados,
+      });
+      return serializarEleicaoResumo(atualizada);
+    } catch (error) {
+      throw await this.explicarFalhaDeStatus(
+        error,
+        id,
+        'Só é possível editar uma eleição enquanto AGENDADA',
+      );
+    }
   }
 
   async remover(id: string): Promise<void> {
-    const eleicao = await this.buscarOuFalhar(id);
-    if (eleicao.status !== 'AGENDADA') {
-      throw new ConflictException('Só é possível remover uma eleição enquanto AGENDADA');
+    try {
+      await this.prisma.eleicao.delete({ where: { id, status: 'AGENDADA' } });
+    } catch (error) {
+      throw await this.explicarFalhaDeStatus(
+        error,
+        id,
+        'Só é possível remover uma eleição enquanto AGENDADA',
+      );
     }
-    await this.prisma.eleicao.delete({ where: { id } });
   }
 
   async listarAdmin() {
@@ -86,18 +96,17 @@ export class EleicaoService {
   }
 
   async buscarAdminDetalhe(id: string) {
-    const eleicao = await this.prisma.eleicao.findUnique({
-      where: { id },
-      include: includeChapasComCandidatos,
-    });
-    if (!eleicao) {
-      throw new NotFoundException('Eleição não encontrada');
-    }
-
-    const [totalElegiveis, totalComparecimentos] = await Promise.all([
+    const [eleicao, totalElegiveis, totalComparecimentos] = await Promise.all([
+      this.prisma.eleicao.findUnique({
+        where: { id },
+        include: includeChapasComCandidatos,
+      }),
       this.prisma.elegivel.count({ where: { eleicaoId: id } }),
       this.prisma.comparecimento.count({ where: { eleicaoId: id } }),
     ]);
+    if (!eleicao) {
+      throw new NotFoundException('Eleição não encontrada');
+    }
 
     return {
       ...serializarEleicaoDetalhe(eleicao),
@@ -128,27 +137,34 @@ export class EleicaoService {
   }
 
   async abrir(id: string) {
-    const eleicao = await this.buscarOuFalhar(id);
+    const agora = new Date();
+    // As três checagens são independentes entre si.
+    const [eleicao, chapaPendente, contestacaoPendente] = await Promise.all([
+      this.prisma.eleicao.findUnique({ where: { id }, select: { status: true } }),
+      this.prisma.chapa.findFirst({
+        where: { eleicaoId: id, status: 'INSCRITA' },
+        select: { id: true },
+      }),
+      this.prisma.contestacaoChapa.findFirst({
+        where: {
+          status: 'ABERTA',
+          chapa: { eleicaoId: id, prazoContestacaoFim: { gt: agora } },
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!eleicao) {
+      throw new NotFoundException('Eleição não encontrada');
+    }
     if (eleicao.status !== 'AGENDADA') {
       throw new ConflictException('Só é possível abrir uma eleição AGENDADA');
     }
-
-    const chapaPendente = await this.prisma.chapa.findFirst({
-      where: { eleicaoId: id, status: 'INSCRITA' },
-    });
     if (chapaPendente) {
       throw new ConflictException(
         'Existem chapas ainda não homologadas. Decida a homologação antes de abrir a votação.',
       );
     }
-
-    const agora = new Date();
-    const contestacaoPendente = await this.prisma.contestacaoChapa.findFirst({
-      where: {
-        status: 'ABERTA',
-        chapa: { eleicaoId: id, prazoContestacaoFim: { gt: agora } },
-      },
-    });
     if (contestacaoPendente) {
       throw new ConflictException(
         'Existem impugnações/recursos em aberto dentro do prazo. Resolva antes de abrir a votação.',
@@ -163,15 +179,19 @@ export class EleicaoService {
   }
 
   async encerrar(id: string) {
-    const eleicao = await this.buscarOuFalhar(id);
-    if (eleicao.status !== 'ABERTA') {
-      throw new ConflictException('Só é possível encerrar uma eleição ABERTA');
+    try {
+      const atualizada = await this.prisma.eleicao.update({
+        where: { id, status: 'ABERTA' },
+        data: { status: 'ENCERRADA' },
+      });
+      return serializarEleicaoResumo(atualizada);
+    } catch (error) {
+      throw await this.explicarFalhaDeStatus(
+        error,
+        id,
+        'Só é possível encerrar uma eleição ABERTA',
+      );
     }
-    const atualizada = await this.prisma.eleicao.update({
-      where: { id },
-      data: { status: 'ENCERRADA' },
-    });
-    return serializarEleicaoResumo(atualizada);
   }
 
   async buscarOuFalhar(id: string) {
@@ -180,5 +200,30 @@ export class EleicaoService {
       throw new NotFoundException('Eleição não encontrada');
     }
     return eleicao;
+  }
+
+  /**
+   * O write filtrado por status resolve tudo em uma consulta, mas o P2025 não
+   * diz se a eleição não existe ou se está no status errado. Só o caminho de
+   * erro paga a consulta extra para montar a mensagem certa.
+   */
+  private async explicarFalhaDeStatus(
+    error: unknown,
+    id: string,
+    mensagemDeStatus: string,
+  ): Promise<unknown> {
+    const naoAtingiu =
+      error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025';
+    if (!naoAtingiu) {
+      return error;
+    }
+
+    const existe = await this.prisma.eleicao.findUnique({
+      where: { id },
+      select: { id: true },
+    });
+    return existe
+      ? new ConflictException(mensagemDeStatus)
+      : new NotFoundException('Eleição não encontrada');
   }
 }

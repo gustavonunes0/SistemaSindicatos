@@ -204,10 +204,19 @@ export class ConveniosService {
     const tenantId = requireTenantId();
     const ehAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN';
 
-    const afiliado = await this.prisma.afiliado.findUnique({
-      where: { userId: user.id },
-      select: { id: true, nome: true, cpf: true, status: true },
-    });
+    // Afiliado, convênio e domínios são independentes entre si — uma viagem só.
+    const [afiliado, convenio, dominios] = await Promise.all([
+      this.prisma.afiliado.findUnique({
+        where: { userId: user.id },
+        select: { id: true, nome: true, cpf: true, status: true },
+      }),
+      ehAdmin ? this.buscarAdmin(convenioId) : this.buscarPublico(convenioId),
+      this.prisma.tenantDomain.findMany({
+        where: { tenantId },
+        orderBy: [{ primario: 'desc' }, { createdAt: 'asc' }],
+        select: { host: true },
+      }),
+    ]);
 
     let beneficiario: {
       afiliadoId: string | null;
@@ -234,10 +243,6 @@ export class ConveniosService {
       throw new ForbiddenException('Afiliação ainda não aprovada');
     }
 
-    const convenio = ehAdmin
-      ? await this.buscarAdmin(convenioId)
-      : await this.buscarPublico(convenioId);
-
     if (!convenio.emiteDeclaracao || !convenio.modeloDeclaracao || !convenio.destinoDeclaracao) {
       throw new BadRequestException('Este convênio não emite declaração');
     }
@@ -258,26 +263,25 @@ export class ConveniosService {
       }
     }
 
-    const codigo = await this.gerarCodigoUnico(tenantId);
-    const urlValidacao = await this.montarUrlValidacao(tenantId, codigo);
+    const baseValidacao = this.resolverBaseValidacao(dominios);
 
-    const registro = await this.prisma.declaracaoEmitida.create({
-      data: {
-        tenantId,
-        codigo,
-        convenioId: convenio.id,
-        afiliadoId: beneficiario.afiliadoId,
-        modelo: convenio.modeloDeclaracao,
-        destino: convenio.destinoDeclaracao,
-        textoComplementar: convenio.textoComplementar,
-        afiliadoNome: beneficiario.nome,
-        afiliadoCpf: beneficiario.cpf,
-        dependenteNome: input.dependenteNome?.trim() || null,
-        dependenteCpf: input.dependenteCpf ?? null,
-        periodoInicio: input.periodoInicio ?? null,
-        periodoFim: input.periodoFim ?? null,
-      },
+    const registro = await this.criarDeclaracaoComCodigoUnico({
+      tenantId,
+      convenioId: convenio.id,
+      afiliadoId: beneficiario.afiliadoId,
+      modelo: convenio.modeloDeclaracao,
+      destino: convenio.destinoDeclaracao,
+      textoComplementar: convenio.textoComplementar,
+      afiliadoNome: beneficiario.nome,
+      afiliadoCpf: beneficiario.cpf,
+      dependenteNome: input.dependenteNome?.trim() || null,
+      dependenteCpf: input.dependenteCpf ?? null,
+      periodoInicio: input.periodoInicio ?? null,
+      periodoFim: input.periodoFim ?? null,
     });
+
+    const codigo = registro.codigo;
+    const urlValidacao = `${baseValidacao}/validar-declaracao/${codigo}`;
 
     const buffer = await this.declaracaoPdf.gerar({
       modelo: registro.modelo,
@@ -349,25 +353,31 @@ export class ConveniosService {
     };
   }
 
-  private async gerarCodigoUnico(tenantId: string): Promise<string> {
+  /**
+   * A unicidade do código é garantida pela constraint `@@unique([tenantId, codigo])`.
+   * Gravamos direto e só sorteamos outro código se o banco acusar colisão (P2002),
+   * em vez de consultar antes de cada tentativa.
+   */
+  private async criarDeclaracaoComCodigoUnico(
+    dados: Omit<Prisma.DeclaracaoEmitidaUncheckedCreateInput, 'codigo'>,
+  ) {
     for (let tentativa = 0; tentativa < 8; tentativa += 1) {
       const codigo = randomBytes(5).toString('hex').toUpperCase().slice(0, 10);
-      const existe = await this.prisma.declaracaoEmitida.findFirst({
-        where: { tenantId, codigo },
-        select: { id: true },
-      });
-      if (!existe) return codigo;
+      try {
+        return await this.prisma.declaracaoEmitida.create({ data: { ...dados, codigo } });
+      } catch (error) {
+        const colisao =
+          error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+        if (!colisao) {
+          throw error;
+        }
+      }
     }
     throw new BadRequestException('Não foi possível gerar código de validação');
   }
 
-  private async montarUrlValidacao(tenantId: string, codigo: string): Promise<string> {
-    const dominios = await this.prisma.tenantDomain.findMany({
-      where: { tenantId },
-      orderBy: [{ primario: 'desc' }, { createdAt: 'asc' }],
-      select: { host: true },
-    });
-
+  /** Resolvido antes de gravar a declaração, para não deixar registro órfão se falhar. */
+  private resolverBaseValidacao(dominios: { host: string }[]): string {
     const ehLocal = (host: string) =>
       host === 'localhost' || host.startsWith('127.') || host.endsWith('.local');
 
@@ -388,7 +398,7 @@ export class ConveniosService {
       );
     }
 
-    return `${base}/validar-declaracao/${codigo}`;
+    return base;
   }
 
   private montarDados(input: AtualizarConvenioInput): Prisma.ConvenioUncheckedCreateInput {

@@ -44,52 +44,45 @@ export class SolicitacoesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async criar(user: RequestUser, input: CriarSolicitacaoInput) {
-    const afiliado = await this.buscarAfiliadoAprovado(user.id);
+    const [afiliado, imovel, conflitos] = await Promise.all([
+      this.buscarAfiliadoAprovado(user.id),
+      this.prisma.imovel.findUnique({
+        where: { id: input.imovelId },
+        select: { id: true, titulo: true, ativo: true },
+      }),
+      this.prisma.periodo.findMany({
+        where: {
+          imovelId: input.imovelId,
+          ...whereSobreposicao(input.inicioDesejado, input.fimDesejado),
+        },
+        select: { id: true },
+      }),
+    ]);
 
-    const imovel = await this.prisma.imovel.findUnique({
-      where: { id: input.imovelId },
-      select: { id: true, titulo: true, ativo: true },
-    });
     if (!imovel?.ativo) {
       throw new NotFoundException('Imóvel não encontrado');
     }
-
-    const conflitos = await this.prisma.periodo.findMany({
-      where: {
-        imovelId: input.imovelId,
-        ...whereSobreposicao(input.inicioDesejado, input.fimDesejado),
-      },
-    });
     if (conflitos.length > 0) {
       throw new ConflictException('O período desejado não está disponível');
     }
 
-    const solicitacao = await this.prisma.$transaction(async (tx) => {
-      const tenantId = requireTenantId();
-      const criada = await tx.solicitacaoAluguel.create({
-        data: {
-          tenantId,
-          imovelId: input.imovelId,
-          afiliadoId: afiliado.id,
-          inicioDesejado: input.inicioDesejado,
-          fimDesejado: input.fimDesejado,
+    const tenantId = requireTenantId();
+    const textoInicial =
+      input.mensagemInicial?.trim() ||
+      `Solicitação de locação de ${input.inicioDesejado.toLocaleDateString('pt-BR')} a ${input.fimDesejado.toLocaleDateString('pt-BR')}.`;
+
+    // Write aninhado: solicitação e mensagem inicial numa só viagem.
+    const solicitacao = await this.prisma.solicitacaoAluguel.create({
+      data: {
+        tenantId,
+        imovelId: input.imovelId,
+        afiliadoId: afiliado.id,
+        inicioDesejado: input.inicioDesejado,
+        fimDesejado: input.fimDesejado,
+        mensagens: {
+          create: { tenantId, autorId: user.id, texto: textoInicial },
         },
-      });
-
-      const textoInicial =
-        input.mensagemInicial?.trim() ||
-        `Solicitação de locação de ${input.inicioDesejado.toLocaleDateString('pt-BR')} a ${input.fimDesejado.toLocaleDateString('pt-BR')}.`;
-
-      await tx.mensagem.create({
-        data: {
-          tenantId,
-          solicitacaoId: criada.id,
-          autorId: user.id,
-          texto: textoInicial,
-        },
-      });
-
-      return criada;
+      },
     });
 
     this.logger.log(
@@ -119,14 +112,17 @@ export class SolicitacoesService {
   }
 
   async buscar(user: RequestUser, id: string) {
-    const solicitacao = await this.prisma.solicitacaoAluguel.findUnique({
-      where: { id },
-      include: includeResumo,
-    });
+    const [solicitacao, afiliado] = await Promise.all([
+      this.prisma.solicitacaoAluguel.findUnique({
+        where: { id },
+        include: includeResumo,
+      }),
+      this.carregarAfiliadoParaAcesso(user),
+    ]);
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
     }
-    await this.garantirAcesso(user, solicitacao.afiliadoId);
+    this.garantirAcesso(user, afiliado, solicitacao.afiliadoId);
     return serializarSolicitacaoResumo(solicitacao);
   }
 
@@ -148,39 +144,50 @@ export class SolicitacoesService {
   }
 
   async listarMensagens(user: RequestUser, solicitacaoId: string) {
-    const solicitacao = await this.prisma.solicitacaoAluguel.findUnique({
-      where: { id: solicitacaoId },
-      select: { afiliadoId: true },
-    });
+    const [solicitacao, afiliado, mensagens] = await Promise.all([
+      this.prisma.solicitacaoAluguel.findUnique({
+        where: { id: solicitacaoId },
+        select: { afiliadoId: true },
+      }),
+      this.carregarAfiliadoParaAcesso(user),
+      this.prisma.mensagem.findMany({
+        where: { solicitacaoId },
+        include: includeMensagemAutor,
+        orderBy: { criadoEm: 'asc' },
+      }),
+    ]);
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
     }
-    await this.garantirAcesso(user, solicitacao.afiliadoId);
+    this.garantirAcesso(user, afiliado, solicitacao.afiliadoId);
 
-    const mensagens = await this.prisma.mensagem.findMany({
-      where: { solicitacaoId },
-      include: includeMensagemAutor,
-      orderBy: { criadoEm: 'asc' },
-    });
     return mensagens.map(serializarMensagem);
   }
 
   async enviarMensagem(user: RequestUser, solicitacaoId: string, input: EnviarMensagemInput) {
-    const solicitacao = await this.prisma.solicitacaoAluguel.findUnique({
-      where: { id: solicitacaoId },
-      select: { afiliadoId: true, status: true, imovel: { select: { titulo: true } } },
-    });
+    const [solicitacao, afiliado] = await Promise.all([
+      this.prisma.solicitacaoAluguel.findUnique({
+        where: { id: solicitacaoId },
+        select: { afiliadoId: true, status: true, imovel: { select: { titulo: true } } },
+      }),
+      this.carregarAfiliadoParaAcesso(user),
+    ]);
     if (!solicitacao) {
       throw new NotFoundException('Solicitação não encontrada');
     }
-    await this.garantirAcesso(user, solicitacao.afiliadoId);
+    this.garantirAcesso(user, afiliado, solicitacao.afiliadoId);
 
     if (solicitacao.status === 'FECHADA') {
       throw new ConflictException('Esta solicitação está encerrada');
     }
 
-    const mensagem = await this.prisma.$transaction(async (tx) => {
-      const criada = await tx.mensagem.create({
+    const novoStatus =
+      user.role === 'ADMIN' && solicitacao.status === 'ABERTA'
+        ? 'EM_ANDAMENTO'
+        : solicitacao.status;
+
+    const [mensagem] = await this.prisma.$transaction([
+      this.prisma.mensagem.create({
         data: {
           tenantId: requireTenantId(),
           solicitacaoId,
@@ -188,20 +195,12 @@ export class SolicitacoesService {
           texto: input.texto.trim(),
         },
         include: includeMensagemAutor,
-      });
-
-      const novoStatus =
-        user.role === 'ADMIN' && solicitacao.status === 'ABERTA'
-          ? 'EM_ANDAMENTO'
-          : solicitacao.status;
-
-      await tx.solicitacaoAluguel.update({
+      }),
+      this.prisma.solicitacaoAluguel.update({
         where: { id: solicitacaoId },
         data: { status: novoStatus },
-      });
-
-      return criada;
-    });
+      }),
+    ]);
 
     if (user.role === 'ADMIN') {
       this.logger.log(
@@ -223,12 +222,23 @@ export class SolicitacoesService {
     return afiliado;
   }
 
-  private async garantirAcesso(user: RequestUser, afiliadoId: string) {
+  /**
+   * O afiliado do usuário não depende da solicitação, então pode ser carregado
+   * em paralelo com ela; a comparação de dono fica sem custo de rede.
+   */
+  private carregarAfiliadoParaAcesso(user: RequestUser) {
+    return user.role === 'ADMIN' ? Promise.resolve(null) : this.buscarAfiliadoAprovado(user.id);
+  }
+
+  private garantirAcesso(
+    user: RequestUser,
+    afiliado: { id: string } | null,
+    afiliadoId: string,
+  ): void {
     if (user.role === 'ADMIN') {
       return;
     }
-    const afiliado = await this.buscarAfiliadoAprovado(user.id);
-    if (afiliado.id !== afiliadoId) {
+    if (afiliado?.id !== afiliadoId) {
       throw new ForbiddenException('Acesso negado');
     }
   }

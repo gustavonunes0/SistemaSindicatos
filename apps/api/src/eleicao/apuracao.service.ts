@@ -22,33 +22,37 @@ export class ApuracaoService {
       throw new ConflictException('A eleição precisa estar ENCERRADA para ser apurada');
     }
 
-    const chapasHomologadas = await this.prisma.chapa.findMany({
-      where: { eleicaoId, status: 'HOMOLOGADA' },
-      select: { id: true },
-    });
-    const contagem = await this.prisma.voto.groupBy({
-      by: ['chapaId'],
-      where: { eleicaoId },
-      _count: { _all: true },
-    });
+    const [chapasHomologadas, contagem] = await Promise.all([
+      this.prisma.chapa.findMany({
+        where: { eleicaoId, status: 'HOMOLOGADA' },
+        select: { id: true },
+      }),
+      this.prisma.voto.groupBy({
+        by: ['chapaId'],
+        where: { eleicaoId },
+        _count: { _all: true },
+      }),
+    ]);
     const votosPorChapa = new Map(contagem.map((item) => [item.chapaId, item._count._all]));
     const totalVotos = contagem.reduce((soma, item) => soma + item._count._all, 0);
+    const tenantId = requireTenantId();
 
-    await this.prisma.$transaction(async (tx) => {
-      for (const chapa of chapasHomologadas) {
-        const votos = votosPorChapa.get(chapa.id) ?? 0;
-        await tx.resultadoApuracao.create({
-          data: {
-            tenantId: requireTenantId(),
+    // createMany + update num único lote: antes era um INSERT por chapa.
+    await this.prisma.$transaction([
+      this.prisma.resultadoApuracao.createMany({
+        data: chapasHomologadas.map((chapa) => {
+          const votos = votosPorChapa.get(chapa.id) ?? 0;
+          return {
+            tenantId,
             eleicaoId,
             chapaId: chapa.id,
             totalVotos: votos,
             percentual: totalVotos > 0 ? (votos / totalVotos) * 100 : 0,
-          },
-        });
-      }
-      await tx.eleicao.update({ where: { id: eleicaoId }, data: { status: 'APURADA' } });
-    });
+          };
+        }),
+      }),
+      this.prisma.eleicao.update({ where: { id: eleicaoId }, data: { status: 'APURADA' } }),
+    ]);
 
     return this.buscarResultado(eleicaoId, eleicao);
   }
@@ -79,23 +83,25 @@ export class ApuracaoService {
       );
     }
 
-    const chapas = await this.prisma.chapa.findMany({ where: { eleicaoId } });
-    const homologadas = chapas.filter((chapa) => chapa.status === 'HOMOLOGADA');
+    const [homologadas, contestacaoPendente] = await Promise.all([
+      this.prisma.chapa.findMany({
+        where: { eleicaoId, status: 'HOMOLOGADA' },
+        select: { id: true },
+      }),
+      this.prisma.contestacaoChapa.findFirst({ where: { chapaId, status: 'ABERTA' } }),
+    ]);
+
     if (homologadas.length !== 1 || homologadas[0]?.id !== chapaId) {
       throw new ConflictException(
         'A resolução por aclamação só é permitida quando há exatamente uma chapa homologada',
       );
     }
-
-    const contestacaoPendente = await this.prisma.contestacaoChapa.findFirst({
-      where: { chapaId, status: 'ABERTA' },
-    });
     if (contestacaoPendente) {
       throw new ConflictException('Existem contestações em aberto para esta chapa');
     }
 
-    await this.prisma.$transaction(async (tx) => {
-      await tx.resultadoApuracao.create({
+    await this.prisma.$transaction([
+      this.prisma.resultadoApuracao.create({
         data: {
           tenantId: requireTenantId(),
           eleicaoId,
@@ -104,12 +110,12 @@ export class ApuracaoService {
           percentual: 100,
           porAclamacao: true,
         },
-      });
-      await tx.eleicao.update({
+      }),
+      this.prisma.eleicao.update({
         where: { id: eleicaoId },
         data: { status: 'APURADA', resolvidaPorAclamacao: true },
-      });
-    });
+      }),
+    ]);
 
     return this.buscarResultado(eleicaoId, { resolvidaPorAclamacao: true });
   }

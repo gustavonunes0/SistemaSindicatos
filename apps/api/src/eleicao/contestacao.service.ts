@@ -9,15 +9,20 @@ export class ContestacaoService {
   constructor(private readonly prisma: PrismaService) {}
 
   async criar(userId: string, eleicaoId: string, chapaId: string, input: CriarContestacaoInput) {
-    const afiliado = await this.prisma.afiliado.findUnique({
-      where: { userId },
-      select: { id: true, status: true },
-    });
+    const [afiliado, chapa] = await Promise.all([
+      this.prisma.afiliado.findUnique({
+        where: { userId },
+        select: { id: true, status: true },
+      }),
+      this.prisma.chapa.findFirst({
+        where: { id: chapaId, eleicaoId },
+        select: { status: true, prazoContestacaoFim: true },
+      }),
+    ]);
+
     if (afiliado?.status !== 'APROVADO') {
       throw new ForbiddenException('Afiliação ainda não aprovada');
     }
-
-    const chapa = await this.prisma.chapa.findFirst({ where: { id: chapaId, eleicaoId } });
     if (!chapa) {
       throw new NotFoundException('Chapa não encontrada nesta eleição');
     }
@@ -74,8 +79,8 @@ export class ContestacaoService {
           : 'HOMOLOGADA'
         : contestacao.chapa.status;
 
-    const atualizada = await this.prisma.$transaction(async (tx) => {
-      const decisao = await tx.contestacaoChapa.update({
+    const [atualizada] = await this.prisma.$transaction([
+      this.prisma.contestacaoChapa.update({
         where: { id: contestacaoId },
         data: {
           status: input.status,
@@ -83,13 +88,12 @@ export class ContestacaoService {
           decididoPorUserId: userId,
           decididoEm: new Date(),
         },
-      });
-      await tx.chapa.update({
+      }),
+      this.prisma.chapa.update({
         where: { id: contestacao.chapaId },
         data: { status: novoStatusChapa },
-      });
-      return decisao;
-    });
+      }),
+    ]);
 
     return serializarContestacao(atualizada);
   }
