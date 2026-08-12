@@ -32,7 +32,7 @@ export class ConveniosController {
   // ---- Gestão (ADMIN) ----
   @Roles('ADMIN')
   @Get('admin')
-  @Header('Cache-Control', 'private, max-age=30, stale-while-revalidate=60')
+  @Header('Cache-Control', 'private, no-store')
   listarAdmin() {
     return this.conveniosService.listarAdmin();
   }

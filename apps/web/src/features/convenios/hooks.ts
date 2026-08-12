@@ -8,15 +8,32 @@ import type {
   FiltroConveniosInput,
 } from '@sindprf/types';
 import { useEffect, useMemo } from 'react';
-import {
-  gravarCacheConveniosAdmin,
-  lerCacheConveniosAdmin,
-  limparCachesAdmin,
-} from '../admin/cache-admin';
+import { gravarCacheConveniosAdmin, lerCacheConveniosAdmin } from '../admin/cache-admin';
 import * as conveniosApi from './api';
 
 function convenioDaListagem(item: ConvenioListagem): Convenio {
   return { ...item, textoComplementar: null };
+}
+
+/** Formato enxuto da tabela admin — espelha o payload de GET /convenios/admin. */
+function listagemAdminDeConvenio(c: Convenio): ConvenioListagem {
+  return {
+    id: c.id,
+    nome: c.nome,
+    categoria: c.categoria,
+    descricao: '',
+    logoUrl: null,
+    link: null,
+    contato: null,
+    vigenciaInicio: null,
+    vigenciaFim: null,
+    ativo: c.ativo,
+    emiteDeclaracao: c.emiteDeclaracao,
+    modeloDeclaracao: c.modeloDeclaracao,
+    destinoDeclaracao: null,
+    createdAt: c.createdAt,
+    updatedAt: c.updatedAt,
+  };
 }
 
 function acharConvenioNasListas(
@@ -43,6 +60,28 @@ function popularCacheDetalhe(
       queryClient.setQueryData(chave, convenioDaListagem(item));
     }
   }
+}
+
+function gravarListaAdmin(
+  queryClient: ReturnType<typeof useQueryClient>,
+  lista: ConvenioListagem[],
+) {
+  queryClient.setQueryData(['convenios', 'admin'], lista);
+  gravarCacheConveniosAdmin(lista);
+}
+
+function sincronizarAposMutacao(
+  queryClient: ReturnType<typeof useQueryClient>,
+  convenio?: Convenio,
+) {
+  if (convenio) {
+    queryClient.setQueryData(['convenios', 'admin', convenio.id], convenio);
+    queryClient.setQueryData(['convenios', 'detalhe', convenio.id], convenio);
+  }
+  // Listagens públicas e métricas — em background, sem bloquear a UI.
+  void queryClient.invalidateQueries({ queryKey: ['convenios', 'lista'] });
+  void queryClient.invalidateQueries({ queryKey: ['convenios', 'categorias'] });
+  void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
 }
 
 export function useConvenios(filtro: FiltroConveniosInput, enabled = true) {
@@ -124,37 +163,60 @@ export function useConvenioAdmin(id: string | undefined) {
   });
 }
 
-function useInvalidarConvenios() {
-  const queryClient = useQueryClient();
-  return () => {
-    limparCachesAdmin();
-    void queryClient.invalidateQueries({ queryKey: ['convenios'] });
-    void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
-  };
-}
-
 export function useCriarConvenio() {
-  const invalidar = useInvalidarConvenios();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: CriarConvenioInput) => conveniosApi.criarConvenio(input),
-    onSuccess: invalidar,
+    onSuccess: (criado) => {
+      const item = listagemAdminDeConvenio(criado);
+      const atual = queryClient.getQueryData<ConvenioListagem[]>(['convenios', 'admin']) ?? [];
+      gravarListaAdmin(queryClient, [item, ...atual.filter((c) => c.id !== item.id)]);
+      sincronizarAposMutacao(queryClient, criado);
+    },
   });
 }
 
 export function useAtualizarConvenio() {
-  const invalidar = useInvalidarConvenios();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id, ...input }: AtualizarConvenioInput & { id: string }) =>
       conveniosApi.atualizarConvenio(id, input),
-    onSuccess: invalidar,
+    onSuccess: (atualizado) => {
+      const item = listagemAdminDeConvenio(atualizado);
+      const atual = queryClient.getQueryData<ConvenioListagem[]>(['convenios', 'admin']) ?? [];
+      const existe = atual.some((c) => c.id === item.id);
+      gravarListaAdmin(
+        queryClient,
+        existe ? atual.map((c) => (c.id === item.id ? item : c)) : [item, ...atual],
+      );
+      sincronizarAposMutacao(queryClient, atualizado);
+    },
   });
 }
 
 export function useRemoverConvenio() {
-  const invalidar = useInvalidarConvenios();
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: conveniosApi.removerConvenio,
-    onSuccess: invalidar,
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: ['convenios', 'admin'] });
+      const anterior = queryClient.getQueryData<ConvenioListagem[]>(['convenios', 'admin']);
+      if (anterior) {
+        gravarListaAdmin(
+          queryClient,
+          anterior.filter((c) => c.id !== id),
+        );
+      }
+      queryClient.removeQueries({ queryKey: ['convenios', 'admin', id] });
+      queryClient.removeQueries({ queryKey: ['convenios', 'detalhe', id] });
+      return { anterior };
+    },
+    onError: (_erro, _id, ctx) => {
+      if (ctx?.anterior) gravarListaAdmin(queryClient, ctx.anterior);
+    },
+    onSettled: () => {
+      sincronizarAposMutacao(queryClient);
+    },
   });
 }
 

@@ -6,8 +6,31 @@ import { requireTenantId } from '../tenant/tenant-context';
 import { serializarEleicaoDetalhe, serializarEleicaoResumo } from './eleicao.util';
 
 const includeChapasComCandidatos = {
-  chapas: { include: { candidatos: true }, orderBy: { numero: 'asc' } },
+  chapas: {
+    orderBy: { numero: 'asc' as const },
+    include: {
+      candidatos: {
+        select: {
+          id: true,
+          chapaId: true,
+          nome: true,
+          cargo: true,
+          fotoUrl: true,
+        },
+      },
+    },
+  },
 } satisfies Prisma.EleicaoInclude;
+
+const CAMPOS_LISTAGEM_ADMIN = {
+  id: true,
+  titulo: true,
+  descricao: true,
+  inicio: true,
+  fim: true,
+  status: true,
+  resolvidaPorAclamacao: true,
+} as const;
 
 @Injectable()
 export class EleicaoService {
@@ -55,7 +78,10 @@ export class EleicaoService {
   }
 
   async listarAdmin() {
-    const lista = await this.prisma.eleicao.findMany({ orderBy: { createdAt: 'desc' } });
+    const lista = await this.prisma.eleicao.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: CAMPOS_LISTAGEM_ADMIN,
+    });
     return lista.map(serializarEleicaoResumo);
   }
 
@@ -83,7 +109,10 @@ export class EleicaoService {
   }
 
   async listarVisiveis() {
-    const lista = await this.prisma.eleicao.findMany({ orderBy: { inicio: 'desc' } });
+    const lista = await this.prisma.eleicao.findMany({
+      orderBy: { inicio: 'desc' },
+      select: CAMPOS_LISTAGEM_ADMIN,
+    });
     return lista.map(serializarEleicaoResumo);
   }
 

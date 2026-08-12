@@ -41,7 +41,7 @@ export class AfiliadosController {
 
   @Roles('ADMIN')
   @Get()
-  @Header('Cache-Control', 'private, max-age=15, stale-while-revalidate=30')
+  @Header('Cache-Control', 'private, no-store')
   listar(@Query(new ZodValidationPipe(filtroAfiliadosSchema)) query: FiltroAfiliadosInput) {
     return this.afiliadosService.listar(query);
   }

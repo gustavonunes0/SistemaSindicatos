@@ -8,7 +8,6 @@ import { useEffect, useMemo } from 'react';
 import {
   gravarCacheAfiliadosAdmin,
   lerCacheAfiliadosAdmin,
-  limparCachesAdmin,
 } from '../admin/cache-admin';
 import * as afiliadosApi from './api';
 
@@ -21,11 +20,14 @@ function chaveFiltro(filtro: {
   return `${filtro.status ?? 'todos'}|${filtro.busca ?? ''}|${filtro.page}|${filtro.limit}`;
 }
 
-export function useAfiliadosAdmin(filtro: Partial<FiltroAfiliadosInput> = {}) {
+export function useAfiliadosAdmin(
+  filtro: Partial<FiltroAfiliadosInput> & { enabled?: boolean } = {},
+) {
   const page = filtro.page ?? 1;
   const limit = filtro.limit ?? 20;
   const status = filtro.status;
   const busca = filtro.busca?.trim() || undefined;
+  const enabled = filtro.enabled ?? true;
   const filtroKey = chaveFiltro({ status, busca, page, limit });
   const cache = useMemo(() => lerCacheAfiliadosAdmin(filtroKey), [filtroKey]);
 
@@ -47,6 +49,7 @@ export function useAfiliadosAdmin(filtro: Partial<FiltroAfiliadosInput> = {}) {
     initialData: cache,
     initialDataUpdatedAt: cache ? 0 : undefined,
     refetchOnMount: 'always',
+    enabled,
   });
 }
 
@@ -56,8 +59,9 @@ export function useAtualizarStatusAfiliado() {
     mutationFn: ({ id, status }: { id: string; status: StatusAfiliado }) =>
       afiliadosApi.atualizarStatusAfiliado(id, status),
     onSuccess: () => {
-      limparCachesAdmin();
+      // Sem limpar o sessionStorage de notícias/convênios — só afiliados.
       void queryClient.invalidateQueries({ queryKey: ['afiliados'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
     },
   });
 }

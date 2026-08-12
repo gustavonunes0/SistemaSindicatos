@@ -17,10 +17,14 @@ type FiltroElegivel = 'todos' | 'votaram' | 'pendentes';
 
 export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
   const { data: elegiveis, isLoading } = useElegiveis(eleicaoId);
+  const [buscaIncluir, setBuscaIncluir] = useState('');
+  const termoIncluir = buscaIncluir.trim();
   const { data: afiliadosPaginados } = useAfiliadosAdmin({
     status: 'APROVADO',
-    limit: 500,
+    busca: termoIncluir.length >= 2 ? termoIncluir : undefined,
+    limit: 40,
     page: 1,
+    enabled: termoIncluir.length >= 2,
   });
   const afiliados = afiliadosPaginados?.items;
   const sincronizar = useSincronizarElegiveis(eleicaoId);
@@ -132,16 +136,31 @@ export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
           }}
         >
           <label>
-            Incluir afiliado aprovado
+            Buscar afiliado para incluir
+            <input
+              type="search"
+              value={buscaIncluir}
+              onChange={(evento) => {
+                setBuscaIncluir(evento.target.value);
+                setAfiliadoId('');
+              }}
+              placeholder="Digite ao menos 2 letras do nome ou matrícula…"
+              autoComplete="off"
+            />
+          </label>
+          <label>
+            Resultado
             <select
               value={afiliadoId}
               onChange={(evento) => setAfiliadoId(evento.target.value)}
-              disabled={candidatosInclusao.length === 0}
+              disabled={buscaIncluir.trim().length < 2 || candidatosInclusao.length === 0}
             >
               <option value="">
-                {candidatosInclusao.length === 0
-                  ? 'Nenhum afiliado disponível para incluir'
-                  : 'Selecione um afiliado…'}
+                {buscaIncluir.trim().length < 2
+                  ? 'Busque para listar afiliados'
+                  : candidatosInclusao.length === 0
+                    ? 'Nenhum afiliado disponível'
+                    : 'Selecione um afiliado…'}
               </option>
               {candidatosInclusao.map((afiliado) => (
                 <option key={afiliado.id} value={afiliado.id}>

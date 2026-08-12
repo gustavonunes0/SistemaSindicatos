@@ -7,7 +7,12 @@ import type {
   EleicaoResumo,
 } from '@sindprf/types';
 
-export function serializarEleicaoResumo(eleicao: Eleicao): EleicaoResumo {
+export function serializarEleicaoResumo(
+  eleicao: Pick<
+    Eleicao,
+    'id' | 'titulo' | 'descricao' | 'inicio' | 'fim' | 'status' | 'resolvidaPorAclamacao'
+  >,
+): EleicaoResumo {
   return {
     id: eleicao.id,
     titulo: eleicao.titulo,
@@ -19,7 +24,9 @@ export function serializarEleicaoResumo(eleicao: Eleicao): EleicaoResumo {
   };
 }
 
-export function serializarCandidato(candidato: Candidato): CandidatoDto {
+export function serializarCandidato(
+  candidato: Pick<Candidato, 'id' | 'chapaId' | 'nome' | 'cargo' | 'fotoUrl'>,
+): CandidatoDto {
   return {
     id: candidato.id,
     chapaId: candidato.chapaId,
@@ -29,7 +36,9 @@ export function serializarCandidato(candidato: Candidato): CandidatoDto {
   };
 }
 
-type ChapaComCandidatos = Chapa & { candidatos: Candidato[] };
+type ChapaComCandidatos = Chapa & {
+  candidatos: Pick<Candidato, 'id' | 'chapaId' | 'nome' | 'cargo' | 'fotoUrl'>[];
+};
 
 export function serializarChapa(chapa: ChapaComCandidatos): ChapaDto {
   return {

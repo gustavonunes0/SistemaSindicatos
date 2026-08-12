@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Header, Param, Patch, Post } from '@nestjs/common';
 import {
   adicionarMembroComissaoSchema,
   atualizarCandidatoSchema,
@@ -55,17 +55,20 @@ export class EleicaoController {
   }
 
   @Get('admin')
+  @Header('Cache-Control', 'private, no-store')
   listarAdmin() {
     return this.eleicaoService.listarAdmin();
   }
 
   // Precisa vir antes de 'admin/:id' para não ser capturado como um id.
   @Get('admin/usuarios')
+  @Header('Cache-Control', 'private, no-store')
   listarAdministradores() {
     return this.comissaoService.listarAdministradores();
   }
 
   @Get('admin/:id')
+  @Header('Cache-Control', 'private, no-store')
   buscarAdmin(@Param('id') id: string) {
     return this.eleicaoService.buscarAdminDetalhe(id);
   }
@@ -148,6 +151,7 @@ export class EleicaoController {
   }
 
   @Get(':id/elegiveis')
+  @Header('Cache-Control', 'private, no-store')
   listarElegiveis(@Param('id') id: string) {
     return this.elegibilidadeService.listar(id);
   }
@@ -166,6 +170,7 @@ export class EleicaoController {
   }
 
   @Get(':id/contestacoes')
+  @Header('Cache-Control', 'private, no-store')
   listarContestacoes(@Param('id') id: string) {
     return this.contestacaoService.listar(id);
   }
@@ -181,6 +186,7 @@ export class EleicaoController {
   }
 
   @Get(':id/comissao')
+  @Header('Cache-Control', 'private, no-store')
   listarComissao(@Param('id') id: string) {
     return this.comissaoService.listar(id);
   }
