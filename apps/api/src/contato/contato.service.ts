@@ -118,6 +118,12 @@ export class ContatoService {
       if (!resposta.ok) {
         const detalhe = await resposta.text();
         this.logger.error(`Resend HTTP ${resposta.status}: ${detalhe}`);
+        if (resposta.status === 403 && from.includes('onboarding@resend.dev')) {
+          this.logger.error(
+            'Com onboarding@resend.dev o Resend só entrega no e-mail da conta. ' +
+              `Ajuste CONTATO_DESTINO_EMAIL (atual: ${params.destino}) ou verifique um domínio e troque RESEND_FROM.`,
+          );
+        }
         throw new Error(`Resend falhou (${resposta.status})`);
       }
     } catch (erro) {
