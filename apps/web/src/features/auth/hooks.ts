@@ -1,13 +1,9 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { Role } from '@sindprf/types';
 import { useNavigate } from 'react-router-dom';
-import * as afiliadosApi from '../afiliado/api';
+import { opcoesListaAfiliadosAdmin } from '../afiliado/hooks';
 import * as adminApi from '../admin/api';
-import {
-  gravarCacheAfiliadosAdmin,
-  gravarCacheConveniosAdmin,
-  gravarCacheNoticiasAdmin,
-} from '../admin/cache-admin';
+import { gravarCacheConveniosAdmin, gravarCacheNoticiasAdmin } from '../admin/cache-admin';
 import * as conveniosApi from '../convenios/api';
 import * as noticiasApi from '../noticias/api';
 import * as authApi from './api';
@@ -38,15 +34,9 @@ function prefetchPainelAdmin(queryClient: QueryClient) {
     },
     staleTime: 5 * 60 * 1000,
   });
-  void queryClient.prefetchQuery({
-    queryKey: ['afiliados', 'admin', { status: 'todos', busca: '', page: 1, limit: 20 }],
-    queryFn: async () => {
-      const data = await afiliadosApi.listarAfiliadosAdmin({ page: 1, limit: 20 });
-      gravarCacheAfiliadosAdmin('todos||1|20', data);
-      return data;
-    },
-    staleTime: 2 * 60 * 1000,
-  });
+  void queryClient.prefetchQuery(
+    opcoesListaAfiliadosAdmin({ page: 1, limit: 20, ordenar: 'nome', direcao: 'asc' }),
+  );
   void queryClient.prefetchQuery({
     queryKey: ['admin', 'metricas'],
     queryFn: adminApi.buscarMetricasAdmin,

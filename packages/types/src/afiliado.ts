@@ -37,11 +37,20 @@ export const adminAtualizarSenhaAfiliadoSchema = z.object({
 });
 export type AdminAtualizarSenhaAfiliadoInput = z.infer<typeof adminAtualizarSenhaAfiliadoSchema>;
 
+/** Colunas que o banco sabe ordenar — a lista é paginada no servidor. */
+export const ordenacaoAfiliadoSchema = z.enum(['nome', 'matricula', 'status', 'createdAt']);
+export type OrdenacaoAfiliado = z.infer<typeof ordenacaoAfiliadoSchema>;
+
+export const direcaoOrdenacaoSchema = z.enum(['asc', 'desc']);
+export type DirecaoOrdenacao = z.infer<typeof direcaoOrdenacaoSchema>;
+
 export const filtroAfiliadosSchema = z.object({
   status: statusAfiliadoSchema.optional(),
   busca: z.string().trim().max(120).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(500).default(20),
+  ordenar: ordenacaoAfiliadoSchema.default('nome'),
+  direcao: direcaoOrdenacaoSchema.default('asc'),
 });
 export type FiltroAfiliadosInput = z.infer<typeof filtroAfiliadosSchema>;
 

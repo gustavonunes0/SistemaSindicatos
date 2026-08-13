@@ -30,6 +30,8 @@ export async function listarAfiliadosAdmin(
   if (filtro.busca?.trim()) params.busca = filtro.busca.trim();
   if (filtro.page) params.page = filtro.page;
   if (filtro.limit) params.limit = filtro.limit;
+  if (filtro.ordenar) params.ordenar = filtro.ordenar;
+  if (filtro.direcao) params.direcao = filtro.direcao;
 
   const { data } = await api.get('/afiliados', { params });
   return afiliadosAdminPaginadosSchema.parse(data);

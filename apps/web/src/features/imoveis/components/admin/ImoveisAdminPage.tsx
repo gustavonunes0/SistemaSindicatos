@@ -83,14 +83,14 @@ export function ImoveisAdminPage() {
                   <td className="tabela-acoes">
                     <button
                       type="button"
-                      className="botao-link-acao"
+                      className="botao-tabela"
                       onClick={() => setModal({ modo: 'editar', id: imovel.id })}
                     >
                       Editar
                     </button>
                     <button
                       type="button"
-                      className="botao-perigo"
+                      className="botao-tabela botao-tabela--perigo"
                       disabled={remover.isPending}
                       onClick={() => onRemover(imovel)}
                     >

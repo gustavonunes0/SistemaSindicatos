@@ -272,7 +272,7 @@ export function ElegiveisAdminPanel({ eleicaoId }: ElegiveisAdminPanelProps) {
                       <td className="tabela-acoes">
                         <button
                           type="button"
-                          className="botao-link-acao botao-link-acao--perigo"
+                          className="botao-tabela botao-tabela--perigo"
                           disabled={remover.isPending || elegivel.compareceu}
                           title={
                             elegivel.compareceu

@@ -2,7 +2,9 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 import { Prisma } from '@prisma/client';
 import type {
   CadastroAfiliadoInput,
+  DirecaoOrdenacao,
   FiltroAfiliadosInput,
+  OrdenacaoAfiliado,
   StatusAfiliado,
 } from '@sindprf/types';
 import * as bcrypt from 'bcrypt';
@@ -12,10 +14,28 @@ import { requireTenantId } from '../tenant/tenant-context';
 const BCRYPT_ROUNDS = 10;
 
 type ListaCache = { expires: number; payload: unknown };
+type TotalCache = { expires: number; total: number };
+
+/** O `id` no fim mantém a paginação estável quando há valores repetidos na coluna. */
+function montarOrderBy(
+  ordenar: OrdenacaoAfiliado,
+  direcao: DirecaoOrdenacao,
+): Prisma.AfiliadoOrderByWithRelationInput[] {
+  const principal: Prisma.AfiliadoOrderByWithRelationInput =
+    ordenar === 'matricula'
+      ? { matricula: direcao }
+      : ordenar === 'status'
+        ? { status: direcao }
+        : ordenar === 'createdAt'
+          ? { createdAt: direcao }
+          : { nome: direcao };
+  return [principal, { id: 'asc' }];
+}
 
 @Injectable()
 export class AfiliadosService {
   private readonly cacheLista = new Map<string, ListaCache>();
+  private readonly cacheTotal = new Map<string, TotalCache>();
   private readonly cacheTtlMs = 30_000;
 
   constructor(private readonly prisma: PrismaService) {}
@@ -24,6 +44,11 @@ export class AfiliadosService {
     for (const chave of this.cacheLista.keys()) {
       if (chave.startsWith(`${tenantId}:`)) {
         this.cacheLista.delete(chave);
+      }
+    }
+    for (const chave of this.cacheTotal.keys()) {
+      if (chave.startsWith(`${tenantId}:`)) {
+        this.cacheTotal.delete(chave);
       }
     }
   }
@@ -62,9 +87,9 @@ export class AfiliadosService {
 
   async listar(filtro: FiltroAfiliadosInput) {
     const tenantId = requireTenantId();
-    const { status, busca, page, limit } = filtro;
+    const { status, busca, page, limit, ordenar, direcao } = filtro;
     const termo = busca?.trim() ?? '';
-    const chave = `${tenantId}:${status ?? ''}:${termo}:${page}:${limit}`;
+    const chave = `${tenantId}:${status ?? ''}:${termo}:${page}:${limit}:${ordenar}:${direcao}`;
     const cached = this.cacheLista.get(chave);
     if (cached && cached.expires > Date.now()) {
       return cached.payload;
@@ -85,8 +110,15 @@ export class AfiliadosService {
         : {}),
     };
 
+    // O total não muda entre páginas do mesmo filtro: cachear evita repetir o
+    // count a cada troca de página, que é a consulta mais cara da listagem.
+    const chaveTotal = `${tenantId}:${status ?? ''}:${termo}`;
+    const totalCache = this.cacheTotal.get(chaveTotal);
+    const totalConhecido =
+      totalCache && totalCache.expires > Date.now() ? totalCache.total : undefined;
+
     const [total, items] = await Promise.all([
-      this.prisma.afiliado.count({ where }),
+      totalConhecido ?? this.prisma.afiliado.count({ where }),
       this.prisma.afiliado.findMany({
         where,
         select: {
@@ -102,11 +134,15 @@ export class AfiliadosService {
           updatedAt: true,
           user: { select: { email: true } },
         },
-        orderBy: [{ nome: 'asc' }, { createdAt: 'desc' }],
+        orderBy: montarOrderBy(ordenar, direcao),
         skip: (page - 1) * limit,
         take: limit,
       }),
     ]);
+
+    if (totalConhecido === undefined) {
+      this.cacheTotal.set(chaveTotal, { expires: Date.now() + this.cacheTtlMs, total });
+    }
 
     const payload = {
       items,

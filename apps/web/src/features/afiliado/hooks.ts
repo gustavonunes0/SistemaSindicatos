@@ -1,7 +1,9 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AdminAtualizarSenhaAfiliadoInput,
+  DirecaoOrdenacao,
   FiltroAfiliadosInput,
+  OrdenacaoAfiliado,
   StatusAfiliado,
 } from '@sindprf/types';
 import { useEffect, useMemo } from 'react';
@@ -11,46 +13,103 @@ import {
 } from '../admin/cache-admin';
 import * as afiliadosApi from './api';
 
-function chaveFiltro(filtro: {
+type FiltroLista = {
   status?: StatusAfiliado;
   busca?: string;
   page: number;
   limit: number;
-}): string {
-  return `${filtro.status ?? 'todos'}|${filtro.busca ?? ''}|${filtro.page}|${filtro.limit}`;
+  ordenar: OrdenacaoAfiliado;
+  direcao: DirecaoOrdenacao;
+};
+
+function chaveFiltro(filtro: FiltroLista): string {
+  return [
+    filtro.status ?? 'todos',
+    filtro.busca ?? '',
+    filtro.page,
+    filtro.limit,
+    filtro.ordenar,
+    filtro.direcao,
+  ].join('|');
 }
 
-export function useAfiliadosAdmin(
-  filtro: Partial<FiltroAfiliadosInput> & { enabled?: boolean } = {},
-) {
-  const page = filtro.page ?? 1;
-  const limit = filtro.limit ?? 20;
-  const status = filtro.status;
-  const busca = filtro.busca?.trim() || undefined;
-  const enabled = filtro.enabled ?? true;
-  const filtroKey = chaveFiltro({ status, busca, page, limit });
-  const cache = useMemo(() => lerCacheAfiliadosAdmin(filtroKey), [filtroKey]);
-
-  return useQuery({
-    queryKey: ['afiliados', 'admin', { status: status ?? 'todos', busca: busca ?? '', page, limit }],
+/** Opções compartilhadas entre a consulta da página atual e todo prefetch da lista. */
+export function opcoesListaAfiliadosAdmin(filtro: FiltroLista) {
+  const filtroKey = chaveFiltro(filtro);
+  return {
+    queryKey: [
+      'afiliados',
+      'admin',
+      {
+        status: filtro.status ?? 'todos',
+        busca: filtro.busca ?? '',
+        page: filtro.page,
+        limit: filtro.limit,
+        ordenar: filtro.ordenar,
+        direcao: filtro.direcao,
+      },
+    ],
     queryFn: async () => {
-      const data = await afiliadosApi.listarAfiliadosAdmin({
-        status,
-        busca,
-        page,
-        limit,
-      });
+      const data = await afiliadosApi.listarAfiliadosAdmin(filtro);
       gravarCacheAfiliadosAdmin(filtroKey, data);
       return data;
     },
     staleTime: 2 * 60 * 1000,
     gcTime: 15 * 60 * 1000,
+  };
+}
+
+export function useAfiliadosAdmin(
+  filtro: Partial<FiltroAfiliadosInput> & { enabled?: boolean; prefetchVizinhas?: boolean } = {},
+) {
+  const queryClient = useQueryClient();
+  const page = filtro.page ?? 1;
+  const limit = filtro.limit ?? 20;
+  const status = filtro.status;
+  const busca = filtro.busca?.trim() || undefined;
+  const enabled = filtro.enabled ?? true;
+  const prefetchVizinhas = filtro.prefetchVizinhas ?? false;
+  const ordenar = filtro.ordenar ?? 'nome';
+  const direcao = filtro.direcao ?? 'asc';
+  const filtroKey = chaveFiltro({ status, busca, page, limit, ordenar, direcao });
+  const cache = useMemo(() => lerCacheAfiliadosAdmin(filtroKey), [filtroKey]);
+
+  const consulta = useQuery({
+    ...opcoesListaAfiliadosAdmin({ status, busca, page, limit, ordenar, direcao }),
     placeholderData: keepPreviousData,
     initialData: cache,
     initialDataUpdatedAt: cache ? 0 : undefined,
     refetchOnMount: 'always',
     enabled,
   });
+
+  // O banco fica em outra região: cada página nova custa uma ida e volta. Deixar
+  // as vizinhas prontas no cache faz a troca de página responder na hora.
+  const totalPages = consulta.data?.totalPages ?? 1;
+  const carregando = consulta.isFetching;
+  useEffect(() => {
+    if (!prefetchVizinhas || !enabled || carregando) return;
+    for (const vizinha of [page + 1, page - 1]) {
+      if (vizinha < 1 || vizinha > totalPages || vizinha === page) continue;
+      void queryClient.prefetchQuery(
+        opcoesListaAfiliadosAdmin({ status, busca, page: vizinha, limit, ordenar, direcao }),
+      );
+    }
+  }, [
+    prefetchVizinhas,
+    enabled,
+    carregando,
+    page,
+    totalPages,
+    status,
+    busca,
+    limit,
+    ordenar,
+    direcao,
+    queryClient,
+  ]);
+
+  return consulta;
 }
 
 export function useAtualizarStatusAfiliado() {
@@ -76,15 +135,10 @@ export function useAtualizarSenhaAfiliadoAdmin() {
 export function usePrefetchAfiliadosAdmin() {
   const queryClient = useQueryClient();
   useEffect(() => {
-    const filtroKey = chaveFiltro({ page: 1, limit: 20 });
-    void queryClient.prefetchQuery({
-      queryKey: ['afiliados', 'admin', { status: 'todos', busca: '', page: 1, limit: 20 }],
-      queryFn: async () => {
-        const data = await afiliadosApi.listarAfiliadosAdmin({ page: 1, limit: 20 });
-        gravarCacheAfiliadosAdmin(filtroKey, data);
-        return data;
-      },
-      staleTime: 2 * 60 * 1000,
-    });
+    for (const page of [1, 2]) {
+      void queryClient.prefetchQuery(
+        opcoesListaAfiliadosAdmin({ page, limit: 20, ordenar: 'nome', direcao: 'asc' }),
+      );
+    }
   }, [queryClient]);
 }

@@ -3259,17 +3259,6 @@ button.botao-primario {
   margin-bottom: 0;
 }
 
-.afiliados-meta {
-  margin: 0 0 0.85rem;
-  font-size: var(--texto-sm);
-  color: var(--cor-texto-suave);
-}
-
-.afiliados-cpf {
-  font-size: 0.85rem;
-  font-variant-numeric: tabular-nums;
-}
-
 .botao-filtro {
   appearance: none;
   border: 1px solid var(--cor-borda);
@@ -4248,9 +4237,36 @@ textarea {
   background: var(--cor-fundo);
 }
 
+/* Moldura da tabela: borda, canto e rolagem ficam aqui para a tabela em si não
+   precisar de borda própria e o rodapé de paginação encostar na moldura. */
+.tabela-painel,
+.tabela-wrapper {
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  overflow: hidden;
+  margin-top: 1.25rem;
+}
+
+.tabela-rolagem,
 .tabela-wrapper {
   overflow-x: auto;
-  margin-top: 0.5rem;
+}
+
+/* Trocar de página busca no servidor: escurecer avisa sem sumir com a tabela. */
+.tabela-rolagem {
+  transition: opacity var(--transicao);
+}
+
+.tabela-painel--atualizando .tabela-rolagem {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tabela-rolagem {
+    transition: none;
+  }
 }
 
 /* Legado — páginas que ainda usam area-page diretamente */
@@ -4338,18 +4354,16 @@ textarea {
   width: 100%;
   border-collapse: collapse;
   background: var(--cor-superficie);
-  border: var(--borda-fina);
-  border-radius: var(--raio-lg);
-  overflow: hidden;
-  margin-top: 1.5rem;
+  margin: 0;
   font-size: var(--texto-sm);
 }
 
 .tabela th,
 .tabela td {
   text-align: left;
-  padding: 0.75rem 1rem;
+  padding: 0.85rem 1.1rem;
   border-bottom: 1px solid var(--cor-borda);
+  vertical-align: middle;
 }
 
 .tabela tbody tr:last-child td {
@@ -4357,23 +4371,160 @@ textarea {
 }
 
 .tabela th {
-  background: var(--azul-noite);
-  color: #fff;
+  background: var(--cor-fundo);
+  color: var(--cor-texto-suave);
   font-family: var(--fonte-base);
   font-weight: 600;
+  font-size: 0.72rem;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 0.75rem;
+  letter-spacing: var(--tracking-label);
+  padding-top: 0.6rem;
+  padding-bottom: 0.6rem;
+  white-space: nowrap;
 }
 
 .tabela tbody tr:hover {
   background: var(--cor-fundo);
 }
 
+/* A faixa amarela marca a coluna que está ordenando a lista. */
+.tabela-th--ordenada {
+  color: var(--cor-texto);
+  box-shadow: inset 0 calc(-1 * var(--faixa-altura)) 0 var(--amarelo-faixa);
+}
+
+.tabela-ordenar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.tabela-ordenar:hover:not(:disabled) {
+  background: none;
+  color: var(--cor-primaria);
+}
+
+.tabela-ordenar-seta {
+  font-size: 0.9em;
+  opacity: 0.4;
+}
+
+.tabela-th--ordenada .tabela-ordenar-seta {
+  color: var(--cor-primaria);
+  opacity: 1;
+}
+
+/* Célula de identificação: nome em destaque, dado de apoio abaixo. */
+.tabela-identidade {
+  display: flex;
+  flex-direction: column;
+}
+
+.tabela-identidade-nome {
+  font-weight: 600;
+  color: var(--cor-texto);
+}
+
+.tabela-identidade-apoio {
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+}
+
+.tabela-numerico {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
 .tabela-acoes {
   display: flex;
-  gap: 0.75rem;
+  gap: 0.4rem;
   align-items: center;
+  justify-content: flex-end;
+}
+
+.botao-tabela {
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.botao-tabela:hover:not(:disabled) {
+  background: var(--cor-fundo);
+  border-color: var(--cor-primaria);
+  color: var(--cor-primaria);
+}
+
+.botao-tabela--destaque {
+  color: var(--cor-primaria);
+}
+
+.botao-tabela--perigo {
+  color: var(--cor-erro);
+}
+
+.botao-tabela--perigo:hover:not(:disabled) {
+  background: var(--cor-fundo);
+  border-color: var(--cor-erro);
+  color: var(--cor-erro);
+}
+
+/* Rodapé de paginação encostado na moldura da tabela. */
+.tabela-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 1.1rem;
+  border-top: 1px solid var(--cor-borda);
+  background: var(--cor-fundo);
+}
+
+.tabela-rodape-info {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.tabela-rodape-controles {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tabela-rodape-pagina {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.botao-pagina {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-primaria);
+  font-size: var(--texto-sm);
+}
+
+.botao-pagina:hover:not(:disabled) {
+  background: var(--cor-superficie);
+  border-color: var(--cor-primaria);
 }
 
 .badge {
