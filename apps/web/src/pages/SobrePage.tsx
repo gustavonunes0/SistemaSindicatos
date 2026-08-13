@@ -2,22 +2,38 @@ import { Link } from 'react-router-dom';
 import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
-const ofertas = [
+/** Prerrogativas do art. 9º do Estatuto, escritas do ponto de vista do sindicalizado. */
+const garantias = [
   {
-    titulo: 'Representação sindical',
-    texto: 'Acompanhamento de pautas da categoria e defesa dos direitos dos PRFs no Ceará.',
+    titulo: 'Assistência jurídica',
+    texto:
+      'Defesa em processo disciplinar e criminal decorrente do exercício do cargo, sem prazo de carência, por escritório contratado pelo sindicato.',
+  },
+  {
+    titulo: 'Representação da categoria',
+    texto:
+      'Acompanhamento das pautas da PRF junto à administração, ao Legislativo e à Justiça, com atuação como substituto processual da categoria.',
   },
   {
     titulo: 'Convênios',
-    texto: 'Rede de parceiros com descontos e benefícios exclusivos para sindicalizados.',
+    texto:
+      'Rede de parceiros com desconto para o sindicalizado e seus dependentes. A declaração de filiação é emitida na hora, na área do sindicalizado.',
+    link: { to: '/convenios', rotulo: 'Ver convênios' },
   },
   {
-    titulo: 'Imóveis para lazer',
-    texto: 'Espaços disponíveis para aluguel, com reserva pelo link oficial do sindicato.',
+    titulo: 'Espaços de lazer',
+    texto:
+      'Uso dos apartamentos e das demais instalações do sindicato, com reserva pelo canal oficial e regulamento próprio.',
   },
   {
-    titulo: 'Eleições transparentes',
-    texto: 'Processo eleitoral com votação eletrônica segura e apuração auditável.',
+    titulo: 'Auxílios',
+    texto:
+      'Auxílio natalidade, auxílio funeral e uso de jazigo, disponíveis após três meses de filiação.',
+  },
+  {
+    titulo: 'Voz nas decisões',
+    texto:
+      'Direito de votar e ser votado nas assembleias e nas eleições da entidade, com voto secreto e apuração auditável.',
   },
 ] as const;
 
@@ -26,7 +42,7 @@ export function SobrePage() {
 
   useSeo({
     title: `Sobre — ${marca.nome}`,
-    description: `História, missão, estatuto e diretoria do ${marca.nomeCompleto}.`,
+    description: `Missão, estatuto, diretoria e o que a filiação garante ao Policial Rodoviário Federal no Ceará — ${marca.nomeCompleto}.`,
   });
 
   return (
@@ -37,22 +53,23 @@ export function SobrePage() {
           <h1 id="sobre-titulo">Sobre o sindicato</h1>
           <span className="sobre-faixa" aria-hidden="true" />
           <p className="sobre-hero-texto">
-            O {marca.nome} representa os Policiais Rodoviários Federais no Ceará na defesa de seus
-            direitos, condições de trabalho e valorização profissional.
+            Fundado em 24 de março de 1992, o {marca.nome} representa os Policiais Rodoviários
+            Federais no Ceará — em atividade, inativos e pensionistas — na defesa de seus direitos,
+            das condições de trabalho e da valorização da carreira.
           </p>
 
           <dl className="sobre-hero-meta">
             <div>
-              <dt>Desde</dt>
+              <dt>Fundação</dt>
               <dd>1992</dd>
             </div>
             <div>
-              <dt>Atuação</dt>
+              <dt>Base territorial</dt>
               <dd>Ceará</dd>
             </div>
             <div>
-              <dt>Categoria</dt>
-              <dd>PRF</dd>
+              <dt>Filiado à</dt>
+              <dd>FENAPRF</dd>
             </div>
           </dl>
         </div>
@@ -63,25 +80,33 @@ export function SobrePage() {
           <p className="eyebrow">Propósito</p>
           <h2 id="missao-titulo">Missão</h2>
           <blockquote className="sobre-missao-texto">
-            Defender os interesses da categoria com transparência e compromisso, oferecendo suporte
-            jurídico, benefícios e espaços de participação democrática.
+            Representar seus associados perante as autoridades e instituições administrativas,
+            legislativas e judiciárias, na defesa de seus direitos e interesses coletivos e
+            individuais, podendo, inclusive, atuar como substituto processual dos seus filiados
+            ativos, inativos e beneficiários de pensão.
           </blockquote>
+          <p className="sobre-missao-fonte">
+            <cite>Estatuto do {marca.nome}, art. 4º</cite>
+          </p>
         </section>
 
         <section className="sobre-ofertas" aria-labelledby="ofertas-titulo">
           <header className="sobre-secao-cabecalho">
-            <h2 id="ofertas-titulo">O que oferecemos</h2>
-            <p>Serviços e espaços de participação para a categoria no Ceará.</p>
+            <h2 id="ofertas-titulo">O que a filiação garante</h2>
+            <p>
+              Prerrogativas asseguradas pelo Estatuto ao sindicalizado em pleno gozo de seus
+              direitos.
+            </p>
           </header>
 
           <ul className="sobre-ofertas-lista">
-            {ofertas.map((item) => (
+            {garantias.map((item) => (
               <li key={item.titulo}>
                 <strong>{item.titulo}</strong>
                 <p>{item.texto}</p>
-                {item.titulo === 'Convênios' ? (
-                  <Link to="/convenios" className="sobre-oferta-link">
-                    Ver convênios
+                {'link' in item ? (
+                  <Link to={item.link.to} className="sobre-oferta-link">
+                    {item.link.rotulo}
                   </Link>
                 ) : null}
               </li>
@@ -95,8 +120,9 @@ export function SobrePage() {
               <p className="eyebrow">Normas</p>
               <h2 id="estatuto-titulo">Estatuto</h2>
               <p>
-                Estatuto consolidado do {marca.nome} (setembro/2025), com as regras de organização,
-                direitos e deveres da categoria.
+                Texto consolidado em setembro de 2025, aprovado em Assembleia Geral. Reúne as regras
+                de filiação e desfiliação, contribuição, assistência jurídica, processo eleitoral e
+                composição dos órgãos de direção.
               </p>
             </div>
             <a
@@ -114,8 +140,9 @@ export function SobrePage() {
             <p className="eyebrow">Gestão</p>
             <h2>Diretoria</h2>
             <p>
-              Consulte a composição atual da diretoria executiva, conselho fiscal e representantes
-              junto à FENAPRF.
+              Diretoria executiva, conselho fiscal e conselho de representantes junto à FENAPRF
+              {marca.diretoria ? ` eleitos para o mandato ${marca.diretoria.mandato}` : ''}, com o
+              histórico das gestões anteriores.
             </p>
             <Link to="/diretoria" className="botao-primario">
               Ver diretoria
@@ -131,6 +158,8 @@ export function SobrePage() {
               CEP {marca.sede.cep}
             </address>
             <p className="sobre-sede-contato">
+              Sede própria, com atendimento de segunda a sexta, das 8h às 17h.
+              <br />
               <a href={`mailto:${marca.contato.email}`}>{marca.contato.email}</a>
             </p>
             <Link to="/contato" className="botao-secundario">
