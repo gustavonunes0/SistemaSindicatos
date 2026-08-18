@@ -10318,6 +10318,64 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   }
 }
 
+/* ============ Alertas (popup do site) ============ */
+.badge-alerta-no-ar {
+  background: #d8f3dc;
+  color: var(--cor-sucesso);
+}
+
+.badge-alerta-agendado {
+  background: #e8f0fe;
+  color: #1a4a8a;
+}
+
+.badge-alerta-encerrado,
+.badge-alerta-inativo {
+  background: #eceef1;
+  color: var(--cor-texto-suave);
+}
+
+.alerta-popup {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.alerta-popup-imagem {
+  display: block;
+  width: 100%;
+  max-height: 15rem;
+  object-fit: cover;
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+}
+
+.alerta-popup-mensagem {
+  margin: 0;
+  /* A mensagem é texto puro: preserva as quebras digitadas pelo admin. */
+  white-space: pre-line;
+  font-size: var(--texto-base);
+  line-height: 1.55;
+  color: var(--cor-texto);
+}
+
+.alerta-popup-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.65rem;
+  padding-top: 1rem;
+  border-top: var(--borda-fina);
+}
+
+/* O CTA é um link, mas precisa da mesma caixa dos botões do formulário. */
+.alerta-popup-acoes .botao-primario {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 /* ============ Movimento: respeito a prefers-reduced-motion ============ */
 @media (prefers-reduced-motion: reduce) {
   *,

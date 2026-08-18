@@ -5,6 +5,7 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AdminModule } from './admin/admin.module';
 import { AfiliadosModule } from './afiliados/afiliados.module';
+import { AlertasModule } from './alertas/alertas.module';
 import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { BalancetesModule } from './balancetes/balancetes.module';
@@ -43,6 +44,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
     AdminModule,
     AfiliadosModule,
     NoticiasModule,
+    AlertasModule,
     PushModule,
     InstagramModule,
     ConveniosModule,

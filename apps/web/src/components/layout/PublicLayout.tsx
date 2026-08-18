@@ -3,6 +3,7 @@ import { Link, NavLink, Outlet } from 'react-router-dom';
 import { ScrollToTop } from '../ScrollToTop';
 import { MarcaHeaderLink } from '../ui/MarcaHeader';
 import { LogoLink } from '../ui/Logo';
+import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { usePushNoticiasPorPadrao } from '../../features/pwa/hooks/usePushNoticias';
@@ -108,6 +109,7 @@ export function PublicLayout() {
         </div>
       </footer>
 
+      <AlertaPopup />
       <BotaoAtualizarPwa />
       <BotaoInstalarPwa />
     </div>

@@ -96,6 +96,11 @@ const NoticiasAdminPage = lazy(() =>
     default: m.NoticiasAdminPage,
   })),
 );
+const AlertasAdminPage = lazy(() =>
+  import('./features/alertas/components/admin/AlertasAdminPage').then((m) => ({
+    default: m.AlertasAdminPage,
+  })),
+);
 const ConveniosAdminPage = lazy(() =>
   import('./features/convenios/components/admin/ConveniosAdminPage').then((m) => ({
     default: m.ConveniosAdminPage,
@@ -220,6 +225,7 @@ export const router = createBrowserRouter([
   { path: '/admin/noticias', element: protegidaAdmin(<NoticiasAdminPage />) },
   { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },
+  { path: '/admin/alertas', element: protegidaAdmin(<AlertasAdminPage />) },
   { path: '/admin/convenios', element: protegidaAdmin(<ConveniosAdminPage />) },
   { path: '/admin/convenios/novo', element: <Navigate to="/admin/convenios" replace /> },
   { path: '/admin/convenios/:id/editar', element: <Navigate to="/admin/convenios" replace /> },

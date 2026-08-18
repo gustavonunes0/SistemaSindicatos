@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
+import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useLogout, useMe } from '../../features/auth/hooks';
@@ -46,6 +47,7 @@ const gruposAdmin: GrupoNav[] = [
     titulo: 'Conteúdo',
     links: [
       { to: '/admin/noticias', rotulo: 'Notícias' },
+      { to: '/admin/alertas', rotulo: 'Alertas' },
       { to: '/admin/convenios', rotulo: 'Convênios' },
       { to: '/admin/imoveis', rotulo: 'Apartamentos' },
     ],
@@ -192,6 +194,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         {children}
       </div>
 
+      {tipo === 'afiliado' ? <AlertaPopup /> : null}
       <BotaoAtualizarPwa />
       <BotaoInstalarPwa />
     </div>

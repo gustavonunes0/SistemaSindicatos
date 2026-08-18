@@ -7,6 +7,7 @@ const MODELS_COM_TENANT = new Set([
   'RefreshToken',
   'PasswordResetToken',
   'Afiliado',
+  'Alerta',
   'ImportacaoD8',
   'LinhaD8',
   'Noticia',

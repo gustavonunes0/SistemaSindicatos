@@ -64,6 +64,7 @@ model Tenant {
   linhasBalancete      LinhaBalancete[]
   refreshTokens        RefreshToken[]
   resetTokens          PasswordResetToken[]
+  alertas              Alerta[]
 
   @@map("tenants")
 }
@@ -273,6 +274,35 @@ model Noticia {
   @@unique([tenantId, slug])
   @@index([tenantId, status, publicadoEm])
   @@map("noticias")
+}
+
+/// Quem enxerga o alerta. FILIADOS restringe a afiliados com cadastro aprovado.
+enum PublicoAlerta {
+  TODOS
+  FILIADOS
+}
+
+/// Aviso em popup exibido no site e na área do filiado durante uma vigência.
+model Alerta {
+  id        String        @id @default(cuid())
+  tenantId  String
+  titulo    String
+  mensagem  String        @db.Text
+  imagemUrl String?
+  linkUrl   String?
+  linkTexto String?
+  publico   PublicoAlerta @default(TODOS)
+  /// Permite tirar do ar sem apagar o histórico nem mexer na vigência.
+  ativo     Boolean       @default(true)
+  inicioEm  DateTime      @db.Timestamptz
+  fimEm     DateTime      @db.Timestamptz
+  createdAt DateTime      @default(now()) @db.Timestamptz
+  updatedAt DateTime      @updatedAt @db.Timestamptz
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@index([tenantId, ativo, inicioEm, fimEm])
+  @@map("alertas")
 }
 
 // Inscrições Web Push (notificações de notícias)

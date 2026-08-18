@@ -2,6 +2,7 @@ export * from './enums';
 export * from './user';
 export * from './tenant';
 export * from './afiliado';
+export * from './alerta';
 export * from './auth';
 export * from './convenio';
 export * from './contato';
