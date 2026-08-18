@@ -10659,6 +10659,169 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   white-space: nowrap;
 }
 
+/* ============ Declarações emitidas e assinatura ============ */
+.badge-declaracao-pendente {
+  background: #fdf1d6;
+  color: #8a5a00;
+}
+
+.badge-declaracao-assinada {
+  background: #d8f3dc;
+  color: var(--cor-sucesso);
+}
+
+.declaracoes-filtros {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.declaracoes-filtros input[type='search'] {
+  min-width: min(22rem, 100%);
+}
+
+.abas {
+  display: flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+}
+
+.aba {
+  padding: 0.45rem 0.9rem;
+  border: none;
+  border-radius: calc(var(--raio) - 0.25rem);
+  background: transparent;
+  color: var(--cor-texto-suave);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    color 0.2s ease;
+}
+
+.aba:hover {
+  color: var(--cor-texto);
+}
+
+.aba--ativa {
+  background: var(--cor-superficie, #fff);
+  color: var(--cor-primaria);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+}
+
+.rubrica-card {
+  margin-bottom: 1.5rem;
+  padding: 1.15rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.rubrica-card-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.rubrica-card-topo h2 {
+  margin: 0 0 0.2rem;
+  font-size: var(--texto-base);
+}
+
+.rubrica-card-topo p {
+  margin: 0;
+}
+
+.rubrica-card-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: var(--borda-fina);
+}
+
+/* Xadrez discreto para enxergar o recorte de um PNG transparente. */
+.rubrica-preview {
+  align-self: flex-start;
+  max-width: 16rem;
+  max-height: 6rem;
+  padding: 0.5rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #eceef1 25%, transparent 25%),
+    linear-gradient(-45deg, #eceef1 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #eceef1 75%),
+    linear-gradient(-45deg, transparent 75%, #eceef1 75%);
+  background-size: 12px 12px;
+  background-position:
+    0 0,
+    0 6px,
+    6px -6px,
+    -6px 0;
+}
+
+.rubrica-card-acoes {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.lista-declaracoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.card-declaracao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.15rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.card-declaracao h2 {
+  margin: 0 0 0.3rem;
+  font-size: var(--texto-base);
+}
+
+.card-declaracao p {
+  margin: 0 0 0.4rem;
+}
+
+.card-declaracao-acoes {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  max-width: 22rem;
+}
+
+.card-declaracao-acoes .botao-primario,
+.card-declaracao-acoes .botao-secundario {
+  white-space: nowrap;
+}
+
 /* ============ Movimento: respeito a prefers-reduced-motion ============ */
 @media (prefers-reduced-motion: reduce) {
   *,

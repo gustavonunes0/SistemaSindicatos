@@ -17,7 +17,9 @@ import { randomBytes } from 'node:crypto';
 import type { RequestUser } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
+import { StorageService } from '../storage/storage.service';
 import { DeclaracaoPdfService } from './declaracao-pdf.service';
+import { lerAssinaturaDoBranding, nomeArquivoDeclaracao } from './declaracoes.util';
 
 const CAMPOS_LISTAGEM = {
   id: true,
@@ -59,6 +61,7 @@ export class ConveniosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly declaracaoPdf: DeclaracaoPdfService,
+    private readonly storage: StorageService,
   ) {}
 
   private invalidarCaches(tenantId = requireTenantId()) {
@@ -204,8 +207,8 @@ export class ConveniosService {
     const tenantId = requireTenantId();
     const ehAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN';
 
-    // Afiliado, convênio e domínios são independentes entre si — uma viagem só.
-    const [afiliado, convenio, dominios] = await Promise.all([
+    // Afiliado, convênio, domínios e branding são independentes entre si — uma viagem só.
+    const [afiliado, convenio, dominios, tenant] = await Promise.all([
       this.prisma.afiliado.findUnique({
         where: { userId: user.id },
         select: { id: true, nome: true, cpf: true, status: true },
@@ -215,6 +218,10 @@ export class ConveniosService {
         where: { tenantId },
         orderBy: [{ primario: 'desc' }, { createdAt: 'asc' }],
         select: { host: true },
+      }),
+      this.prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { branding: true },
       }),
     ]);
 
@@ -295,16 +302,24 @@ export class ConveniosService {
       periodoFim: registro.periodoFim ?? undefined,
       urlValidacao,
       codigoValidacao: codigo,
+      assinaturaUrl: lerAssinaturaDoBranding(tenant?.branding),
+      emitidaEm: registro.emitidaEm,
     });
 
-    const slug = convenio.nome
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-      .toLowerCase()
-      .slice(0, 40);
-    const nomeArquivo = `declaracao-${slug || 'convenio'}-${codigo}.pdf`;
+    const nomeArquivo = nomeArquivoDeclaracao(convenio.nome, codigo);
+
+    // Guardar o PDF é o que permite à presidente rever depois exatamente o
+    // documento que o filiado baixou. Falha de disco não pode impedir a
+    // emissão, então o erro só tira o arquivo da fila de assinatura.
+    try {
+      const arquivoUrl = await this.storage.salvar(buffer, nomeArquivo);
+      await this.prisma.declaracaoEmitida.update({
+        where: { id: registro.id, tenantId },
+        data: { arquivoUrl },
+      });
+    } catch {
+      // segue devolvendo o PDF ao solicitante
+    }
 
     return { buffer, nomeArquivo };
   }

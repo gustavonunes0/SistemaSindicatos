@@ -185,3 +185,45 @@ export const declaracaoValidacaoRespostaSchema = z.discriminatedUnion('valida', 
   declaracaoInvalidaSchema,
 ]);
 export type DeclaracaoValidacaoResposta = z.infer<typeof declaracaoValidacaoRespostaSchema>;
+
+// ---------------------------------------------------------------------------
+// Declarações emitidas: fila de assinatura e acompanhamento pelo filiado
+// ---------------------------------------------------------------------------
+
+export const statusDeclaracaoSchema = z.enum(['PENDENTE', 'ASSINADA']);
+export type StatusDeclaracao = z.infer<typeof statusDeclaracaoSchema>;
+
+export const STATUS_DECLARACAO_ROTULO: Record<StatusDeclaracao, string> = {
+  PENDENTE: 'Aguardando assinatura',
+  ASSINADA: 'Assinada',
+};
+
+/** Linha da fila do admin e do histórico do filiado. */
+export const declaracaoEmitidaSchema = z.object({
+  id: z.string(),
+  codigo: z.string(),
+  modelo: modeloDeclaracaoSchema,
+  destino: z.string(),
+  convenioNome: z.string(),
+  afiliadoNome: z.string(),
+  afiliadoMatricula: z.string().nullable(),
+  dependenteNome: z.string().nullable(),
+  periodoInicio: z.coerce.date().nullable(),
+  periodoFim: z.coerce.date().nullable(),
+  emitidaEm: z.coerce.date(),
+  status: statusDeclaracaoSchema,
+  temArquivoOriginal: z.boolean(),
+  temArquivoAssinado: z.boolean(),
+  assinadaEm: z.coerce.date().nullable(),
+  assinadaPorEmail: z.string().nullable(),
+});
+export type DeclaracaoEmitida = z.infer<typeof declaracaoEmitidaSchema>;
+
+export const listarDeclaracoesQuerySchema = z.object({
+  status: statusDeclaracaoSchema.optional(),
+  busca: z.string().trim().max(120).optional(),
+});
+export type ListarDeclaracoesQuery = z.infer<typeof listarDeclaracoesQuerySchema>;
+
+export const uploadAssinaturaResponseSchema = z.object({ url: z.string() });
+export type UploadAssinaturaResponse = z.infer<typeof uploadAssinaturaResponseSchema>;

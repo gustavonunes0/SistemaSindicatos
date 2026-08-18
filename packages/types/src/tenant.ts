@@ -60,6 +60,8 @@ export const tenantBrandingSchema = z.object({
   regulamentoApartamentosUrl: z.string().nullable().optional(),
   /** PDF do estatuto sindical (site institucional). */
   estatutoUrl: z.string().nullable().optional(),
+  /** Rubrica desenhada acima do carimbo nas declarações em PDF. */
+  assinaturaUrl: z.string().nullable().optional(),
   themeColor: z.string().optional(),
   cores: coresBrandingSchema.optional(),
   /** E-mail destino do formulário de contato (override). */

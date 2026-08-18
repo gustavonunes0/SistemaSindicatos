@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { ModeloDeclaracao } from '@prisma/client';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import PDFDocument from 'pdfkit';
 import QRCode from 'qrcode';
 
@@ -37,6 +37,10 @@ export type DadosDeclaracaoPdf = {
   /** URL absoluta da página pública de validação (QR Code). */
   urlValidacao: string;
   codigoValidacao: string;
+  /** Rubrica enviada pelo admin (caminho servido em /uploads). */
+  assinaturaUrl?: string | null;
+  /** Data impressa no documento. Explícita para que reemitir não mude a data. */
+  emitidaEm?: Date;
 };
 
 function formatarCpf(cpf: string): string {
@@ -52,6 +56,24 @@ function caminhoAsset(nome: string): string | null {
     join(process.cwd(), 'apps', 'web', 'public', nome),
   ];
   return candidatos.find((c) => existsSync(c)) ?? null;
+}
+
+const RAIZ_UPLOADS = join(process.cwd(), 'uploads');
+
+/**
+ * Converte a URL guardada no branding (`/uploads/<tenant>/<arquivo>`) no
+ * caminho em disco. O `resolve` + prefixo barram `..` no meio do caminho, que
+ * de outra forma leria qualquer arquivo do servidor.
+ */
+function caminhoDoUpload(url: string | null | undefined): string | null {
+  if (!url || !url.startsWith('/uploads/')) {
+    return null;
+  }
+  const destino = resolve(RAIZ_UPLOADS, url.slice('/uploads/'.length));
+  if (!destino.startsWith(RAIZ_UPLOADS) || !existsSync(destino)) {
+    return null;
+  }
+  return destino;
 }
 
 @Injectable()
@@ -77,8 +99,8 @@ export class DeclaracaoPdfService {
     this.desenharLogo(doc);
     this.desenharTitulo(doc, dados);
     this.desenharCorpo(doc, dados);
-    this.desenharDataLocal(doc);
-    this.desenharAssinatura(doc);
+    this.desenharDataLocal(doc, dados);
+    this.desenharAssinatura(doc, dados);
     await this.desenharValidacaoQr(doc, dados);
 
     doc.end();
@@ -165,15 +187,17 @@ export class DeclaracaoPdfService {
     );
   }
 
-  private desenharDataLocal(doc: PDFKit.PDFDocument): void {
-    const hoje = dataFmt.format(new Date());
+  private desenharDataLocal(doc: PDFKit.PDFDocument, dados: DadosDeclaracaoPdf): void {
+    const data = dataFmt.format(dados.emitidaEm ?? new Date());
     doc.moveDown(2).font('Times-Roman').fontSize(12).fillColor('#000000');
-    doc.text(`Fortaleza, ${hoje}.`, { align: 'left' });
+    doc.text(`Fortaleza, ${data}.`, { align: 'left' });
   }
 
-  private desenharAssinatura(doc: PDFKit.PDFDocument): void {
+  /** A rubrica cadastrada pelo sindicato tem prioridade sobre o PNG do disco. */
+  private desenharAssinatura(doc: PDFKit.PDFDocument, dados: DadosDeclaracaoPdf): void {
     doc.moveDown(3);
-    const assinaturaPath = caminhoAsset('assinatura-presidente.png');
+    const assinaturaPath =
+      caminhoDoUpload(dados.assinaturaUrl) ?? caminhoAsset('assinatura-presidente.png');
     const centroX = doc.page.width / 2;
 
     if (assinaturaPath) {

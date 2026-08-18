@@ -128,6 +128,7 @@ model User {
   mensagens      Mensagem[]       @relation("AutorMensagem")
   membrosComissao        MembroComissaoEleitoral[]
   contestacoesDecididas  ContestacaoChapa[]        @relation("DecisorContestacao")
+  declaracoesAssinadas   DeclaracaoEmitida[]       @relation("DeclaracoesAssinadas")
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -445,6 +446,12 @@ model Convenio {
   @@map("convenios")
 }
 
+/// Aguardando a assinatura física da presidente ou já assinada e devolvida.
+enum StatusDeclaracao {
+  PENDENTE
+  ASSINADA
+}
+
 /// Declaração/autorização emitida em PDF — validável via QR Code no site.
 model DeclaracaoEmitida {
   id                 String           @id @default(cuid())
@@ -464,12 +471,23 @@ model DeclaracaoEmitida {
   periodoFim         DateTime?        @db.Timestamptz
   emitidaEm          DateTime         @default(now()) @db.Timestamptz
 
-  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  convenio Convenio @relation(fields: [convenioId], references: [id], onDelete: Restrict)
-  afiliado Afiliado? @relation(fields: [afiliadoId], references: [id], onDelete: Restrict)
+  status             StatusDeclaracao @default(PENDENTE)
+  /// PDF gerado na emissão. Guardado para que o documento assinado depois
+  /// seja exatamente o que o filiado baixou, mesmo que a rubrica mude.
+  arquivoUrl         String?
+  /// PDF devolvido pela presidente, assinado à mão.
+  arquivoAssinadoUrl String?
+  assinadaEm         DateTime?        @db.Timestamptz
+  assinadaPorId      String?
+
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  convenio    Convenio  @relation(fields: [convenioId], references: [id], onDelete: Restrict)
+  afiliado    Afiliado? @relation(fields: [afiliadoId], references: [id], onDelete: Restrict)
+  assinadaPor User?     @relation("DeclaracoesAssinadas", fields: [assinadaPorId], references: [id], onDelete: SetNull)
 
   @@unique([tenantId, codigo])
   @@index([tenantId, emitidaEm])
+  @@index([tenantId, status, emitidaEm])
   @@map("declaracoes_emitidas")
 }
 
