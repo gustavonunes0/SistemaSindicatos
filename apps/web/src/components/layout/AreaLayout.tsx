@@ -48,6 +48,7 @@ const gruposAdmin: GrupoNav[] = [
     links: [
       { to: '/admin/noticias', rotulo: 'Notícias' },
       { to: '/admin/alertas', rotulo: 'Alertas' },
+      { to: '/admin/formularios', rotulo: 'Formulários' },
       { to: '/admin/convenios', rotulo: 'Convênios' },
       { to: '/admin/imoveis', rotulo: 'Apartamentos' },
     ],
@@ -76,6 +77,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         { to: '/afiliado', rotulo: 'Visão geral', end: true },
         { to: '/afiliado/convenios', rotulo: 'Convênios' },
         { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
+        { to: '/afiliado/formularios', rotulo: 'Formulários' },
         { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
       ],
     },

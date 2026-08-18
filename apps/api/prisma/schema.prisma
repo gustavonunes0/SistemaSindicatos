@@ -65,6 +65,8 @@ model Tenant {
   refreshTokens        RefreshToken[]
   resetTokens          PasswordResetToken[]
   alertas              Alerta[]
+  formularios          Formulario[]
+  respostasFormulario  RespostaFormulario[]
 
   @@map("tenants")
 }
@@ -187,6 +189,7 @@ model Afiliado {
   contestacoes     ContestacaoChapa[]
   linhasD8         LinhaD8[]
   declaracoes      DeclaracaoEmitida[]
+  respostas        RespostaFormulario[]
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, matricula])
@@ -274,6 +277,67 @@ model Noticia {
   @@unique([tenantId, slug])
   @@index([tenantId, status, publicadoEm])
   @@map("noticias")
+}
+
+// =====================================================================
+// FORMULÁRIOS DINÂMICOS
+// =====================================================================
+
+/// Quem pode responder. FILIADOS exige afiliado com cadastro aprovado.
+enum PublicoFormulario {
+  TODOS
+  FILIADOS
+}
+
+enum StatusFormulario {
+  RASCUNHO
+  PUBLICADO
+  ENCERRADO
+}
+
+model Formulario {
+  id        String            @id @default(cuid())
+  tenantId  String
+  titulo    String
+  slug      String
+  descricao String?           @db.Text
+  /// Perguntas do formulário — ver campoFormularioSchema em @sindprf/types.
+  /// JSON em vez de tabela: salvar o formulário é um único write e a ordem
+  /// das perguntas vem de graça.
+  campos    Json              @default("[]")
+  publico   PublicoFormulario @default(FILIADOS)
+  status    StatusFormulario  @default(RASCUNHO)
+  createdAt DateTime          @default(now()) @db.Timestamptz
+  updatedAt DateTime          @updatedAt @db.Timestamptz
+
+  tenant    Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  respostas RespostaFormulario[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, status])
+  @@map("formularios")
+}
+
+model RespostaFormulario {
+  id           String @id @default(cuid())
+  tenantId     String
+  formularioId String
+  /// Nulo quando o formulário é aberto e quem respondeu não estava logado.
+  afiliadoId   String?
+  /// Respostas com a pergunta congelada no momento do envio — ver
+  /// itemRespostaSchema. Editar o formulário depois não reescreve o histórico.
+  valores      Json     @default("[]")
+  enviadoEm    DateTime @default(now()) @db.Timestamptz
+
+  tenant     Tenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  formulario Formulario @relation(fields: [formularioId], references: [id], onDelete: Cascade)
+  afiliado   Afiliado?  @relation(fields: [afiliadoId], references: [id], onDelete: SetNull)
+
+  /// Trava "uma resposta por filiado". No Postgres NULLs são distintos entre
+  /// si, então respostas anônimas não colidem.
+  @@unique([formularioId, afiliadoId])
+  @@index([tenantId, formularioId, enviadoEm])
+  @@map("respostas_formulario")
 }
 
 /// Quem enxerga o alerta. FILIADOS restringe a afiliados com cadastro aprovado.

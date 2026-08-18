@@ -9,7 +9,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PushService } from '../push/push.service';
 import { requireTenantId } from '../tenant/tenant-context';
 import { resumoDeConteudo } from './noticia-resumo';
-import { gerarSlug } from './slug';
+import { gerarSlug } from '../common/slug';
 
 const CAMPOS_LISTAGEM_PUBLICA = {
   id: true,

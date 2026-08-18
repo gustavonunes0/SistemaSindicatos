@@ -101,6 +101,31 @@ const AlertasAdminPage = lazy(() =>
     default: m.AlertasAdminPage,
   })),
 );
+const FormulariosAdminPage = lazy(() =>
+  import('./features/formularios/components/admin/FormulariosAdminPage').then((m) => ({
+    default: m.FormulariosAdminPage,
+  })),
+);
+const FormularioBuilderPage = lazy(() =>
+  import('./features/formularios/components/admin/FormularioBuilderPage').then((m) => ({
+    default: m.FormularioBuilderPage,
+  })),
+);
+const FormularioRespostasPage = lazy(() =>
+  import('./features/formularios/components/admin/FormularioRespostasPage').then((m) => ({
+    default: m.FormularioRespostasPage,
+  })),
+);
+const FormularioPublicoPage = lazy(() =>
+  import('./features/formularios/components/FormularioPublicoPage').then((m) => ({
+    default: m.FormularioPublicoPage,
+  })),
+);
+const MeusFormulariosPage = lazy(() =>
+  import('./features/formularios/components/MeusFormulariosPage').then((m) => ({
+    default: m.MeusFormulariosPage,
+  })),
+);
 const ConveniosAdminPage = lazy(() =>
   import('./features/convenios/components/admin/ConveniosAdminPage').then((m) => ({
     default: m.ConveniosAdminPage,
@@ -194,6 +219,7 @@ export const router = createBrowserRouter([
       { path: '/noticias/:slug', element: comSuspense(<NoticiaDetalhePage />) },
       { path: '/convenios', element: comSuspense(<ConveniosPublicPage />) },
       { path: '/convenios/:id', element: comSuspense(<ConvenioPublicoDetalhePage />) },
+      { path: '/formularios/:slug', element: comSuspense(<FormularioPublicoPage />) },
       { path: '/sobre', element: comSuspense(<SobrePage />) },
       { path: '/diretoria', element: comSuspense(<DiretoriaPage />) },
       { path: '/contato', element: comSuspense(<ContatoPage />) },
@@ -226,6 +252,13 @@ export const router = createBrowserRouter([
   { path: '/admin/noticias/nova', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/alertas', element: protegidaAdmin(<AlertasAdminPage />) },
+  { path: '/admin/formularios', element: protegidaAdmin(<FormulariosAdminPage />) },
+  { path: '/admin/formularios/novo', element: protegidaAdmin(<FormularioBuilderPage />) },
+  { path: '/admin/formularios/:id', element: protegidaAdmin(<FormularioBuilderPage />) },
+  {
+    path: '/admin/formularios/:id/respostas',
+    element: protegidaAdmin(<FormularioRespostasPage />),
+  },
   { path: '/admin/convenios', element: protegidaAdmin(<ConveniosAdminPage />) },
   { path: '/admin/convenios/novo', element: <Navigate to="/admin/convenios" replace /> },
   { path: '/admin/convenios/:id/editar', element: <Navigate to="/admin/convenios" replace /> },
@@ -242,6 +275,7 @@ export const router = createBrowserRouter([
   { path: '/afiliado', element: protegidaAfiliado(<AfiliadoDashboardPage />) },
   { path: '/afiliado/convenios', element: protegidaAfiliado(<ConveniosPage />) },
   { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
+  { path: '/afiliado/formularios', element: protegidaAfiliado(<MeusFormulariosPage />) },
   { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },
   { path: '/afiliado/imoveis/:id', element: <Navigate to="/afiliado/imoveis" replace /> },
   { path: '/afiliado/eleicoes', element: protegidaAfiliado(<EleicoesPage />) },
