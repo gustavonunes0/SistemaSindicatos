@@ -118,10 +118,31 @@ export const marcaPlataformaFallback: TenantBranding = {
 /** @deprecated Use useMarca() — mantido para imports legados. */
 export const marca = marcaFallback;
 
+/** Dígitos no formato E.164 Brasil (55 + DDD + número), ou vazio se inválido. */
+export function digitosTelefoneBrasil(telefone: string): string {
+  const soDigitos = telefone.replace(/\D/g, '');
+  if (soDigitos.length < 10) return '';
+  if (soDigitos.startsWith('55') && soDigitos.length >= 12) return soDigitos;
+  return `55${soDigitos}`;
+}
+
+export function urlTel(telefone: string): string {
+  const digitos = digitosTelefoneBrasil(telefone);
+  return digitos ? `tel:+${digitos}` : '#';
+}
+
+export function urlWhatsApp(telefone: string, texto?: string): string {
+  const digitos = digitosTelefoneBrasil(telefone);
+  if (!digitos) return '#';
+  const base = `https://wa.me/${digitos}`;
+  return texto ? `${base}?text=${encodeURIComponent(texto)}` : base;
+}
+
 export function telefonePrincipalTel(branding: TenantBranding = marcaFallback): string {
   const tel = branding.contato.telefones[0];
   if (!tel) return '';
-  return `+55${tel.replace(/\D/g, '')}`;
+  const digitos = digitosTelefoneBrasil(tel);
+  return digitos ? `+${digitos}` : '';
 }
 
 /** Completa campos institucionais ausentes no branding do tenant (ex.: diretoria). */

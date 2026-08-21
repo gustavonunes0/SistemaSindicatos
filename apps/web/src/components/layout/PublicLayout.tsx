@@ -4,13 +4,14 @@ import { ScrollToTop } from '../ScrollToTop';
 import { MarcaHeaderLink } from '../ui/MarcaHeader';
 import { LogoLink } from '../ui/Logo';
 import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
+import { TelefoneContato } from '../ui/TelefoneContato';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { usePushNoticiasPorPadrao } from '../../features/pwa/hooks/usePushNoticias';
 import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
 import { usePrefetchNoticias } from '../../features/noticias/hooks';
-import { telefonePrincipalTel, useMarca } from '../../lib/marca';
+import { useMarca } from '../../lib/marca';
 
 const links = [
   { to: '/', rotulo: 'Início' },
@@ -83,13 +84,9 @@ export function PublicLayout() {
             </p>
             {marca.contato.telefones.length > 0 && (
               <ul className="contato-telefones site-footer-telefones">
-                {marca.contato.telefones.map((telefone, indice) => (
+                {marca.contato.telefones.map((telefone) => (
                   <li key={telefone}>
-                    {indice === 0 ? (
-                      <a href={`tel:${telefonePrincipalTel(marca)}`}>{telefone}</a>
-                    ) : (
-                      telefone
-                    )}
+                    <TelefoneContato telefone={telefone} />
                   </li>
                 ))}
               </ul>

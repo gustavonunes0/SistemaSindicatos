@@ -2354,6 +2354,80 @@ button.botao-primario {
   text-decoration: underline;
 }
 
+/* Botão que abre o seletor Ligar / WhatsApp — parece o link de telefone. */
+.telefone-contato {
+  display: inline;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.telefone-contato:hover:not(:disabled) {
+  background: none;
+  text-decoration: underline;
+}
+
+.site-footer .telefone-contato {
+  color: inherit;
+}
+
+.telefone-contato-opcoes {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.telefone-contato-opcao {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.95rem 1.1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  text-decoration: none;
+  transition:
+    border-color var(--transicao),
+    background var(--transicao);
+}
+
+.telefone-contato-opcao:hover {
+  border-color: var(--cor-primaria);
+  background: var(--cor-fundo);
+  text-decoration: none;
+}
+
+.telefone-contato-opcao-rotulo {
+  font-family: var(--fonte-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.telefone-contato-opcao-apoio {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.telefone-contato-opcao--whatsapp {
+  border-left: var(--faixa-altura) solid #1f8a4c;
+}
+
+.telefone-contato-opcao--whatsapp .telefone-contato-opcao-rotulo {
+  color: #1f8a4c;
+}
+
+.telefone-contato-opcao--ligar {
+  border-left: var(--faixa-altura) solid var(--cor-primaria);
+}
+
 .contato-hero-inner > *,
 .contato-form-painel,
 .contato-canal {
@@ -4115,6 +4189,10 @@ textarea {
   border-top: var(--faixa-altura) solid var(--amarelo-faixa);
   box-shadow: 0 18px 48px rgb(7 31 56 / 0.22);
   overflow: hidden;
+}
+
+.modal-painel--md {
+  width: min(100%, 22rem);
 }
 
 .modal-painel--lg {

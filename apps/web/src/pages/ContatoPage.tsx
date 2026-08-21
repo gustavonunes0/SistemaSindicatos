@@ -9,8 +9,9 @@ import {
 import { isAxiosError } from 'axios';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { TelefoneContato } from '../components/ui/TelefoneContato';
 import { api } from '../lib/http';
-import { telefonePrincipalTel, useMarca } from '../lib/marca';
+import { useMarca } from '../lib/marca';
 import { useSeo } from '../lib/seo';
 
 const assuntos = Object.entries(CONTATO_ASSUNTO_ROTULO) as Array<[ContatoAssunto, string]>;
@@ -165,13 +166,9 @@ export function ContatoPage() {
             <div className="contato-canal">
               <h3>Telefones</h3>
               <ul className="contato-telefones">
-                {marca.contato.telefones.map((telefone, indice) => (
+                {marca.contato.telefones.map((telefone) => (
                   <li key={telefone}>
-                    {indice === 0 ? (
-                      <a href={`tel:${telefonePrincipalTel(marca)}`}>{telefone}</a>
-                    ) : (
-                      telefone
-                    )}
+                    <TelefoneContato telefone={telefone} />
                   </li>
                 ))}
               </ul>
