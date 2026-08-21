@@ -96,6 +96,10 @@ export function FormularioBuilderPage() {
     alterarCampo(indice, { opcoes });
   };
 
+  const adicionarPergunta = () => {
+    setCampos((atual) => [...atual, novoCampo()]);
+  };
+
   const salvando = criar.isPending || atualizar.isPending;
 
   const onSalvar = () => {
@@ -133,7 +137,7 @@ export function FormularioBuilderPage() {
     <AreaLayout
       tipo="admin"
       titulo={editando ? 'Editar formulário' : 'Novo formulário'}
-      descricao="Monte as perguntas e defina quem pode responder."
+      descricao="Defina o conteúdo, quem pode responder e monte as perguntas."
       acoes={
         <>
           <button
@@ -149,208 +153,246 @@ export function FormularioBuilderPage() {
             onClick={onSalvar}
             disabled={salvando}
           >
-            {salvando ? 'Salvando…' : 'Salvar'}
+            {salvando ? 'Salvando…' : 'Salvar formulário'}
           </button>
         </>
       }
     >
-      <div className="form-area">
-        <label>
-          Título
-          <input
-            type="text"
-            value={titulo}
-            onChange={(evento) => setTitulo(evento.target.value)}
-            placeholder="Pesquisa de satisfação"
-          />
-        </label>
+      <section className="construtor-bloco" aria-labelledby="construtor-identidade">
+        <header className="construtor-bloco-cabecalho">
+          <p className="eyebrow">Passo 1</p>
+          <h2 id="construtor-identidade">Identidade</h2>
+          <p>Título e descrição aparecem para quem for responder.</p>
+        </header>
 
-        <label>
-          Descrição (opcional)
-          <textarea
-            rows={3}
-            value={descricao}
-            onChange={(evento) => setDescricao(evento.target.value)}
-            placeholder="Explique o objetivo do formulário para quem for responder."
-          />
-        </label>
+        <div className="form-area construtor-identidade">
+          <label>
+            Título
+            <input
+              type="text"
+              value={titulo}
+              onChange={(evento) => setTitulo(evento.target.value)}
+              placeholder="Pesquisa de satisfação"
+            />
+          </label>
 
-        <div className="form-grid">
           <label>
-            Quem pode responder
-            <select
-              value={publico}
-              onChange={(evento) => setPublico(evento.target.value as PublicoFormulario)}
-            >
-              {Object.entries(PUBLICO_FORMULARIO_ROTULO).map(([valor, rotulo]) => (
-                <option key={valor} value={valor}>
-                  {rotulo}
-                </option>
-              ))}
-            </select>
+            Descrição <span className="campo-opcional">(opcional)</span>
+            <textarea
+              rows={3}
+              value={descricao}
+              onChange={(evento) => setDescricao(evento.target.value)}
+              placeholder="Explique o objetivo do formulário em uma ou duas frases."
+            />
           </label>
-          <label>
-            Situação
-            <select
-              value={status}
-              onChange={(evento) => setStatus(evento.target.value as StatusFormulario)}
-            >
-              {Object.entries(STATUS_FORMULARIO_ROTULO).map(([valor, rotulo]) => (
-                <option key={valor} value={valor}>
-                  {rotulo}
-                </option>
-              ))}
-            </select>
-          </label>
+
+          <div className="form-grid">
+            <label>
+              Quem pode responder
+              <select
+                value={publico}
+                onChange={(evento) => setPublico(evento.target.value as PublicoFormulario)}
+              >
+                {Object.entries(PUBLICO_FORMULARIO_ROTULO).map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>
+                    {rotulo}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Situação
+              <select
+                value={status}
+                onChange={(evento) => setStatus(evento.target.value as StatusFormulario)}
+              >
+                {Object.entries(STATUS_FORMULARIO_ROTULO).map(([valor, rotulo]) => (
+                  <option key={valor} value={valor}>
+                    {rotulo}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+
+          {status === 'RASCUNHO' && (
+            <p className="construtor-dica">
+              Em rascunho o formulário não aparece para ninguém. Publique para gerar o link
+              compartilhável.
+            </p>
+          )}
+          {status === 'ENCERRADO' && (
+            <p className="construtor-dica">
+              Formulário encerrado: o link continua acessível, mas não recebe mais respostas.
+            </p>
+          )}
         </div>
-      </div>
+      </section>
 
-      <div className="construtor-perguntas">
-        <div className="construtor-cabecalho">
-          <h2>Perguntas</h2>
-          <button
-            type="button"
-            className="botao-secundario"
-            onClick={() => setCampos((atual) => [...atual, novoCampo()])}
-          >
+      <section className="construtor-bloco" aria-labelledby="construtor-perguntas-titulo">
+        <header className="construtor-cabecalho">
+          <div>
+            <p className="eyebrow">Passo 2</p>
+            <h2 id="construtor-perguntas-titulo">Perguntas</h2>
+            <p className="texto-secundario">
+              {campos.length === 0
+                ? 'Adicione a primeira pergunta para começar.'
+                : `${campos.length} ${campos.length === 1 ? 'pergunta' : 'perguntas'}`}
+            </p>
+          </div>
+          <button type="button" className="botao-secundario" onClick={adicionarPergunta}>
             Adicionar pergunta
           </button>
-        </div>
+        </header>
 
         {campos.length === 0 && (
-          <p className="texto-secundario">
-            Nenhuma pergunta ainda. Adicione a primeira para começar.
-          </p>
+          <div className="estado-vazio construtor-vazio">
+            <p>Nenhuma pergunta ainda.</p>
+            <button type="button" className="botao-primario" onClick={adicionarPergunta}>
+              Adicionar a primeira
+            </button>
+          </div>
         )}
 
-        {campos.map((campo, indice) => (
-          <article key={campo.id} className="construtor-campo">
-            <header className="construtor-campo-topo">
-              <span className="construtor-campo-numero">{indice + 1}</span>
-              <div className="construtor-campo-acoes">
-                <button
-                  type="button"
-                  className="botao-link-acao"
-                  onClick={() => setCampos((atual) => mover(atual, indice, indice - 1))}
-                  disabled={indice === 0}
-                  aria-label="Mover para cima"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  className="botao-link-acao"
-                  onClick={() => setCampos((atual) => mover(atual, indice, indice + 1))}
-                  disabled={indice === campos.length - 1}
-                  aria-label="Mover para baixo"
-                >
-                  ↓
-                </button>
-                <button
-                  type="button"
-                  className="botao-perigo"
-                  onClick={() =>
-                    setCampos((atual) => atual.filter((_, posicao) => posicao !== indice))
-                  }
-                >
-                  Remover
-                </button>
-              </div>
-            </header>
+        <div className="construtor-perguntas">
+          {campos.map((campo, indice) => (
+            <article key={campo.id} className="construtor-campo">
+              <header className="construtor-campo-topo">
+                <div className="construtor-campo-marca">
+                  <span className="construtor-campo-numero" aria-hidden="true">
+                    {indice + 1}
+                  </span>
+                  <span className="construtor-campo-tipo">{TIPO_CAMPO_ROTULO[campo.tipo]}</span>
+                  {campo.obrigatorio && (
+                    <span className="construtor-campo-obrigatoria">Obrigatória</span>
+                  )}
+                </div>
+                <div className="construtor-campo-acoes">
+                  <button
+                    type="button"
+                    className="botao-tabela"
+                    onClick={() => setCampos((atual) => mover(atual, indice, indice - 1))}
+                    disabled={indice === 0}
+                    aria-label="Mover para cima"
+                  >
+                    ↑
+                  </button>
+                  <button
+                    type="button"
+                    className="botao-tabela"
+                    onClick={() => setCampos((atual) => mover(atual, indice, indice + 1))}
+                    disabled={indice === campos.length - 1}
+                    aria-label="Mover para baixo"
+                  >
+                    ↓
+                  </button>
+                  <button
+                    type="button"
+                    className="botao-tabela botao-tabela--perigo"
+                    onClick={() =>
+                      setCampos((atual) => atual.filter((_, posicao) => posicao !== indice))
+                    }
+                  >
+                    Remover
+                  </button>
+                </div>
+              </header>
 
-            <label>
-              Pergunta
-              <input
-                type="text"
-                value={campo.rotulo}
-                onChange={(evento) => alterarCampo(indice, { rotulo: evento.target.value })}
-                placeholder="Qual o seu grau de satisfação?"
-              />
-            </label>
-
-            <div className="form-grid">
               <label>
-                Tipo de resposta
-                <select
-                  value={campo.tipo}
-                  onChange={(evento) =>
-                    alterarTipo(indice, evento.target.value as TipoCampoFormulario)
-                  }
-                >
-                  {TIPOS.map((tipo) => (
-                    <option key={tipo} value={tipo}>
-                      {TIPO_CAMPO_ROTULO[tipo]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Texto de ajuda (opcional)
+                Pergunta
                 <input
                   type="text"
-                  value={campo.ajuda ?? ''}
-                  onChange={(evento) =>
-                    alterarCampo(indice, { ajuda: evento.target.value || null })
-                  }
+                  value={campo.rotulo}
+                  onChange={(evento) => alterarCampo(indice, { rotulo: evento.target.value })}
+                  placeholder="Qual o seu grau de satisfação?"
                 />
               </label>
-            </div>
 
-            {campoTemOpcoes(campo.tipo) && (
-              <div className="construtor-opcoes">
-                <span className="campo-rotulo">Opções</span>
-                {campo.opcoes.map((opcao, posicao) => (
-                  <div key={posicao} className="construtor-opcao">
-                    <input
-                      type="text"
-                      value={opcao}
-                      onChange={(evento) => alterarOpcao(indice, posicao, evento.target.value)}
-                      placeholder={`Opção ${posicao + 1}`}
-                    />
-                    <button
-                      type="button"
-                      className="botao-link-acao"
-                      onClick={() =>
-                        alterarCampo(indice, {
-                          opcoes: campo.opcoes.filter((_, atual) => atual !== posicao),
-                        })
-                      }
-                      aria-label={`Remover opção ${posicao + 1}`}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  className="botao-link"
-                  onClick={() => alterarCampo(indice, { opcoes: [...campo.opcoes, ''] })}
-                >
-                  Adicionar opção
-                </button>
+              <div className="form-grid">
+                <label>
+                  Tipo de resposta
+                  <select
+                    value={campo.tipo}
+                    onChange={(evento) =>
+                      alterarTipo(indice, evento.target.value as TipoCampoFormulario)
+                    }
+                  >
+                    {TIPOS.map((tipo) => (
+                      <option key={tipo} value={tipo}>
+                        {TIPO_CAMPO_ROTULO[tipo]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Texto de ajuda <span className="campo-opcional">(opcional)</span>
+                  <input
+                    type="text"
+                    value={campo.ajuda ?? ''}
+                    onChange={(evento) =>
+                      alterarCampo(indice, { ajuda: evento.target.value || null })
+                    }
+                    placeholder="Dica curta abaixo da pergunta"
+                  />
+                </label>
               </div>
-            )}
 
-            <label className="campo-checkbox">
-              <input
-                type="checkbox"
-                checked={campo.obrigatorio}
-                onChange={(evento) =>
-                  alterarCampo(indice, { obrigatorio: evento.target.checked })
-                }
-              />
-              Resposta obrigatória
-            </label>
-          </article>
-        ))}
-      </div>
+              {campoTemOpcoes(campo.tipo) && (
+                <div className="construtor-opcoes">
+                  <span className="campo-rotulo">Opções</span>
+                  {campo.opcoes.map((opcao, posicao) => (
+                    <div key={posicao} className="construtor-opcao">
+                      <input
+                        type="text"
+                        value={opcao}
+                        onChange={(evento) => alterarOpcao(indice, posicao, evento.target.value)}
+                        placeholder={`Opção ${posicao + 1}`}
+                      />
+                      <button
+                        type="button"
+                        className="botao-tabela"
+                        onClick={() =>
+                          alterarCampo(indice, {
+                            opcoes: campo.opcoes.filter((_, atual) => atual !== posicao),
+                          })
+                        }
+                        aria-label={`Remover opção ${posicao + 1}`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    type="button"
+                    className="botao-link-acao"
+                    onClick={() => alterarCampo(indice, { opcoes: [...campo.opcoes, ''] })}
+                  >
+                    Adicionar opção
+                  </button>
+                </div>
+              )}
+
+              <label className="campo-checkbox">
+                <input
+                  type="checkbox"
+                  checked={campo.obrigatorio}
+                  onChange={(evento) =>
+                    alterarCampo(indice, { obrigatorio: evento.target.checked })
+                  }
+                />
+                Resposta obrigatória
+              </label>
+            </article>
+          ))}
+        </div>
+      </section>
 
       {erros.length > 0 && (
-        <div className="erro">
+        <div className="erro construtor-erros" role="alert">
           <p>Corrija antes de salvar:</p>
           <ul>
             {erros.map((mensagem, indice) => (
-              <li key={indice}>{mensagem}</li>
+              <li key={`${indice}-${mensagem}`}>{mensagem}</li>
             ))}
           </ul>
         </div>
@@ -359,6 +401,24 @@ export function FormularioBuilderPage() {
       {(criar.isError || atualizar.isError) && (
         <p className="erro">Erro ao salvar o formulário. Tente novamente.</p>
       )}
+
+      <div className="construtor-rodape">
+        <button
+          type="button"
+          className="botao-secundario"
+          onClick={() => navigate('/admin/formularios')}
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          className="botao-primario"
+          onClick={onSalvar}
+          disabled={salvando}
+        >
+          {salvando ? 'Salvando…' : 'Salvar formulário'}
+        </button>
+      </div>
     </AreaLayout>
   );
 }

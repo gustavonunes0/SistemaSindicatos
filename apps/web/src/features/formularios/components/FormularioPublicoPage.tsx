@@ -90,8 +90,10 @@ export function FormularioPublicoPage() {
   if (isError || !formulario) {
     return (
       <main className="formulario-publico-page">
-        <div className="secao-inner">
-          <div className="estado-vazio">
+        <div className="secao-inner formulario-publico-corpo">
+          <div className="estado-vazio formularios-vazio">
+            <p className="eyebrow">{marca.nome}</p>
+            <h1>Formulário indisponível</h1>
             <p>Este formulário não está disponível ou foi removido.</p>
             <Link to="/" className="botao-primario">
               Voltar ao início
@@ -107,11 +109,17 @@ export function FormularioPublicoPage() {
       <main className="formulario-publico-page">
         <div className="secao-inner formulario-publico-corpo">
           <div className="formulario-aviso formulario-aviso--sucesso">
+            <p className="eyebrow">{marca.nome}</p>
             <h1>Resposta enviada</h1>
             <p>Obrigado por responder “{formulario.titulo}”.</p>
-            <Link to="/" className="botao-primario">
-              Voltar ao início
-            </Link>
+            <div className="formularios-vazio-acoes">
+              <Link to="/" className="botao-primario">
+                Voltar ao início
+              </Link>
+              <Link to="/afiliado/formularios" className="botao-secundario">
+                Meus formulários
+              </Link>
+            </div>
           </div>
         </div>
       </main>
@@ -122,30 +130,47 @@ export function FormularioPublicoPage() {
     <main className="formulario-publico-page">
       <div className="secao-inner formulario-publico-corpo">
         <header className="formulario-publico-cabecalho">
+          <p className="eyebrow">{marca.nome}</p>
           <h1>{formulario.titulo}</h1>
+          <span className="formulario-publico-faixa" aria-hidden="true" />
           {formulario.descricao && <p>{formulario.descricao}</p>}
+          {formulario.podeResponder && formulario.campos.length > 0 && (
+            <p className="formulario-publico-meta">
+              {formulario.campos.length}{' '}
+              {formulario.campos.length === 1 ? 'pergunta' : 'perguntas'}
+              {formulario.campos.some((campo) => campo.obrigatorio)
+                ? ' · campos com * são obrigatórios'
+                : ''}
+            </p>
+          )}
         </header>
 
         {!formulario.podeResponder ? (
           <div className="formulario-aviso">
             <p>{MENSAGEM_BLOQUEIO[formulario.motivo]}</p>
-            {formulario.motivo === 'PRECISA_LOGIN' && (
-              <Link to="/login" className="botao-primario">
-                Entrar
+            <div className="formularios-vazio-acoes">
+              {formulario.motivo === 'PRECISA_LOGIN' && (
+                <Link to="/login" className="botao-primario">
+                  Entrar
+                </Link>
+              )}
+              <Link to="/" className="botao-secundario">
+                Voltar ao início
               </Link>
-            )}
+            </div>
           </div>
         ) : (
           <form className="form-area formulario-publico-form" onSubmit={onEnviar} noValidate>
-            {formulario.campos.map((campo) => (
+            {formulario.campos.map((campo, indice) => (
               <CampoResposta
                 key={campo.id}
+                ordem={indice + 1}
                 campo={campo}
                 valor={valores[campo.id] ?? valorInicial(campo)}
                 onChange={(valor) => definir(campo.id, valor)}
                 onArquivo={(arquivo) =>
                   upload.mutate(arquivo, {
-                    onSuccess: (enviado) => definir(campo.id, enviado),
+                    onSuccess: (enviadoArquivo) => definir(campo.id, enviadoArquivo),
                   })
                 }
                 onAlternarOpcao={(opcao, marcado) => alternarOpcao(campo, opcao, marcado)}
@@ -153,11 +178,7 @@ export function FormularioPublicoPage() {
               />
             ))}
 
-            {enviar.isError && (
-              <p className="erro">
-                {mensagemDeErro(enviar.error)}
-              </p>
-            )}
+            {enviar.isError && <p className="erro">{mensagemDeErro(enviar.error)}</p>}
 
             <div className="form-acoes">
               <button type="submit" className="botao-primario" disabled={enviar.isPending}>
@@ -185,6 +206,7 @@ function mensagemDeErro(erro: unknown): string {
 }
 
 type CampoRespostaProps = {
+  ordem: number;
   campo: CampoFormulario;
   valor: string | string[] | Arquivo | null;
   onChange: (valor: string | null) => void;
@@ -194,6 +216,7 @@ type CampoRespostaProps = {
 };
 
 function CampoResposta({
+  ordem,
   campo,
   valor,
   onChange,
@@ -203,6 +226,9 @@ function CampoResposta({
 }: CampoRespostaProps) {
   const rotulo = (
     <span className="campo-rotulo">
+      <span className="campo-ordem" aria-hidden="true">
+        {ordem}.
+      </span>{' '}
       {campo.rotulo}
       {campo.obrigatorio && <span aria-hidden="true"> *</span>}
     </span>
@@ -312,8 +338,14 @@ function CampoResposta({
               if (selecionado) onArquivo(selecionado);
             }}
           />
-          {enviandoArquivo && <span>Enviando arquivo…</span>}
-          {arquivo && <span className="campo-ajuda">Anexado: {arquivo.nome}</span>}
+          {enviandoArquivo && (
+            <span className="campo-ajuda" role="status">
+              Enviando arquivo…
+            </span>
+          )}
+          {arquivo && !enviandoArquivo && (
+            <span className="campo-arquivo-ok">Anexado: {arquivo.nome}</span>
+          )}
         </div>
       );
     }

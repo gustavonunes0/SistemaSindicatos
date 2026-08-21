@@ -10460,6 +10460,11 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   font-size: var(--texto-sm, 0.875rem);
 }
 
+.campo-opcional {
+  font-weight: 400;
+  color: var(--cor-texto-suave);
+}
+
 .badge-formulario-publicado {
   background: #d8f3dc;
   color: var(--cor-sucesso);
@@ -10475,25 +10480,145 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   color: var(--cor-texto-suave);
 }
 
+.formularios-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.5rem;
+  margin: 0 0 1rem;
+  padding: 0.85rem 1.1rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+}
+
+.formularios-meta div {
+  min-width: 4.5rem;
+}
+
+.formularios-meta dt {
+  margin: 0 0 0.15rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.formularios-meta dd {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+  font-variant-numeric: tabular-nums;
+}
+
+.formularios-vazio {
+  text-align: left;
+  max-width: 32rem;
+  padding: 1.5rem 1.35rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  border-top: var(--faixa-altura) solid var(--amarelo-faixa);
+}
+
+.formularios-vazio h1,
+.formularios-vazio h2 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.2rem, 2.5vw, 1.45rem);
+}
+
+.formularios-vazio > p {
+  margin: 0 0 1rem;
+  color: var(--cor-texto-suave);
+  line-height: 1.55;
+}
+
+.formularios-vazio .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.formularios-vazio-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  align-items: center;
+}
+
 /* ---- Construtor (admin) ---- */
+.construtor-bloco {
+  margin-top: 1.75rem;
+}
+
+.construtor-bloco:first-of-type {
+  margin-top: 0.5rem;
+}
+
+.construtor-bloco-cabecalho {
+  margin-bottom: 0.85rem;
+  max-width: 40rem;
+}
+
+.construtor-bloco-cabecalho h2 {
+  margin: 0 0 0.25rem;
+  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+}
+
+.construtor-bloco-cabecalho p {
+  margin: 0;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+}
+
+.construtor-identidade {
+  padding: 1.15rem 1.2rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.construtor-dica {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  background: var(--cor-fundo);
+  border-radius: var(--raio);
+  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+}
+
 .construtor-perguntas {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-top: 1.5rem;
+  margin-top: 1rem;
 }
 
 .construtor-cabecalho {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
 }
 
 .construtor-cabecalho h2 {
+  margin: 0 0 0.2rem;
+  font-size: clamp(1.15rem, 2.2vw, 1.35rem);
+}
+
+.construtor-cabecalho .eyebrow {
+  margin-bottom: 0.2rem;
+}
+
+.construtor-cabecalho p {
   margin: 0;
-  font-size: var(--texto-lg, 1.125rem);
+}
+
+.construtor-vazio {
+  margin-top: 1rem;
 }
 
 .construtor-campo {
@@ -10502,8 +10627,9 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   gap: 0.85rem;
   padding: 1.15rem;
   border: var(--borda-fina);
-  border-radius: var(--raio);
+  border-radius: var(--raio-lg);
   background: var(--cor-superficie, #fff);
+  border-left: var(--faixa-altura) solid var(--cor-primaria);
 }
 
 .construtor-campo-topo {
@@ -10511,6 +10637,14 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.construtor-campo-marca {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .construtor-campo-numero {
@@ -10521,21 +10655,41 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   height: 1.75rem;
   border-radius: 50%;
   background: var(--cor-fundo);
-  color: var(--cor-texto-suave);
+  color: var(--cor-primaria);
   font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.construtor-campo-tipo {
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.construtor-campo-obrigatoria {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--raio);
+  background: #fdf1d6;
+  color: #8a5a00;
 }
 
 .construtor-campo-acoes {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .construtor-opcoes {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  padding: 0.85rem;
+  background: var(--cor-fundo);
+  border-radius: var(--raio);
 }
 
 .construtor-opcao {
@@ -10548,14 +10702,49 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   flex: 1;
 }
 
-/* ---- Resumo das respostas ---- */
-.resumo-respostas {
-  margin-bottom: 2rem;
+.construtor-erros {
+  margin-top: 1.25rem;
 }
 
-.resumo-respostas h2 {
-  margin: 0 0 0.85rem;
+.construtor-erros ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.construtor-rodape {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-top: 1.75rem;
+  padding-top: 1.15rem;
+  border-top: var(--borda-fina);
+}
+
+/* ---- Respostas (admin) ---- */
+.respostas-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.resumo-cabecalho {
+  margin-bottom: 0.85rem;
+}
+
+.resumo-cabecalho h2 {
+  margin: 0 0 0.25rem;
   font-size: var(--texto-lg, 1.125rem);
+}
+
+.resumo-cabecalho p {
+  margin: 0;
+}
+
+.resumo-respostas {
+  margin-bottom: 2rem;
 }
 
 .resumo-grid {
@@ -10567,7 +10756,7 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 .resumo-card {
   padding: 1.15rem;
   border: var(--borda-fina);
-  border-radius: var(--raio);
+  border-radius: var(--raio-lg);
   background: var(--cor-superficie, #fff);
 }
 
@@ -10611,11 +10800,25 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   transition: width 0.3s ease;
 }
 
+.respostas-lista {
+  margin-top: 0.5rem;
+}
+
 .detalhe-resposta {
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+.detalhe-resposta > div {
+  padding-bottom: 0.85rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.detalhe-resposta > div:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
 }
 
 .detalhe-resposta dt {
@@ -10642,8 +10845,20 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   max-width: 46rem;
 }
 
+.formulario-publico-cabecalho .eyebrow {
+  margin-bottom: 0.4rem;
+}
+
 .formulario-publico-cabecalho h1 {
   margin: 0 0 0.5rem;
+}
+
+.formulario-publico-faixa {
+  display: block;
+  width: 3.5rem;
+  height: var(--faixa-altura);
+  margin: 0.75rem 0 1rem;
+  background: var(--amarelo-faixa);
 }
 
 .formulario-publico-cabecalho p {
@@ -10652,12 +10867,31 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   line-height: 1.6;
 }
 
+.formulario-publico-meta {
+  margin-top: 0.85rem !important;
+  font-size: var(--texto-sm);
+}
+
 .formulario-publico-form {
-  margin-top: 2rem;
+  margin-top: 1.75rem;
   padding: clamp(1.25rem, 3vw, 2rem);
   border: var(--borda-fina);
-  border-radius: var(--raio);
+  border-radius: var(--raio-lg);
   background: var(--cor-superficie, #fff);
+  border-top: var(--faixa-altura) solid var(--amarelo-faixa);
+}
+
+.campo-ordem {
+  color: var(--cor-texto-suave);
+  font-variant-numeric: tabular-nums;
+}
+
+.campo-arquivo-ok {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-sucesso);
+  font-weight: 600;
 }
 
 .campo-opcoes {
@@ -10678,21 +10912,32 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   margin-top: 2rem;
   padding: 1.5rem;
   border: var(--borda-fina);
-  border-radius: var(--raio);
-  background: var(--cor-fundo);
-  text-align: center;
+  border-radius: var(--raio-lg);
+  background: var(--cor-superficie);
+  text-align: left;
 }
 
 .formulario-aviso p {
   margin: 0 0 1rem;
   color: var(--cor-texto);
+  line-height: 1.55;
+}
+
+.formulario-aviso .eyebrow {
+  margin-bottom: 0.35rem;
+}
+
+.formulario-aviso h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.25rem, 2.5vw, 1.55rem);
 }
 
 .formulario-aviso--sucesso {
-  border-color: var(--cor-sucesso);
+  border-top: var(--faixa-altura) solid var(--cor-sucesso);
 }
 
-.formulario-aviso .botao-primario {
+.formulario-aviso .botao-primario,
+.formulario-aviso .botao-secundario {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
@@ -10714,15 +10959,41 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  padding: 1.15rem;
+  padding: 1.15rem 1.2rem;
   border: var(--borda-fina);
-  border-radius: var(--raio);
+  border-radius: var(--raio-lg);
   background: var(--cor-superficie, #fff);
+  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+}
+
+.card-formulario-corpo {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.card-formulario-topo {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.45rem;
+}
+
+.card-formulario-meta {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
 }
 
 .card-formulario h2 {
   margin: 0 0 0.3rem;
-  font-size: var(--texto-base);
+  font-size: 1.05rem;
+}
+
+.card-formulario-descricao {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-formulario p {

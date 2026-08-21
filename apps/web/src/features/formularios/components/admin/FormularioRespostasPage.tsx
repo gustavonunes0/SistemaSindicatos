@@ -1,4 +1,8 @@
-import type { ItemResposta, RespostaFormulario } from '@sindprf/types';
+import {
+  STATUS_FORMULARIO_ROTULO,
+  type ItemResposta,
+  type RespostaFormulario,
+} from '@sindprf/types';
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
@@ -38,6 +42,10 @@ function ValorDoItem({ item }: { item: ItemResposta }) {
   return <span>{item.texto || '—'}</span>;
 }
 
+function linkPublico(slug: string): string {
+  return `${window.location.origin}/formularios/${slug}`;
+}
+
 export function FormularioRespostasPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -46,6 +54,7 @@ export function FormularioRespostasPage() {
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [detalhe, setDetalhe] = useState<RespostaFormulario | null>(null);
   const [baixando, setBaixando] = useState(false);
+  const [copiado, setCopiado] = useState(false);
 
   const onBaixarCsv = async () => {
     if (!id || !data) return;
@@ -55,6 +64,13 @@ export function FormularioRespostasPage() {
     } finally {
       setBaixando(false);
     }
+  };
+
+  const onCopiarLink = async () => {
+    if (!data) return;
+    await navigator.clipboard.writeText(linkPublico(data.formulario.slug));
+    setCopiado(true);
+    window.setTimeout(() => setCopiado(false), 2000);
   };
 
   const onRemover = (resposta: RespostaFormulario) => {
@@ -69,7 +85,7 @@ export function FormularioRespostasPage() {
   if (isLoading && !data) {
     return (
       <AreaLayout tipo="admin" titulo="Respostas">
-        <EstadoCarregando />
+        <EstadoCarregando mensagem="Carregando respostas…" />
       </AreaLayout>
     );
   }
@@ -78,6 +94,13 @@ export function FormularioRespostasPage() {
     return (
       <AreaLayout tipo="admin" titulo="Respostas">
         <p className="erro">Erro ao carregar as respostas.</p>
+        <button
+          type="button"
+          className="botao-secundario"
+          onClick={() => navigate('/admin/formularios')}
+        >
+          Voltar aos formulários
+        </button>
       </AreaLayout>
     );
   }
@@ -86,12 +109,14 @@ export function FormularioRespostasPage() {
   // A tabela ficaria ilegível com 20 colunas: mostra as primeiras e joga o
   // resto para o detalhe.
   const colunas = formulario.campos.slice(0, 4);
+  const perguntasExtras = Math.max(0, formulario.campos.length - colunas.length);
+  const podeCompartilhar = formulario.status === 'PUBLICADO';
 
   return (
     <AreaLayout
       tipo="admin"
       titulo={formulario.titulo}
-      descricao={`${respostas.length} resposta(s) recebida(s).`}
+      descricao={`${respostas.length} ${respostas.length === 1 ? 'resposta recebida' : 'respostas recebidas'}.`}
       acoes={
         <>
           <button
@@ -100,6 +125,13 @@ export function FormularioRespostasPage() {
             onClick={() => navigate('/admin/formularios')}
           >
             Voltar
+          </button>
+          <button
+            type="button"
+            className="botao-secundario"
+            onClick={() => navigate(`/admin/formularios/${formulario.id}`)}
+          >
+            Editar
           </button>
           <button
             type="button"
@@ -112,22 +144,66 @@ export function FormularioRespostasPage() {
         </>
       }
     >
+      <div className="respostas-topo">
+        <span className={`badge badge-formulario-${formulario.status.toLowerCase()}`}>
+          {STATUS_FORMULARIO_ROTULO[formulario.status]}
+        </span>
+        {podeCompartilhar ? (
+          <button type="button" className="botao-tabela" onClick={() => void onCopiarLink()}>
+            {copiado ? 'Link copiado!' : 'Copiar link público'}
+          </button>
+        ) : (
+          <p className="texto-secundario">
+            {formulario.status === 'RASCUNHO'
+              ? 'Publique o formulário para compartilhar o link.'
+              : 'Formulário encerrado — o link não recebe mais respostas.'}
+          </p>
+        )}
+      </div>
+
       {respostas.length === 0 && (
-        <div className="estado-vazio">
-          <p>Ainda não há respostas para este formulário.</p>
+        <div className="estado-vazio formularios-vazio">
+          <p className="eyebrow">Aguardando</p>
+          <h2>Ainda não há respostas</h2>
+          <p>
+            Compartilhe o link com quem deve responder. As respostas aparecem aqui em tempo
+            quase real, com resumo das escolhas e exportação em CSV.
+          </p>
+          <div className="formularios-vazio-acoes">
+            {podeCompartilhar && (
+              <button type="button" className="botao-primario" onClick={() => void onCopiarLink()}>
+                {copiado ? 'Link copiado!' : 'Copiar link'}
+              </button>
+            )}
+            <button
+              type="button"
+              className="botao-secundario"
+              onClick={() => navigate(`/admin/formularios/${formulario.id}`)}
+            >
+              Editar formulário
+            </button>
+          </div>
         </div>
       )}
 
       {resumo.length > 0 && respostas.length > 0 && (
-        <section className="resumo-respostas">
-          <h2>Resumo</h2>
+        <section className="resumo-respostas" aria-labelledby="resumo-titulo">
+          <header className="resumo-cabecalho">
+            <h2 id="resumo-titulo">Resumo das escolhas</h2>
+            <p className="texto-secundario">
+              Contagem das respostas de múltipla escolha, escolha única e lista.
+            </p>
+          </header>
           <div className="resumo-grid">
             {resumo.map((campo) => {
               const maior = Math.max(1, ...campo.contagem.map((opcao) => opcao.total));
               return (
                 <article key={campo.campoId} className="resumo-card">
                   <h3>{campo.rotulo}</h3>
-                  <p className="texto-secundario">{campo.totalRespondido} resposta(s)</p>
+                  <p className="texto-secundario">
+                    {campo.totalRespondido}{' '}
+                    {campo.totalRespondido === 1 ? 'resposta' : 'respostas'}
+                  </p>
                   <ul className="resumo-barras">
                     {campo.contagem.map((opcao) => (
                       <li key={opcao.opcao}>
@@ -151,62 +227,90 @@ export function FormularioRespostasPage() {
       )}
 
       {respostas.length > 0 && (
-        <div className="tabela-wrapper">
-          <table className="tabela">
-            <thead>
-              <tr>
-                <th>Enviado em</th>
-                <th>Quem respondeu</th>
-                {colunas.map((campo) => (
-                  <th key={campo.id}>{campo.rotulo}</th>
-                ))}
-                <th aria-label="Ações" />
-              </tr>
-            </thead>
-            <tbody>
-              {respostas.map((resposta) => {
-                const porCampo = new Map(resposta.valores.map((item) => [item.campoId, item]));
-                return (
-                  <tr key={resposta.id}>
-                    <td>{formatarDataHora(resposta.enviadoEm)}</td>
-                    <td>
-                      {resposta.afiliadoNome ?? <em className="texto-secundario">Anônimo</em>}
-                      {resposta.afiliadoMatricula && (
-                        <span className="texto-secundario"> · {resposta.afiliadoMatricula}</span>
-                      )}
-                    </td>
+        <section className="respostas-lista" aria-labelledby="lista-respostas-titulo">
+          <header className="resumo-cabecalho">
+            <h2 id="lista-respostas-titulo">Todas as respostas</h2>
+            {perguntasExtras > 0 && (
+              <p className="texto-secundario">
+                A tabela mostra as primeiras {colunas.length} perguntas. As outras{' '}
+                {perguntasExtras} aparecem em “Ver”.
+              </p>
+            )}
+          </header>
+
+          <div className="tabela-painel">
+            <div className="tabela-rolagem">
+              <table className="tabela" aria-label="Respostas do formulário">
+                <thead>
+                  <tr>
+                    <th scope="col">Enviado em</th>
+                    <th scope="col">Quem respondeu</th>
                     {colunas.map((campo) => (
-                      <td key={campo.id}>{resumoDoItem(porCampo.get(campo.id))}</td>
+                      <th key={campo.id} scope="col">
+                        {campo.rotulo}
+                      </th>
                     ))}
-                    <td className="tabela-acoes">
-                      <button
-                        type="button"
-                        className="botao-link-acao"
-                        onClick={() => setDetalhe(resposta)}
-                      >
-                        Ver
-                      </button>
-                      <button
-                        type="button"
-                        className="botao-perigo"
-                        disabled={remover.isPending}
-                        onClick={() => onRemover(resposta)}
-                      >
-                        Excluir
-                      </button>
-                    </td>
+                    <th scope="col">
+                      <span className="visually-hidden">Ações</span>
+                    </th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody>
+                  {respostas.map((resposta) => {
+                    const porCampo = new Map(resposta.valores.map((item) => [item.campoId, item]));
+                    return (
+                      <tr key={resposta.id}>
+                        <td>
+                          <span className="tabela-numerico">
+                            {formatarDataHora(resposta.enviadoEm)}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="tabela-identidade">
+                            <span className="tabela-identidade-nome">
+                              {resposta.afiliadoNome ?? 'Anônimo'}
+                            </span>
+                            {resposta.afiliadoMatricula && (
+                              <span className="tabela-identidade-apoio">
+                                Mat. {resposta.afiliadoMatricula}
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        {colunas.map((campo) => (
+                          <td key={campo.id}>{resumoDoItem(porCampo.get(campo.id))}</td>
+                        ))}
+                        <td className="tabela-acoes">
+                          <button
+                            type="button"
+                            className="botao-tabela botao-tabela--destaque"
+                            onClick={() => setDetalhe(resposta)}
+                          >
+                            Ver
+                          </button>
+                          <button
+                            type="button"
+                            className="botao-tabela botao-tabela--perigo"
+                            disabled={remover.isPending}
+                            onClick={() => onRemover(resposta)}
+                          >
+                            Excluir
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
       )}
 
       <Modal
         aberto={detalhe !== null}
         onFechar={() => setDetalhe(null)}
-        titulo="Resposta"
+        titulo="Resposta completa"
         descricao={
           detalhe
             ? `${detalhe.afiliadoNome ?? 'Anônimo'} · ${formatarDataHora(detalhe.enviadoEm)}`
