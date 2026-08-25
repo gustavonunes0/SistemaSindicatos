@@ -67,6 +67,8 @@ model Tenant {
   alertas              Alerta[]
   formularios          Formulario[]
   respostasFormulario  RespostaFormulario[]
+  documentosAfiliados  DocumentoAfiliado[]
+  dependentesAfiliados DependenteAfiliado[]
 
   @@map("tenants")
 }
@@ -109,6 +111,22 @@ enum StatusAfiliado {
 enum TipoD8 {
   SERVIDOR
   PENSIONISTA
+}
+
+enum TipoDocumentoFiliacao {
+  IDENTIDADE_CPF
+  COMPROVANTE_ENDERECO
+  CONTRACHEQUE
+  FOTO_3X4
+}
+
+enum EstadoCivil {
+  SOLTEIRO
+  CASADO
+  UNIAO_ESTAVEL
+  SEPARADO
+  DIVORCIADO
+  VIUVO
 }
 
 model User {
@@ -179,6 +197,31 @@ model Afiliado {
   telefone   String?
   categoria  TipoD8?
   status     StatusAfiliado @default(PENDENTE)
+
+  /// Ficha de filiação — nula nos cadastros feitos direto pela secretaria.
+  dataNascimento   DateTime?    @db.Date
+  rg               String?
+  orgaoExpedidor   String?
+  naturalidade     String?
+  estadoCivil      EstadoCivil?
+  nomeMae          String?
+  nomePai          String?
+  conjuge          String?
+  endereco         String?
+  complemento      String?
+  bairro           String?
+  cidade           String?
+  uf               String?      @db.VarChar(2)
+  cep              String?      @db.VarChar(8)
+  lotacaoSiape     String?
+  lotacaoAtividade String?
+  dataAdmissao     DateTime?    @db.Date
+  celular          String?
+  celular2         String?
+  emailFuncional   String?
+  /// Momento em que aceitou o estatuto e autorizou o desconto em folha.
+  aceiteEstatutoEm DateTime?    @db.Timestamptz
+
   createdAt  DateTime       @default(now()) @db.Timestamptz
   updatedAt  DateTime       @updatedAt @db.Timestamptz
 
@@ -191,6 +234,8 @@ model Afiliado {
   linhasD8         LinhaD8[]
   declaracoes      DeclaracaoEmitida[]
   respostas        RespostaFormulario[]
+  documentos       DocumentoAfiliado[]
+  dependentes      DependenteAfiliado[]
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, matricula])
@@ -198,6 +243,41 @@ model Afiliado {
   @@index([tenantId, status])
   @@index([tenantId, nome])
   @@map("afiliados")
+}
+
+model DocumentoAfiliado {
+  id            String                 @id @default(cuid())
+  tenantId      String
+  afiliadoId    String
+  tipo          TipoDocumentoFiliacao
+  arquivoChave  String
+  nomeOriginal  String
+  mimeType      String
+  tamanhoBytes  Int
+  createdAt     DateTime               @default(now()) @db.Timestamptz
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  afiliado Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, afiliadoId, tipo])
+  @@index([tenantId, afiliadoId])
+  @@map("documentos_afiliado")
+}
+
+model DependenteAfiliado {
+  id             String   @id @default(cuid())
+  tenantId       String
+  afiliadoId     String
+  nome           String
+  parentesco     String
+  dataNascimento DateTime @db.Date
+  createdAt      DateTime @default(now()) @db.Timestamptz
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  afiliado Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, afiliadoId])
+  @@map("dependentes_afiliado")
 }
 
 // =====================================================================

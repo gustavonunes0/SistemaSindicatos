@@ -8,6 +8,7 @@ import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import type { AfiliadoAdmin } from '../../api';
 import { useAfiliadosAdmin, useAtualizarStatusAfiliado } from '../../hooks';
+import { AfiliadoAnaliseModal } from './AfiliadoAnaliseModal';
 import { AfiliadoCadastroModal } from './AfiliadoCadastroModal';
 import { AfiliadoSenhaModal } from './AfiliadoSenhaModal';
 
@@ -41,6 +42,7 @@ export function AfiliadosAdminPage() {
     null,
   );
   const [cadastroAberto, setCadastroAberto] = useState(false);
+  const [afiliadoAnalise, setAfiliadoAnalise] = useState<AfiliadoAdmin | null>(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -151,6 +153,20 @@ export function AfiliadosAdminPage() {
           const afiliado = row.original;
           return (
             <div className="tabela-acoes">
+              <button
+                type="button"
+                className={
+                  afiliado.status === 'PENDENTE'
+                    ? 'botao-tabela botao-tabela--destaque'
+                    : 'botao-tabela'
+                }
+                onClick={() => setAfiliadoAnalise(afiliado)}
+              >
+                {afiliado.status === 'PENDENTE' ? 'Analisar' : 'Documentos'}
+                {typeof afiliado.documentosCount === 'number'
+                  ? ` (${afiliado.documentosCount})`
+                  : ''}
+              </button>
               <button
                 type="button"
                 className="botao-tabela"
@@ -324,6 +340,10 @@ export function AfiliadosAdminPage() {
       )}
 
       <AfiliadoCadastroModal aberto={cadastroAberto} onFechar={() => setCadastroAberto(false)} />
+      <AfiliadoAnaliseModal
+        afiliado={afiliadoAnalise}
+        onFechar={() => setAfiliadoAnalise(null)}
+      />
       <AfiliadoSenhaModal afiliado={afiliadoSenha} onFechar={() => setAfiliadoSenha(null)} />
       {modalConfirmacao}
     </AreaLayout>

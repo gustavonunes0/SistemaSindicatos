@@ -2,6 +2,7 @@ node_modules/
 dist/
 coverage/
 uploads/
+uploads-private/
 
 # Segredos: nunca versionar. O .env.example é a única exceção.
 .env

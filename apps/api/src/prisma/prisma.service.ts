@@ -38,6 +38,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   // Tipagem estática dos delegates (runtime via Proxy).
   declare user: TenantPrismaClient['user'];
   declare afiliado: TenantPrismaClient['afiliado'];
+  declare documentoAfiliado: TenantPrismaClient['documentoAfiliado'];
+  declare dependenteAfiliado: TenantPrismaClient['dependenteAfiliado'];
   declare alerta: TenantPrismaClient['alerta'];
   declare formulario: TenantPrismaClient['formulario'];
   declare respostaFormulario: TenantPrismaClient['respostaFormulario'];

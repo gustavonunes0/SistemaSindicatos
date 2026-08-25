@@ -14,6 +14,7 @@ import {
   lerCacheAfiliadosAdmin,
 } from '../admin/cache-admin';
 import * as afiliadosApi from './api';
+import type { DocumentoAfiliado } from '@sindprf/types';
 
 type FiltroLista = {
   status?: StatusAfiliado;
@@ -116,7 +117,36 @@ export function useAfiliadosAdmin(
 
 export function useCadastroAfiliado() {
   return useMutation({
-    mutationFn: (input: CadastroAfiliadoInput) => afiliadosApi.cadastrarAfiliado(input),
+    mutationFn: ({
+      dados,
+      documentos,
+    }: {
+      dados: CadastroAfiliadoInput;
+      documentos: afiliadosApi.DocumentosCadastro;
+    }) => afiliadosApi.cadastrarAfiliado(dados, documentos),
+  });
+}
+
+export function useFichaAfiliadoAdmin(id: string | null) {
+  return useQuery({
+    queryKey: ['afiliados', 'ficha', id],
+    queryFn: () => afiliadosApi.buscarFichaAfiliado(id!),
+    enabled: Boolean(id),
+    staleTime: 60 * 1000,
+  });
+}
+
+export function useAbrirDocumentoAfiliado() {
+  return useMutation({
+    mutationFn: ({
+      afiliadoId,
+      documento,
+      modo,
+    }: {
+      afiliadoId: string;
+      documento: DocumentoAfiliado;
+      modo: 'visualizar' | 'baixar';
+    }) => afiliadosApi.abrirDocumentoAfiliado(afiliadoId, documento, modo),
   });
 }
 
