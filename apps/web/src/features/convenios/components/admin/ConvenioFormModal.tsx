@@ -174,6 +174,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
             />
             {uploadLogo.isPending && <span>Enviando imagem…</span>}
             {uploadLogo.isError && <span className="erro">Erro ao enviar a imagem.</span>}
+            {errors.logoUrl && <span className="erro">{errors.logoUrl.message}</span>}
             {logoUrlValida && (
               <button
                 type="button"
@@ -274,6 +275,12 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
               </>
             )}
           </fieldset>
+
+          {/* Sem isto, um campo inválido fora da área visível faz o botão
+              "Salvar" parecer quebrado: o envio é barrado sem qualquer aviso. */}
+          {Object.keys(errors).length > 0 && (
+            <p className="erro">Confira os campos destacados antes de salvar.</p>
+          )}
 
           {(criar.isError || atualizar.isError) && (
             <p className="erro">Erro ao salvar o convênio. Tente novamente.</p>

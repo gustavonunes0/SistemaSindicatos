@@ -12,6 +12,21 @@ const urlOpcional = z.preprocess(
   z.string().url('Link inválido').nullable().optional(),
 );
 
+// Imagem guardada pelo próprio sistema: o upload devolve um caminho relativo
+// (`/uploads/...`), que não passa em `z.string().url()`.
+const arquivoOpcional = z.preprocess(
+  (valor) => (valor === '' ? null : valor),
+  z
+    .string()
+    .trim()
+    .refine(
+      (valor) => valor.startsWith('/') || z.string().url().safeParse(valor).success,
+      { message: 'Imagem inválida' },
+    )
+    .nullable()
+    .optional(),
+);
+
 const dataOpcional = z.preprocess(
   (valor) => (valor === '' || valor === null ? null : valor),
   z.coerce.date().nullable().optional(),
@@ -62,7 +77,7 @@ const convenioCamposSchema = z.object({
   nome: z.string().min(2, 'Informe o nome do parceiro'),
   categoria: z.string().min(2, 'Informe a categoria'),
   descricao: z.string().min(10, 'Descreva o benefício em ao menos 10 caracteres'),
-  logoUrl: urlOpcional,
+  logoUrl: arquivoOpcional,
   link: urlOpcional,
   contato: textoOpcional,
   vigenciaInicio: dataOpcional,
