@@ -1,6 +1,8 @@
 import {
   afiliadoSchema,
   type AdminAtualizarSenhaAfiliadoInput,
+  type CadastroAfiliadoAdminInput,
+  type CadastroAfiliadoInput,
   type FiltroAfiliadosInput,
   type StatusAfiliado,
 } from '@sindprf/types';
@@ -35,6 +37,16 @@ export async function listarAfiliadosAdmin(
 
   const { data } = await api.get('/afiliados', { params });
   return afiliadosAdminPaginadosSchema.parse(data);
+}
+
+export async function cadastrarAfiliado(input: CadastroAfiliadoInput): Promise<void> {
+  const { data } = await api.post('/afiliados/cadastro', input);
+  afiliadoSchema.parse(data);
+}
+
+export async function cadastrarAfiliadoAdmin(input: CadastroAfiliadoAdminInput): Promise<AfiliadoAdmin> {
+  const { data } = await api.post('/afiliados', input);
+  return afiliadoAdminSchema.parse(data);
 }
 
 export async function atualizarStatusAfiliado(id: string, status: StatusAfiliado) {

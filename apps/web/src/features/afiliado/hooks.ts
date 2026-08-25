@@ -1,6 +1,8 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AdminAtualizarSenhaAfiliadoInput,
+  CadastroAfiliadoAdminInput,
+  CadastroAfiliadoInput,
   DirecaoOrdenacao,
   FiltroAfiliadosInput,
   OrdenacaoAfiliado,
@@ -110,6 +112,23 @@ export function useAfiliadosAdmin(
   ]);
 
   return consulta;
+}
+
+export function useCadastroAfiliado() {
+  return useMutation({
+    mutationFn: (input: CadastroAfiliadoInput) => afiliadosApi.cadastrarAfiliado(input),
+  });
+}
+
+export function useCadastrarAfiliadoAdmin() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: CadastroAfiliadoAdminInput) => afiliadosApi.cadastrarAfiliadoAdmin(input),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['afiliados'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
+    },
+  });
 }
 
 export function useAtualizarStatusAfiliado() {

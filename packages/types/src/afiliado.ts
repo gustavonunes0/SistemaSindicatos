@@ -18,14 +18,26 @@ export const afiliadoSchema = z.object({
 export type Afiliado = z.infer<typeof afiliadoSchema>;
 
 export const cadastroAfiliadoSchema = z.object({
-  nome: z.string().min(3, 'Nome deve ter no mínimo 3 caracteres'),
+  nome: z.string().trim().min(3, 'Nome deve ter no mínimo 3 caracteres'),
   cpf: cpfSchema,
-  matricula: z.string().min(1, 'Matrícula é obrigatória'),
-  telefone: z.string().min(8, 'Telefone inválido').optional(),
-  email: z.string().email('Email inválido'),
+  matricula: z.string().trim().min(1, 'Matrícula é obrigatória'),
+  telefone: z.preprocess(
+    (valor) => (typeof valor === 'string' && valor.trim() === '' ? undefined : valor),
+    z.string().min(8, 'Telefone inválido').optional(),
+  ),
+  email: z.string().trim().toLowerCase().email('Email inválido'),
   senha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
 });
 export type CadastroAfiliadoInput = z.infer<typeof cadastroAfiliadoSchema>;
+
+/**
+ * Cadastro feito pelo admin: mesmos dados de acesso, com status escolhido.
+ * Padrão APROVADO — quem cadastra na secretaria já concluiu a filiação.
+ */
+export const cadastroAfiliadoAdminSchema = cadastroAfiliadoSchema.extend({
+  status: statusAfiliadoSchema.default('APROVADO'),
+});
+export type CadastroAfiliadoAdminInput = z.infer<typeof cadastroAfiliadoAdminSchema>;
 
 export const atualizarStatusAfiliadoSchema = z.object({
   status: statusAfiliadoSchema,

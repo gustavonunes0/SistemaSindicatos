@@ -1,6 +1,7 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
+  CadastroAfiliadoAdminInput,
   CadastroAfiliadoInput,
   DirecaoOrdenacao,
   FiltroAfiliadosInput,
@@ -54,6 +55,17 @@ export class AfiliadosService {
   }
 
   async cadastrar(input: CadastroAfiliadoInput) {
+    return this.criarAfiliado(input, 'PENDENTE');
+  }
+
+  async cadastrarAdmin(input: CadastroAfiliadoAdminInput) {
+    return this.criarAfiliado(input, input.status);
+  }
+
+  private async criarAfiliado(
+    input: CadastroAfiliadoInput,
+    status: StatusAfiliado,
+  ) {
     const senhaHash = await bcrypt.hash(input.senha, BCRYPT_ROUNDS);
     const tenantId = requireTenantId();
 
@@ -71,8 +83,9 @@ export class AfiliadosService {
             cpf: input.cpf,
             matricula: input.matricula,
             telefone: input.telefone ?? null,
-            status: 'PENDENTE',
+            status,
           },
+          include: { user: { select: { email: true } } },
         });
       });
       this.invalidarCacheLista(tenantId);

@@ -8,6 +8,7 @@ import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import type { AfiliadoAdmin } from '../../api';
 import { useAfiliadosAdmin, useAtualizarStatusAfiliado } from '../../hooks';
+import { AfiliadoCadastroModal } from './AfiliadoCadastroModal';
 import { AfiliadoSenhaModal } from './AfiliadoSenhaModal';
 
 const PAGE_SIZE = 20;
@@ -39,6 +40,7 @@ export function AfiliadosAdminPage() {
   const [afiliadoSenha, setAfiliadoSenha] = useState<Pick<AfiliadoAdmin, 'id' | 'nome'> | null>(
     null,
   );
+  const [cadastroAberto, setCadastroAberto] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -218,7 +220,12 @@ export function AfiliadosAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Filiados"
-      descricao="Aprove solicitações de cadastro e gerencie a situação da filiação."
+      descricao="Cadastre sindicalizados, aprove solicitações e gerencie a situação da filiação."
+      acoes={
+        <button type="button" className="botao-primario" onClick={() => setCadastroAberto(true)}>
+          Cadastrar filiado
+        </button>
+      }
     >
       <div className="afiliados-toolbar">
         <label className="afiliados-busca">
@@ -261,6 +268,15 @@ export function AfiliadosAdminPage() {
               ? `Nenhum sindicalizado encontrado para “${busca}”.`
               : 'Nenhum sindicalizado neste filtro.'}
           </p>
+          {!busca && (
+            <button
+              type="button"
+              className="botao-primario"
+              onClick={() => setCadastroAberto(true)}
+            >
+              Cadastrar o primeiro
+            </button>
+          )}
         </div>
       )}
 
@@ -307,6 +323,7 @@ export function AfiliadosAdminPage() {
         />
       )}
 
+      <AfiliadoCadastroModal aberto={cadastroAberto} onFechar={() => setCadastroAberto(false)} />
       <AfiliadoSenhaModal afiliado={afiliadoSenha} onFechar={() => setAfiliadoSenha(null)} />
       {modalConfirmacao}
     </AreaLayout>

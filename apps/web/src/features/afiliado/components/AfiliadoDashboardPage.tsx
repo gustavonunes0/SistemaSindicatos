@@ -63,7 +63,7 @@ export function AfiliadoDashboardPage() {
         <div className="estado-vazio">
           <p>Não encontramos o perfil de afiliado vinculado a esta conta.</p>
           <p>
-            <Link to="/cadastro">Como se filiar</Link>
+            <Link to="/cadastro">Solicitar afiliação</Link>
           </p>
         </div>
       )}

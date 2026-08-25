@@ -30,7 +30,7 @@ export function HomePage() {
                 Área do sindicalizado
               </Link>
               <Link to="/cadastro" className="hero-link">
-                Como me sindicalizar <span aria-hidden="true">→</span>
+                Solicitar afiliação <span aria-hidden="true">→</span>
               </Link>
             </div>
           </div>

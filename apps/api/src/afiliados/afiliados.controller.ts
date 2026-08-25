@@ -15,10 +15,12 @@ import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   adminAtualizarSenhaAfiliadoSchema,
   atualizarStatusAfiliadoSchema,
+  cadastroAfiliadoAdminSchema,
   cadastroAfiliadoSchema,
   filtroAfiliadosSchema,
   type AdminAtualizarSenhaAfiliadoInput,
   type AtualizarStatusAfiliadoInput,
+  type CadastroAfiliadoAdminInput,
   type CadastroAfiliadoInput,
   type FiltroAfiliadosInput,
 } from '@sindprf/types';
@@ -44,6 +46,14 @@ export class AfiliadosController {
   @Header('Cache-Control', 'private, no-store')
   listar(@Query(new ZodValidationPipe(filtroAfiliadosSchema)) query: FiltroAfiliadosInput) {
     return this.afiliadosService.listar(query);
+  }
+
+  @Roles('ADMIN')
+  @Post()
+  cadastrarAdmin(
+    @Body(new ZodValidationPipe(cadastroAfiliadoAdminSchema)) body: CadastroAfiliadoAdminInput,
+  ) {
+    return this.afiliadosService.cadastrarAdmin(body);
   }
 
   @Roles('ADMIN')
