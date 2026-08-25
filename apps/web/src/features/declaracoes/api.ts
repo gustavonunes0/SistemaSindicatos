@@ -47,6 +47,12 @@ export async function baixarDeclaracao(
   URL.revokeObjectURL(url);
 }
 
+/** Assina pela plataforma, reemitindo o PDF com a rubrica cadastrada. */
+export async function assinarDeclaracao(id: string): Promise<DeclaracaoEmitida> {
+  const { data } = await api.post(`/declaracoes/${id}/assinar`);
+  return declaracaoEmitidaSchema.parse(data);
+}
+
 export async function enviarDeclaracaoAssinada(
   id: string,
   arquivo: File,

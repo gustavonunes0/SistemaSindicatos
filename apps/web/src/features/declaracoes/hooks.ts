@@ -48,6 +48,18 @@ export function useBaixarDeclaracao() {
   });
 }
 
+export function useAssinarDeclaracao() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: declaracoesApi.assinarDeclaracao,
+    onSuccess: (atualizada) => {
+      trocarNaLista(queryClient, atualizada);
+      void queryClient.invalidateQueries({ queryKey: [...CHAVE_ADMIN] });
+      void queryClient.invalidateQueries({ queryKey: ['declaracoes', 'minhas'] });
+    },
+  });
+}
+
 export function useEnviarDeclaracaoAssinada() {
   const queryClient = useQueryClient();
   return useMutation({

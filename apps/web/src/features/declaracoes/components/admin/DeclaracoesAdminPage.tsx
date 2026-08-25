@@ -4,12 +4,15 @@ import {
   type DeclaracaoEmitida,
   type StatusDeclaracao,
 } from '@sindprf/types';
+import { isAxiosError } from 'axios';
 import { useRef, useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData, formatarDataHora } from '../../../../lib/datas';
+import { useMarca } from '../../../../lib/marca';
 import {
+  useAssinarDeclaracao,
   useBaixarDeclaracao,
   useDeclaracoesAdmin,
   useEnviarDeclaracaoAssinada,
@@ -24,6 +27,15 @@ const ABAS: { valor: Filtro; rotulo: string }[] = [
   { valor: 'ASSINADA', rotulo: 'Assinadas' },
   { valor: 'TODOS', rotulo: 'Todas' },
 ];
+
+function mensagemErro(erro: unknown, fallback: string): string {
+  if (isAxiosError(erro)) {
+    const data = erro.response?.data as { message?: string | string[] } | undefined;
+    if (typeof data?.message === 'string') return data.message;
+    if (Array.isArray(data?.message)) return data.message.join(', ');
+  }
+  return fallback;
+}
 
 export function DeclaracoesAdminPage() {
   const [filtro, setFiltro] = useState<Filtro>('PENDENTE');
@@ -41,9 +53,11 @@ export function DeclaracoesAdminPage() {
   });
 
   const baixar = useBaixarDeclaracao();
+  const assinar = useAssinarDeclaracao();
   const enviarAssinada = useEnviarDeclaracaoAssinada();
   const removerAssinada = useRemoverDeclaracaoAssinada();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
+  const temRubrica = Boolean(useMarca().assinaturaUrl);
 
   const onEscolherArquivo = (id: string) => {
     setEnviandoId(id);
@@ -60,6 +74,15 @@ export function DeclaracoesAdminPage() {
     }
   };
 
+  const onAssinar = (declaracao: DeclaracaoEmitida) => {
+    pedirConfirmacao({
+      titulo: 'Assinar pela plataforma?',
+      descricao: `A declaração ${declaracao.codigo} será gerada de novo com a assinatura cadastrada e liberada assinada para ${declaracao.afiliadoNome}.`,
+      confirmarRotulo: 'Assinar',
+      onConfirmar: () => assinar.mutateAsync(declaracao.id),
+    });
+  };
+
   const onRemoverAssinatura = (declaracao: DeclaracaoEmitida) => {
     pedirConfirmacao({
       titulo: 'Remover assinatura?',
@@ -73,7 +96,7 @@ export function DeclaracoesAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Declarações"
-      descricao="Baixe a declaração emitida, assine e devolva o PDF assinado ao filiado."
+      descricao="Assine pela plataforma com a rubrica cadastrada ou, se preferir a assinatura à mão, baixe o PDF e devolva o documento digitalizado."
     >
       <RubricaCard />
 
@@ -110,6 +133,13 @@ export function DeclaracoesAdminPage() {
       {enviarAssinada.isPending && <p>Enviando declaração assinada…</p>}
       {enviarAssinada.isError && (
         <p className="erro">Erro ao enviar o PDF assinado. Tente novamente.</p>
+      )}
+
+      {assinar.isPending && <p>Assinando declaração…</p>}
+      {assinar.isError && (
+        <p className="erro">
+          {mensagemErro(assinar.error, 'Erro ao assinar a declaração. Tente novamente.')}
+        </p>
       )}
 
       {isLoading && !declaracoes && <EstadoCarregando />}
@@ -180,6 +210,21 @@ export function DeclaracoesAdminPage() {
                     )}
                   </td>
                   <td className="tabela-acoes">
+                    {declaracao.status === 'PENDENTE' && (
+                      <button
+                        type="button"
+                        className="botao-link-acao"
+                        disabled={!temRubrica || assinar.isPending}
+                        title={
+                          temRubrica
+                            ? 'Gera o PDF com a assinatura cadastrada e libera para o filiado'
+                            : 'Cadastre a assinatura da presidente acima para assinar por aqui'
+                        }
+                        onClick={() => onAssinar(declaracao)}
+                      >
+                        Assinar pela plataforma
+                      </button>
+                    )}
                     <button
                       type="button"
                       className="botao-link-acao"

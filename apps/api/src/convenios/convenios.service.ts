@@ -19,7 +19,11 @@ import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
 import { StorageService } from '../storage/storage.service';
 import { DeclaracaoPdfService } from './declaracao-pdf.service';
-import { lerAssinaturaDoBranding, nomeArquivoDeclaracao } from './declaracoes.util';
+import {
+  lerAssinaturaDoBranding,
+  nomeArquivoDeclaracao,
+  resolverBaseValidacao,
+} from './declaracoes.util';
 
 const CAMPOS_LISTAGEM = {
   id: true,
@@ -270,7 +274,7 @@ export class ConveniosService {
       }
     }
 
-    const baseValidacao = this.resolverBaseValidacao(dominios);
+    const baseValidacao = resolverBaseValidacao(dominios);
 
     const registro = await this.criarDeclaracaoComCodigoUnico({
       tenantId,
@@ -392,30 +396,6 @@ export class ConveniosService {
   }
 
   /** Resolvido antes de gravar a declaração, para não deixar registro órfão se falhar. */
-  private resolverBaseValidacao(dominios: { host: string }[]): string {
-    const ehLocal = (host: string) =>
-      host === 'localhost' || host.startsWith('127.') || host.endsWith('.local');
-
-    const publico = dominios.find((d) => !ehLocal(d.host.toLowerCase()));
-    const escolhido = publico ?? dominios[0];
-
-    let base: string | null = null;
-    if (escolhido?.host) {
-      const host = escolhido.host.toLowerCase();
-      base = `${ehLocal(host) ? 'http' : 'https'}://${host}`;
-    } else if (process.env.WEB_URL?.trim()) {
-      base = process.env.WEB_URL.trim().replace(/\/+$/, '');
-    }
-
-    if (!base) {
-      throw new BadRequestException(
-        'Não há domínio do sindicato cadastrado para gerar o QR Code de validação',
-      );
-    }
-
-    return base;
-  }
-
   private montarDados(input: AtualizarConvenioInput): Prisma.ConvenioUncheckedCreateInput {
     const dados: Prisma.ConvenioUncheckedCreateInput = {} as Prisma.ConvenioUncheckedCreateInput;
     if (input.nome !== undefined) dados.nome = input.nome;

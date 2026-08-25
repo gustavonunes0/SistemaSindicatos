@@ -12,7 +12,14 @@ import type { RequestUser } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { requireTenantId } from '../tenant/tenant-context';
-import { nomeArquivoDeclaracao, serializarDeclaracao } from './declaracoes.util';
+import { TenantService } from '../tenant/tenant.service';
+import { DeclaracaoPdfService } from './declaracao-pdf.service';
+import {
+  lerAssinaturaDoBranding,
+  nomeArquivoDeclaracao,
+  resolverBaseValidacao,
+  serializarDeclaracao,
+} from './declaracoes.util';
 
 const RAIZ_UPLOADS = join(process.cwd(), 'uploads');
 
@@ -27,6 +34,8 @@ export class DeclaracoesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly declaracaoPdf: DeclaracaoPdfService,
+    private readonly tenantService: TenantService,
   ) {}
 
   /** Fila do admin: pendentes primeiro, que é o que exige ação. */
@@ -179,6 +188,86 @@ export class DeclaracoesService {
 
     const branding = { ...(tenant.branding as Prisma.JsonObject), assinaturaUrl: url };
     await this.prisma.tenant.update({ where: { id: tenantId }, data: { branding } });
+
+    // O tenant resolvido por host fica em cache por 60s. Sem limpar, o admin
+    // recarrega a tela e continua vendo a rubrica antiga.
+    this.tenantService.invalidarCache();
+  }
+
+  /**
+   * Aplica a rubrica cadastrada e fecha a pendência sem passar pelo papel.
+   *
+   * O PDF é gerado de novo a partir do registro, e não carimbado sobre o
+   * arquivo original, porque todo o conteúdo do documento está no banco — assim
+   * a rubrica entra no layout, e não colada por cima dele. A data impressa
+   * continua sendo a da emissão.
+   */
+  async assinarComRubrica(user: RequestUser, id: string) {
+    const tenantId = requireTenantId();
+
+    const [registro, tenant, dominios] = await Promise.all([
+      this.prisma.declaracaoEmitida.findFirst({
+        where: { id },
+        include: { convenio: { select: { nome: true } } },
+      }),
+      this.prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { branding: true },
+      }),
+      this.prisma.tenantDomain.findMany({
+        where: { tenantId },
+        orderBy: [{ primario: 'desc' }, { createdAt: 'asc' }],
+        select: { host: true },
+      }),
+    ]);
+
+    if (!registro) {
+      throw new NotFoundException('Declaração não encontrada');
+    }
+
+    const assinaturaUrl = lerAssinaturaDoBranding(tenant?.branding);
+    if (!assinaturaUrl) {
+      throw new BadRequestException(
+        'Cadastre a assinatura da presidente antes de assinar pela plataforma',
+      );
+    }
+
+    const urlValidacao = `${resolverBaseValidacao(dominios)}/validar-declaracao/${registro.codigo}`;
+
+    const buffer = await this.declaracaoPdf.gerar({
+      modelo: registro.modelo,
+      destino: registro.destino,
+      textoComplementar: registro.textoComplementar,
+      afiliadoNome: registro.afiliadoNome,
+      afiliadoCpf: registro.afiliadoCpf,
+      dependenteNome: registro.dependenteNome ?? undefined,
+      dependenteCpf: registro.dependenteCpf ?? undefined,
+      periodoInicio: registro.periodoInicio ?? undefined,
+      periodoFim: registro.periodoFim ?? undefined,
+      urlValidacao,
+      codigoValidacao: registro.codigo,
+      assinaturaUrl,
+      emitidaEm: registro.emitidaEm,
+    });
+
+    const nomeArquivo = nomeArquivoDeclaracao(registro.convenio.nome, registro.codigo).replace(
+      /\.pdf$/,
+      '-assinada.pdf',
+    );
+    const arquivoAssinadoUrl = await this.storage.salvar(buffer, nomeArquivo);
+
+    const atualizado = await this.prisma.declaracaoEmitida.update({
+      where: { id, tenantId },
+      data: {
+        arquivoAssinadoUrl,
+        status: 'ASSINADA',
+        assinadaEm: new Date(),
+        assinadaPorId: user.id,
+      },
+      include: INCLUDE_LISTAGEM,
+    });
+
+    return serializarDeclaracao(atualizado);
   }
 
   /** O `resolve` + prefixo barram `..` vindo de um registro adulterado. */

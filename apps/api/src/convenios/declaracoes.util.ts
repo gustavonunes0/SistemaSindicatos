@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import type { DeclaracaoEmitida, ModeloDeclaracao, StatusDeclaracao } from '@prisma/client';
 
 /**
@@ -45,6 +46,36 @@ export function serializarDeclaracao(registro: RegistroComRelacoes) {
     assinadaEm: registro.assinadaEm,
     assinadaPorEmail: registro.assinadaPor?.email ?? null,
   };
+}
+
+/**
+ * Origem pública usada no QR Code de validação.
+ *
+ * Um domínio local nunca abre no celular de quem escaneia o papel, então ele só
+ * entra como último recurso — em desenvolvimento, onde é o único cadastrado.
+ */
+export function resolverBaseValidacao(dominios: { host: string }[]): string {
+  const ehLocal = (host: string) =>
+    host === 'localhost' || host.startsWith('127.') || host.endsWith('.local');
+
+  const publico = dominios.find((d) => !ehLocal(d.host.toLowerCase()));
+  const escolhido = publico ?? dominios[0];
+
+  let base: string | null = null;
+  if (escolhido?.host) {
+    const host = escolhido.host.toLowerCase();
+    base = `${ehLocal(host) ? 'http' : 'https'}://${host}`;
+  } else if (process.env.WEB_URL?.trim()) {
+    base = process.env.WEB_URL.trim().replace(/\/+$/, '');
+  }
+
+  if (!base) {
+    throw new BadRequestException(
+      'Não há domínio do sindicato cadastrado para gerar o QR Code de validação',
+    );
+  }
+
+  return base;
 }
 
 /** Nome amigável do PDF baixado, derivado do convênio e do código. */

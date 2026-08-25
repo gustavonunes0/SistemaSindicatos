@@ -97,6 +97,13 @@ export class DeclaracoesController {
     });
   }
 
+  /** Assinatura pela plataforma: reemite o PDF já com a rubrica cadastrada. */
+  @Roles('ADMIN')
+  @Post(':id/assinar')
+  assinar(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.declaracoesService.assinarComRubrica(user, id);
+  }
+
   @Roles('ADMIN')
   @Post(':id/assinada')
   @UseInterceptors(FileInterceptor('file', { limits: { fileSize: PDF_MAX_BYTES } }))

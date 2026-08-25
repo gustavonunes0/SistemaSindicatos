@@ -1,7 +1,17 @@
+import { isAxiosError } from 'axios';
 import { useRef, useState } from 'react';
 import { useMarca } from '../../../../lib/marca';
 import { urlDaApi } from '../../../../lib/urls';
 import { useEnviarRubrica, useRemoverRubrica } from '../../hooks';
+
+function mensagemErro(erro: unknown): string {
+  if (isAxiosError(erro)) {
+    const data = erro.response?.data as { message?: string | string[] } | undefined;
+    if (typeof data?.message === 'string') return data.message;
+    if (Array.isArray(data?.message)) return data.message.join(', ');
+  }
+  return 'Erro ao salvar a assinatura. Tente novamente.';
+}
 
 /**
  * Rubrica desenhada acima do carimbo nas declarações em PDF.
@@ -14,9 +24,13 @@ export function RubricaCard() {
   const enviar = useEnviarRubrica();
   const remover = useRemoverRubrica();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [aberto, setAberto] = useState(false);
-
   const assinaturaUrl = marca.assinaturaUrl ?? null;
+
+  // Sem rubrica não há nada a assinar pela plataforma, então o painel já abre
+  // pedindo o arquivo em vez de esconder a pendência atrás de um botão.
+  const [aberto, setAberto] = useState(!assinaturaUrl);
+
+  const ocupado = enviar.isPending || remover.isPending;
 
   const onSelecionar = (arquivo: File | undefined) => {
     if (arquivo) {
@@ -31,11 +45,16 @@ export function RubricaCard() {
     <section className="rubrica-card">
       <header className="rubrica-card-topo">
         <div>
-          <h2>Assinatura da presidente</h2>
+          <h2>
+            Assinatura da presidente{' '}
+            <span className={`badge ${assinaturaUrl ? 'badge-rubrica-ok' : 'badge-rubrica-falta'}`}>
+              {assinaturaUrl ? 'Cadastrada' : 'Não cadastrada'}
+            </span>
+          </h2>
           <p className="texto-secundario">
             {assinaturaUrl
-              ? 'Aparece acima do carimbo em toda declaração emitida.'
-              : 'Sem rubrica cadastrada: o PDF sai apenas com o carimbo de nome e CNPJ.'}
+              ? 'Entra automaticamente acima do carimbo em toda declaração emitida e permite assinar pela plataforma.'
+              : 'Sem rubrica, o PDF sai só com o carimbo de nome e CNPJ e a assinatura pela plataforma fica indisponível.'}
           </p>
         </div>
         <button
@@ -49,12 +68,14 @@ export function RubricaCard() {
 
       {aberto && (
         <div className="rubrica-card-corpo">
-          {assinaturaUrl && (
+          {assinaturaUrl ? (
             <img
               className="rubrica-preview"
               src={urlDaApi(assinaturaUrl)}
               alt="Assinatura cadastrada"
             />
+          ) : (
+            <p className="texto-secundario">Nenhuma imagem enviada até agora.</p>
           )}
 
           <div className="rubrica-card-acoes">
@@ -62,13 +83,14 @@ export function RubricaCard() {
               ref={inputRef}
               type="file"
               accept="image/png,image/jpeg,image/webp"
+              disabled={ocupado}
               onChange={(evento) => onSelecionar(evento.target.files?.[0])}
             />
             {assinaturaUrl && (
               <button
                 type="button"
                 className="botao-link"
-                disabled={remover.isPending}
+                disabled={ocupado}
                 onClick={() => remover.mutate()}
               >
                 Remover assinatura
@@ -81,12 +103,11 @@ export function RubricaCard() {
           </p>
 
           {enviar.isPending && <p>Enviando assinatura…</p>}
-          {enviar.isError && (
-            <p className="erro">
-              Erro ao salvar a assinatura. Confira se o sindicato já tem identidade visual
-              configurada.
-            </p>
+          {enviar.isSuccess && !enviar.isPending && (
+            <p className="sucesso">Assinatura salva. As próximas declarações já saem com ela.</p>
           )}
+          {enviar.isError && <p className="erro">{mensagemErro(enviar.error)}</p>}
+          {remover.isError && <p className="erro">{mensagemErro(remover.error)}</p>}
         </div>
       )}
     </section>
