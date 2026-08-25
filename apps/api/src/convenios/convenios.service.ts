@@ -9,14 +9,17 @@ import type {
   AtualizarConvenioInput,
   CriarConvenioInput,
   DeclaracaoValidacaoResposta,
+  DefinirLinkCategoriaInput,
   EmitirDeclaracaoInput,
   FiltroConveniosInput,
+  LinksCategoriaConvenio,
 } from '@sindprf/types';
-import { MODELO_DECLARACAO_ROTULO } from '@sindprf/types';
+import { linksCategoriaConvenioSchema, MODELO_DECLARACAO_ROTULO } from '@sindprf/types';
 import { randomBytes } from 'node:crypto';
 import type { RequestUser } from '../common/request-user';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
+import { TenantService } from '../tenant/tenant.service';
 import { StorageService } from '../storage/storage.service';
 import { DeclaracaoPdfService } from './declaracao-pdf.service';
 import {
@@ -56,6 +59,11 @@ const CAMPOS_LISTAGEM_ADMIN = {
 
 type ListaCache = { expires: number; payload: unknown };
 
+function lerLinksCategoria(branding: Prisma.JsonObject): LinksCategoriaConvenio {
+  const parsed = linksCategoriaConvenioSchema.safeParse(branding.linksCategoriaConvenio);
+  return parsed.success ? parsed.data : {};
+}
+
 @Injectable()
 export class ConveniosService {
   private readonly cacheAdmin = new Map<string, ListaCache>();
@@ -66,7 +74,46 @@ export class ConveniosService {
     private readonly prisma: PrismaService,
     private readonly declaracaoPdf: DeclaracaoPdfService,
     private readonly storage: StorageService,
+    private readonly tenantService: TenantService,
   ) {}
+
+  /**
+   * Link que fecha a listagem pública de uma categoria (ex.: portfólio completo).
+   *
+   * Guardado no branding do sindicato porque o site já recebe o branding no
+   * bootstrap: a vitrine mostra o link sem pagar uma requisição a mais.
+   * `url` nula apaga o link da categoria.
+   */
+  async definirLinkCategoria(input: DefinirLinkCategoriaInput): Promise<LinksCategoriaConvenio> {
+    const tenantId = requireTenantId();
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { branding: true },
+    });
+
+    if (!tenant?.branding || typeof tenant.branding !== 'object') {
+      throw new BadRequestException('Este sindicato ainda não tem identidade visual configurada');
+    }
+
+    const branding = tenant.branding as Prisma.JsonObject;
+    const links = lerLinksCategoria(branding);
+    if (input.url) {
+      links[input.categoria] = input.url;
+    } else {
+      delete links[input.categoria];
+    }
+
+    await this.prisma.tenant.update({
+      where: { id: tenantId },
+      data: { branding: { ...branding, linksCategoriaConvenio: links } },
+    });
+
+    // O tenant resolvido por host fica em cache por 60s. Sem limpar, o admin
+    // salva e continua vendo o link antigo.
+    this.tenantService.invalidarCache();
+
+    return links;
+  }
 
   private invalidarCaches(tenantId = requireTenantId()) {
     for (const chave of [...this.cacheAdmin.keys(), ...this.cachePublico.keys()]) {

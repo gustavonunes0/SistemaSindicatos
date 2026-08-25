@@ -32,6 +32,37 @@ const dataOpcional = z.preprocess(
   z.coerce.date().nullable().optional(),
 );
 
+/** Categorias oficiais da vitrine de convênios. */
+export const CATEGORIAS_CONVENIO = [
+  'Educação',
+  'Saúde',
+  'Esporte e Lazer',
+  'Serviços e Facilidades',
+] as const;
+
+export const categoriaConvenioSchema = z.enum(CATEGORIAS_CONVENIO);
+export type CategoriaConvenio = z.infer<typeof categoriaConvenioSchema>;
+
+/**
+ * Link exibido ao fim da listagem pública de cada categoria, indexado pelo nome
+ * da categoria. Categoria sem link cadastrado simplesmente não aparece no mapa.
+ */
+export const linksCategoriaConvenioSchema = z.record(z.string(), z.string().url());
+export type LinksCategoriaConvenio = z.infer<typeof linksCategoriaConvenioSchema>;
+
+export const definirLinkCategoriaSchema = z.object({
+  categoria: categoriaConvenioSchema,
+  url: z.preprocess(
+    (valor) => (typeof valor === 'string' && valor.trim() === '' ? null : valor),
+    z
+      .string()
+      .trim()
+      .url('Informe o endereço completo, começando com https://')
+      .nullable(),
+  ),
+});
+export type DefinirLinkCategoriaInput = z.infer<typeof definirLinkCategoriaSchema>;
+
 export const modeloDeclaracaoSchema = z.enum([
   'FILIADO',
   'DEPENDENTE',

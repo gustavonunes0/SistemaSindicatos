@@ -209,7 +209,7 @@ export function DeclaracoesAdminPage() {
                       </div>
                     )}
                   </td>
-                  <td className="tabela-acoes">
+                  <td className="tabela-acoes tabela-acoes--coluna">
                     {declaracao.status === 'PENDENTE' && (
                       <button
                         type="button"

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { linksCategoriaConvenioSchema } from './convenio';
 
 export const tenantTipoSchema = z.enum(['SINDICATO', 'PLATAFORMA']);
 export type TenantTipo = z.infer<typeof tenantTipoSchema>;
@@ -62,6 +63,8 @@ export const tenantBrandingSchema = z.object({
   estatutoUrl: z.string().nullable().optional(),
   /** Rubrica desenhada acima do carimbo nas declarações em PDF. */
   assinaturaUrl: z.string().nullable().optional(),
+  /** Link do fim da listagem pública de cada categoria de convênio. */
+  linksCategoriaConvenio: linksCategoriaConvenioSchema.optional(),
   themeColor: z.string().optional(),
   cores: coresBrandingSchema.optional(),
   /** E-mail destino do formulário de contato (override). */

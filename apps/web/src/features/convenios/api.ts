@@ -1,12 +1,15 @@
 import {
   convenioListagemSchema,
   convenioSchema,
+  linksCategoriaConvenioSchema,
   type AtualizarConvenioInput,
   type Convenio,
   type ConvenioListagem,
   type CriarConvenioInput,
+  type DefinirLinkCategoriaInput,
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
+  type LinksCategoriaConvenio,
 } from '@sindprf/types';
 import { z } from 'zod';
 import { api } from '../../lib/http';
@@ -47,6 +50,13 @@ export async function atualizarConvenio(
 ): Promise<Convenio> {
   const { data } = await api.patch(`/convenios/${id}`, input);
   return convenioSchema.parse(data);
+}
+
+export async function definirLinkCategoria(
+  input: DefinirLinkCategoriaInput,
+): Promise<LinksCategoriaConvenio> {
+  const { data } = await api.put('/convenios/categorias/link', input);
+  return linksCategoriaConvenioSchema.parse(data);
 }
 
 export async function removerConvenio(id: string): Promise<void> {

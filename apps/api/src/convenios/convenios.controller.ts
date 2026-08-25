@@ -7,16 +7,19 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   StreamableFile,
 } from '@nestjs/common';
 import {
   atualizarConvenioSchema,
   criarConvenioSchema,
+  definirLinkCategoriaSchema,
   emitirDeclaracaoSchema,
   filtroConveniosSchema,
   type AtualizarConvenioInput,
   type CriarConvenioInput,
+  type DefinirLinkCategoriaInput,
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
 } from '@sindprf/types';
@@ -41,6 +44,15 @@ export class ConveniosController {
   @Get('admin/:id')
   buscarAdmin(@Param('id') id: string) {
     return this.conveniosService.buscarAdmin(id);
+  }
+
+  /** Link exibido ao fim da listagem pública da categoria; `url` nula remove. */
+  @Roles('ADMIN')
+  @Put('categorias/link')
+  definirLinkCategoria(
+    @Body(new ZodValidationPipe(definirLinkCategoriaSchema)) body: DefinirLinkCategoriaInput,
+  ) {
+    return this.conveniosService.definirLinkCategoria(body);
   }
 
   @Roles('ADMIN')

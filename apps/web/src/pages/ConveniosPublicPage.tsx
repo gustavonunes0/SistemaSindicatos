@@ -5,6 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { EstadoCarregando } from '../components/ui/EstadoCarregando';
 import {
   CATEGORIAS_CONVENIO,
+  linkDaCategoria,
   normalizarCategoriaConvenio,
   type CategoriaConvenio,
 } from '../features/convenios/categorias';
@@ -118,6 +119,7 @@ export function ConveniosPublicPage() {
 
   const totalParceiros = convenios?.length ?? 0;
   const listaAtiva = categoriaAtiva ? porCategoria[categoriaAtiva] : [];
+  const linkAtivo = categoriaAtiva ? linkDaCategoria(marca, categoriaAtiva) : null;
 
   return (
     <main className="convenios-public-page">
@@ -235,6 +237,18 @@ export function ConveniosPublicPage() {
                       </li>
                     ))}
                   </ul>
+
+                  {linkAtivo && (
+                    <a
+                      className="convenios-public-link-categoria"
+                      href={linkAtivo}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Ver portfólio completo de {categoriaAtiva}
+                      <span aria-hidden="true">↗</span>
+                    </a>
+                  )}
                 </>
               )}
             </section>

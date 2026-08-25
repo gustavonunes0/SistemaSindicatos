@@ -9,6 +9,7 @@ import type {
 } from '@sindprf/types';
 import { useEffect, useMemo } from 'react';
 import { gravarCacheConveniosAdmin, lerCacheConveniosAdmin } from '../admin/cache-admin';
+import { useTenantStore } from '../tenant/store';
 import * as conveniosApi from './api';
 
 function convenioDaListagem(item: ConvenioListagem): Convenio {
@@ -216,6 +217,16 @@ export function useRemoverConvenio() {
     },
     onSettled: () => {
       sincronizarAposMutacao(queryClient);
+    },
+  });
+}
+
+/** O link mora no branding, que fica no store de tenant e não no React Query. */
+export function useDefinirLinkCategoria() {
+  return useMutation({
+    mutationFn: conveniosApi.definirLinkCategoria,
+    onSuccess: () => {
+      void useTenantStore.getState().carregar();
     },
   });
 }

@@ -129,6 +129,7 @@ button.botao-primario {
   font-size: var(--texto-sm);
   font-weight: 600;
   text-decoration: underline;
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -4548,9 +4549,19 @@ textarea {
 
 .tabela-acoes {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
   justify-content: flex-end;
+}
+
+/* Rótulos longos (declarações): uma ação por linha, alinhadas à direita. */
+.tabela-acoes--coluna {
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.35rem;
+  text-align: right;
 }
 
 .botao-tabela {
@@ -5148,6 +5159,32 @@ textarea {
 .convenios-public-card:hover .convenios-public-card-seta {
   opacity: 1;
   transform: translateX(3px);
+}
+
+/* Fecha a listagem da categoria — em geral o portfólio completo do parceiro. */
+.convenios-public-link-categoria {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  width: fit-content;
+  max-width: 100%;
+  margin: 1.15rem auto 0;
+  padding: 0.7rem 1.2rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+  font-family: var(--fonte-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--cor-primaria);
+  text-decoration: none;
+  transition: border-color 180ms ease-out, box-shadow 180ms ease-out;
+}
+
+.convenios-public-link-categoria:hover,
+.convenios-public-link-categoria:focus-visible {
+  border-color: var(--cor-primaria);
+  box-shadow: 0 4px 14px rgb(0 0 0 / 8%);
 }
 
 .convenios-public-rodape {
@@ -11145,6 +11182,56 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
+}
+
+.links-categorias-card {
+  margin-bottom: 1.5rem;
+  padding: 1.15rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.links-categorias-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.links-categorias-topo h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.2rem;
+  font-size: var(--texto-base);
+}
+
+.links-categorias-topo p {
+  margin: 0;
+}
+
+.links-categorias-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: var(--borda-fina);
+}
+
+.links-categorias-linha {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.links-categorias-linha .campo {
+  flex: 1 1 22rem;
+  margin: 0;
 }
 
 .lista-declaracoes {

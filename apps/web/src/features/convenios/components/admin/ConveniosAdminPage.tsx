@@ -6,6 +6,7 @@ import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { useConveniosAdmin, useRemoverConvenio } from '../../hooks';
 import { EmitirDeclaracaoModal } from '../EmitirDeclaracaoModal';
 import { ConvenioFormModal } from './ConvenioFormModal';
+import { LinksCategoriasCard } from './LinksCategoriasCard';
 
 type ModalConvenio = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 
@@ -40,6 +41,8 @@ export function ConveniosAdminPage() {
         </button>
       }
     >
+      <LinksCategoriasCard />
+
       {isLoading && !convenios && <EstadoCarregando mensagem="Carregando convênios…" />}
       {isError && !convenios && (
         <p className="erro">Não foi possível carregar os convênios. Tente novamente.</p>
