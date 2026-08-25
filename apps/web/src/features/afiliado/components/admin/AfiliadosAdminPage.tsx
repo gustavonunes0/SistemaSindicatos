@@ -198,7 +198,7 @@ export function AfiliadosAdminPage() {
                   disabled={atualizarStatus.isPending}
                   onClick={() =>
                     onMudarStatus(afiliado, 'PENDENTE', {
-                      titulo: 'Reabrir afiliação?',
+                      titulo: 'Reabrir filiação?',
                       descricao: `${afiliado.nome} voltará para o status pendente.`,
                       confirmarRotulo: 'Reabrir',
                       tom: 'primario',

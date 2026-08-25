@@ -29,7 +29,7 @@ const etapas = [
 
 function mensagemDeErro(erro: unknown): string {
   if (isAxiosError(erro) && erro.response?.status === 409) {
-    return 'Este e-mail, CPF ou matrícula já está cadastrado. Se já solicitou afiliação, aguarde a análise ou entre em contato com o sindicato.';
+    return 'Este e-mail, CPF ou matrícula já está cadastrado. Se já solicitou filiação, aguarde a análise ou entre em contato com o sindicato.';
   }
   if (isAxiosError(erro) && erro.response?.status === 400) {
     return 'Há campos inválidos. Confira o CPF (11 dígitos) e preencha todos os obrigatórios.';
@@ -97,7 +97,7 @@ export function CadastroAfiliadoPage() {
   const documentos = filiacao?.documentos ?? [];
 
   useSeo({
-    title: `Solicitar afiliação | ${marca.nome}`,
+    title: `Solicitar filiação | ${marca.nome}`,
     description: `Cadastro de afiliado do ${marca.nomeCompleto}.`,
   });
 
@@ -122,7 +122,7 @@ export function CadastroAfiliadoPage() {
 
   return (
     <main className="cadastro-page">
-      <aside className="cadastro-painel" aria-label="Sobre a afiliação">
+      <aside className="cadastro-painel" aria-label="Sobre a filiação">
         <div className="cadastro-painel-topo">
           <Link to="/" className="cadastro-voltar">
             ← Voltar ao site
@@ -188,8 +188,8 @@ export function CadastroAfiliadoPage() {
         ) : (
           <>
             <header className="cadastro-cabecalho">
-              <p className="eyebrow">Nova afiliação</p>
-              <h2>Solicitar afiliação</h2>
+              <p className="eyebrow">Nova filiação</p>
+              <h2>Solicitar filiação</h2>
               <p>
                 Preencha com os mesmos dados da sua identificação funcional. Campos com * são
                 obrigatórios.
@@ -289,7 +289,7 @@ export function CadastroAfiliadoPage() {
 
                   <div className="cadastro-acoes">
                     <button type="submit" className="botao-primario" disabled={cadastro.isPending}>
-                      {cadastro.isPending ? 'Enviando solicitação…' : 'Solicitar afiliação'}
+                      {cadastro.isPending ? 'Enviando solicitação…' : 'Solicitar filiação'}
                     </button>
                     <p className="cadastro-rodape-form">
                       Já tem cadastro? <Link to="/login">Entrar</Link>

@@ -37,7 +37,7 @@ const TUTORIAIS: Tutorial[] = [
       'Se precisar, use Inativar ou Reabrir. Em Senha, defina uma nova senha de acesso.',
     ],
     dicas: [
-      'O público solicita afiliação em /cadastro. O login só funciona depois da aprovação.',
+      'O público solicita filiação em /cadastro. O login só funciona depois da aprovação.',
       'Novos filiados também podem surgir automaticamente na importação do D8.',
     ],
   },

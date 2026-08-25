@@ -6,9 +6,9 @@ import { useMe } from '../../auth/hooks';
 import { marca } from '../../../lib/marca';
 
 const descricaoStatus = {
-  PENDENTE: 'Sua afiliação está em análise. Você receberá acesso aos benefícios após a aprovação.',
-  APROVADO: 'Sua afiliação está ativa. Acesse os convênios e benefícios disponíveis.',
-  INATIVO: 'Sua afiliação está inativa. Entre em contato com o sindicato para regularizar.',
+  PENDENTE: 'Sua filiação está em análise. Você receberá acesso aos benefícios após a aprovação.',
+  APROVADO: 'Sua filiação está ativa. Acesse os convênios e benefícios disponíveis.',
+  INATIVO: 'Sua filiação está inativa. Entre em contato com o sindicato para regularizar.',
 } as const;
 
 const rotuloStatus = {
@@ -44,7 +44,7 @@ export function AfiliadoDashboardPage() {
     <AreaLayout
       tipo="afiliado"
       titulo="Minha área"
-      descricao="Acompanhe sua afiliação e acesse os benefícios disponíveis."
+      descricao="Acompanhe sua filiação e acesse os benefícios disponíveis."
     >
       {isLoading && <EstadoCarregando />}
       {isError && (
@@ -63,7 +63,7 @@ export function AfiliadoDashboardPage() {
         <div className="estado-vazio">
           <p>Não encontramos o perfil de afiliado vinculado a esta conta.</p>
           <p>
-            <Link to="/cadastro">Solicitar afiliação</Link>
+            <Link to="/cadastro">Solicitar filiação</Link>
           </p>
         </div>
       )}
@@ -73,7 +73,7 @@ export function AfiliadoDashboardPage() {
           <section className="painel-boas-vindas">
             <p className="painel-saudacao">Olá, {afiliado.nome.split(' ')[0]}</p>
             <div className="painel-status-linha">
-              <span className="painel-status-rotulo">Situação da afiliação</span>
+              <span className="painel-status-rotulo">Situação da filiação</span>
               <span className={`badge badge-${afiliado.status.toLowerCase()}`}>
                 {rotuloStatus[afiliado.status]}
               </span>
@@ -120,7 +120,7 @@ export function AfiliadoDashboardPage() {
           {afiliado.status === 'PENDENTE' && (
             <aside className="painel-aviso">
               <p>
-                Assim que sua afiliação for aprovada, convênios e apartamentos liberam
+                Assim que sua filiação for aprovada, convênios e apartamentos liberam
                 automaticamente — use o botão acima ou o menu lateral para conferir.
               </p>
             </aside>
