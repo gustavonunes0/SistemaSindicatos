@@ -70,8 +70,18 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
           {dados && (
             <>
               <section aria-labelledby="dados-filiacao-titulo">
-                <h3 id="dados-filiacao-titulo">Dados pessoais e funcionais</h3>
+                <h3 id="dados-filiacao-titulo">Dados da filiação</h3>
                 <dl className="analise-filiacao-dados">
+                  <Dado
+                    rotulo="Tipo"
+                    valor={
+                      dados.categoria === 'PENSIONISTA'
+                        ? 'Pensionista'
+                        : dados.categoria === 'SERVIDOR'
+                          ? 'Filiado(a) — servidor PRF'
+                          : 'Não informado'
+                    }
+                  />
                   <Dado rotulo="CPF" valor={formatarCpf(dados.cpf)} />
                   <Dado rotulo="Matrícula" valor={dados.matricula} />
                   <Dado
@@ -96,6 +106,7 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
                   <Dado rotulo="Endereço" valor={enderecoCompleto(dados)} />
                   <Dado rotulo="Lotação SIAPE" valor={dados.lotacaoSiape} />
                   <Dado rotulo="Lotação de atividade" valor={dados.lotacaoAtividade} />
+                  <Dado rotulo="Instituidor da pensão" valor={dados.instituidorPensao} />
                   <Dado
                     rotulo="Data de admissão"
                     valor={dados.dataAdmissao && formatarData(dados.dataAdmissao)}

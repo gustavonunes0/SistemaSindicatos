@@ -127,13 +127,19 @@ export function CadastroAfiliadoPage() {
   const {
     register,
     control,
+    watch,
     handleSubmit,
     formState: { errors },
   } = useForm<CadastroFormValues, unknown, CadastroAfiliadoInput>({
     resolver: zodResolver(cadastroAfiliadoSchema),
-    defaultValues: { dependentes: [], aceiteEstatuto: false },
+    defaultValues: {
+      categoria: 'SERVIDOR',
+      dependentes: [],
+      aceiteEstatuto: false,
+    },
   });
   const dependentes = useFieldArray({ control, name: 'dependentes' });
+  const categoria = watch('categoria');
 
   const docsProps = {
     endereco: marca.sede.endereco,
@@ -254,6 +260,26 @@ export function CadastroAfiliadoPage() {
               >
                 <div className="cadastro-formulario">
                   <fieldset className="cadastro-grupo">
+                    <legend>Tipo de filiação</legend>
+                    <div className="cadastro-tipo-opcoes">
+                      <label className="cadastro-tipo-opcao">
+                        <input type="radio" value="SERVIDOR" {...register('categoria')} />
+                        <span>
+                          <strong>Filiado(a) — servidor PRF</strong>
+                          <small>Policial rodoviário federal em atividade ou aposentado.</small>
+                        </span>
+                      </label>
+                      <label className="cadastro-tipo-opcao">
+                        <input type="radio" value="PENSIONISTA" {...register('categoria')} />
+                        <span>
+                          <strong>Pensionista</strong>
+                          <small>Beneficiário(a) de pensão vinculada a servidor PRF.</small>
+                        </span>
+                      </label>
+                    </div>
+                  </fieldset>
+
+                  <fieldset className="cadastro-grupo">
                     <legend>Dados pessoais</legend>
                     <div className="cadastro-grade">
                       <label className="cadastro-campo-cheio">
@@ -331,11 +357,13 @@ export function CadastroAfiliadoPage() {
                         )}
                       </label>
 
-                      <label>
-                        Cônjuge
-                        <input type="text" autoComplete="off" {...register('conjuge')} />
-                        {errors.conjuge && <span className="erro">{errors.conjuge.message}</span>}
-                      </label>
+                      {categoria === 'SERVIDOR' && (
+                        <label>
+                          Cônjuge
+                          <input type="text" autoComplete="off" {...register('conjuge')} />
+                          {errors.conjuge && <span className="erro">{errors.conjuge.message}</span>}
+                        </label>
+                      )}
 
                       <label>
                         Nome da mãe *
@@ -420,10 +448,12 @@ export function CadastroAfiliadoPage() {
                   </fieldset>
 
                   <fieldset className="cadastro-grupo">
-                    <legend>Dados funcionais</legend>
+                    <legend>
+                      {categoria === 'PENSIONISTA' ? 'Dados da pensão' : 'Dados funcionais'}
+                    </legend>
                     <div className="cadastro-grade">
                       <label>
-                        Matrícula PRF *
+                        Matrícula *
                         <input
                           type="text"
                           autoComplete="off"
@@ -435,29 +465,46 @@ export function CadastroAfiliadoPage() {
                         )}
                       </label>
 
-                      <label>
-                        Data de admissão *
-                        <input type="date" {...register('dataAdmissao')} />
-                        {errors.dataAdmissao && (
-                          <span className="erro">{errors.dataAdmissao.message}</span>
-                        )}
-                      </label>
+                      {categoria === 'PENSIONISTA' ? (
+                        <label className="cadastro-campo-cheio">
+                          Instituidor da pensão *
+                          <input
+                            type="text"
+                            autoComplete="off"
+                            placeholder="Nome completo do servidor instituidor"
+                            {...register('instituidorPensao')}
+                          />
+                          {errors.instituidorPensao && (
+                            <span className="erro">{errors.instituidorPensao.message}</span>
+                          )}
+                        </label>
+                      ) : (
+                        <>
+                          <label>
+                            Data de admissão *
+                            <input type="date" {...register('dataAdmissao')} />
+                            {errors.dataAdmissao && (
+                              <span className="erro">{errors.dataAdmissao.message}</span>
+                            )}
+                          </label>
 
-                      <label>
-                        Lotação SIAPE *
-                        <input type="text" autoComplete="off" {...register('lotacaoSiape')} />
-                        {errors.lotacaoSiape && (
-                          <span className="erro">{errors.lotacaoSiape.message}</span>
-                        )}
-                      </label>
+                          <label>
+                            Lotação SIAPE *
+                            <input type="text" autoComplete="off" {...register('lotacaoSiape')} />
+                            {errors.lotacaoSiape && (
+                              <span className="erro">{errors.lotacaoSiape.message}</span>
+                            )}
+                          </label>
 
-                      <label>
-                        Lotação de atividade
-                        <input type="text" autoComplete="off" {...register('lotacaoAtividade')} />
-                        {errors.lotacaoAtividade && (
-                          <span className="erro">{errors.lotacaoAtividade.message}</span>
-                        )}
-                      </label>
+                          <label>
+                            Lotação de atividade
+                            <input type="text" autoComplete="off" {...register('lotacaoAtividade')} />
+                            {errors.lotacaoAtividade && (
+                              <span className="erro">{errors.lotacaoAtividade.message}</span>
+                            )}
+                          </label>
+                        </>
+                      )}
                     </div>
                   </fieldset>
 
@@ -501,13 +548,15 @@ export function CadastroAfiliadoPage() {
                         {errors.email && <span className="erro">{errors.email.message}</span>}
                       </label>
 
-                      <label>
-                        E-mail funcional
-                        <input type="email" autoComplete="off" {...register('emailFuncional')} />
-                        {errors.emailFuncional && (
-                          <span className="erro">{errors.emailFuncional.message}</span>
-                        )}
-                      </label>
+                      {categoria === 'SERVIDOR' && (
+                        <label>
+                          E-mail funcional
+                          <input type="email" autoComplete="off" {...register('emailFuncional')} />
+                          {errors.emailFuncional && (
+                            <span className="erro">{errors.emailFuncional.message}</span>
+                          )}
+                        </label>
+                      )}
                     </div>
                   </fieldset>
 

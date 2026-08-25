@@ -106,12 +106,8 @@ export const dependenteAfiliadoSchema = z.object({
 });
 export type DependenteAfiliadoInput = z.infer<typeof dependenteAfiliadoSchema>;
 
-/**
- * Ficha de filiação em papel do sindicato. Obrigatória no cadastro público e
- * opcional no cadastro pelo admin, que registra quem já entregou a ficha
- * preenchida na secretaria.
- */
-const fichaFiliacaoSchema = z.object({
+/** Dados presentes nas fichas de servidor e pensionista. */
+const fichaFiliacaoComumSchema = z.object({
   dataNascimento: dataObrigatoria('Informe a data de nascimento'),
   rg: z.string().trim().min(3, 'Informe o RG').max(30),
   orgaoExpedidor: z.string().trim().min(2, 'Informe o órgão expedidor').max(40),
@@ -138,13 +134,19 @@ const fichaFiliacaoSchema = z.object({
     .transform((valor) => valor.replace(/\D/g, ''))
     .pipe(z.string().regex(/^\d{8}$/, 'CEP deve ter 8 dígitos')),
 
-  lotacaoSiape: z.string().trim().min(2, 'Informe a lotação SIAPE').max(120),
-  lotacaoAtividade: textoOpcional,
-  dataAdmissao: dataObrigatoria('Informe a data de admissão'),
-
   celular: telefone('Informe DDD e número do celular'),
   celular2: telefoneOpcional,
   emailFuncional: emailOpcional,
+});
+
+const camposFuncionaisSchema = z.object({
+  lotacaoSiape: textoOpcional,
+  lotacaoAtividade: textoOpcional,
+  dataAdmissao: z.preprocess(
+    (valor) => (typeof valor === 'string' && valor.trim() === '' ? undefined : valor),
+    z.coerce.date().optional(),
+  ),
+  instituidorPensao: textoOpcional,
 });
 
 const acessoAfiliadoSchema = z.object({
@@ -161,14 +163,44 @@ const dependentesSchema = z
   .max(10, 'Informe no máximo 10 dependentes')
   .default([]);
 
-export const cadastroAfiliadoSchema = acessoAfiliadoSchema.merge(fichaFiliacaoSchema).extend({
-  dependentes: dependentesSchema,
-  // O sindicato precisa guardar o momento do aceite: é ele que autoriza o
-  // desconto da mensalidade em folha.
-  aceiteEstatuto: z
-    .boolean()
-    .refine((valor) => valor, 'É preciso aceitar as condições do estatuto'),
-});
+export const cadastroAfiliadoSchema = acessoAfiliadoSchema
+  .merge(fichaFiliacaoComumSchema)
+  .merge(camposFuncionaisSchema)
+  .extend({
+    categoria: tipoD8Schema,
+    dependentes: dependentesSchema,
+    // O sindicato precisa guardar o momento do aceite: é ele que autoriza o
+    // desconto da mensalidade em folha.
+    aceiteEstatuto: z
+      .boolean()
+      .refine((valor) => valor, 'É preciso aceitar as condições do estatuto'),
+  })
+  .superRefine((dados, contexto) => {
+    if (dados.categoria === 'SERVIDOR') {
+      if (!dados.lotacaoSiape) {
+        contexto.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['lotacaoSiape'],
+          message: 'Informe a lotação SIAPE',
+        });
+      }
+      if (!dados.dataAdmissao) {
+        contexto.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['dataAdmissao'],
+          message: 'Informe a data de admissão',
+        });
+      }
+    }
+
+    if (dados.categoria === 'PENSIONISTA' && !dados.instituidorPensao) {
+      contexto.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['instituidorPensao'],
+        message: 'Informe o instituidor da pensão',
+      });
+    }
+  });
 export type CadastroAfiliadoInput = z.infer<typeof cadastroAfiliadoSchema>;
 
 /**
@@ -177,8 +209,10 @@ export type CadastroAfiliadoInput = z.infer<typeof cadastroAfiliadoSchema>;
  * ficha completa pode ser preenchida depois.
  */
 export const cadastroAfiliadoAdminSchema = acessoAfiliadoSchema
-  .merge(fichaFiliacaoSchema.partial())
+  .merge(fichaFiliacaoComumSchema.partial())
+  .merge(camposFuncionaisSchema.partial())
   .extend({
+    categoria: tipoD8Schema.optional(),
     dependentes: dependentesSchema,
     status: statusAfiliadoSchema.default('APROVADO'),
   });
@@ -241,6 +275,7 @@ export const afiliadoFichaSchema = afiliadoSchema.extend({
   cep: z.string().nullable(),
   lotacaoSiape: z.string().nullable(),
   lotacaoAtividade: z.string().nullable(),
+  instituidorPensao: z.string().nullable(),
   dataAdmissao: z.coerce.date().nullable(),
   aceiteEstatutoEm: z.coerce.date().nullable(),
   dependentes: z.array(dependenteAfiliadoRespostaSchema),

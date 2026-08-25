@@ -19,7 +19,6 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-
 // =====================================================================
 // MULTI-TENANT (Fase A)
 // =====================================================================
@@ -138,15 +137,15 @@ model User {
   createdAt DateTime @default(now()) @db.Timestamptz
   updatedAt DateTime @updatedAt @db.Timestamptz
 
-  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  afiliado       Afiliado?
-  refreshTokens  RefreshToken[]
-  resetTokens    PasswordResetToken[]
-  noticias       Noticia[]        @relation("AutorNoticia")
-  mensagens      Mensagem[]       @relation("AutorMensagem")
-  membrosComissao        MembroComissaoEleitoral[]
-  contestacoesDecididas  ContestacaoChapa[]        @relation("DecisorContestacao")
-  declaracoesAssinadas   DeclaracaoEmitida[]       @relation("DeclaracoesAssinadas")
+  tenant                Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  afiliado              Afiliado?
+  refreshTokens         RefreshToken[]
+  resetTokens           PasswordResetToken[]
+  noticias              Noticia[]                 @relation("AutorNoticia")
+  mensagens             Mensagem[]                @relation("AutorMensagem")
+  membrosComissao       MembroComissaoEleitoral[]
+  contestacoesDecididas ContestacaoChapa[]        @relation("DecisorContestacao")
+  declaracoesAssinadas  DeclaracaoEmitida[]       @relation("DeclaracoesAssinadas")
 
   @@unique([tenantId, email])
   @@index([tenantId])
@@ -188,54 +187,55 @@ model PasswordResetToken {
 }
 
 model Afiliado {
-  id         String         @id @default(cuid())
-  tenantId   String
-  userId     String         @unique
-  nome       String
-  cpf        String
-  matricula  String
-  telefone   String?
-  categoria  TipoD8?
-  status     StatusAfiliado @default(PENDENTE)
+  id        String         @id @default(cuid())
+  tenantId  String
+  userId    String         @unique
+  nome      String
+  cpf       String
+  matricula String
+  telefone  String?
+  categoria TipoD8?
+  status    StatusAfiliado @default(PENDENTE)
 
   /// Ficha de filiação — nula nos cadastros feitos direto pela secretaria.
-  dataNascimento   DateTime?    @db.Date
-  rg               String?
-  orgaoExpedidor   String?
-  naturalidade     String?
-  estadoCivil      EstadoCivil?
-  nomeMae          String?
-  nomePai          String?
-  conjuge          String?
-  endereco         String?
-  complemento      String?
-  bairro           String?
-  cidade           String?
-  uf               String?      @db.VarChar(2)
-  cep              String?      @db.VarChar(8)
-  lotacaoSiape     String?
-  lotacaoAtividade String?
-  dataAdmissao     DateTime?    @db.Date
-  celular          String?
-  celular2         String?
-  emailFuncional   String?
+  dataNascimento    DateTime?    @db.Date
+  rg                String?
+  orgaoExpedidor    String?
+  naturalidade      String?
+  estadoCivil       EstadoCivil?
+  nomeMae           String?
+  nomePai           String?
+  conjuge           String?
+  endereco          String?
+  complemento       String?
+  bairro            String?
+  cidade            String?
+  uf                String?      @db.VarChar(2)
+  cep               String?      @db.VarChar(8)
+  lotacaoSiape      String?
+  lotacaoAtividade  String?
+  instituidorPensao String?
+  dataAdmissao      DateTime?    @db.Date
+  celular           String?
+  celular2          String?
+  emailFuncional    String?
   /// Momento em que aceitou o estatuto e autorizou o desconto em folha.
-  aceiteEstatutoEm DateTime?    @db.Timestamptz
+  aceiteEstatutoEm  DateTime?    @db.Timestamptz
 
-  createdAt  DateTime       @default(now()) @db.Timestamptz
-  updatedAt  DateTime       @updatedAt @db.Timestamptz
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
 
-  tenant           Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  user             User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  elegibilidades   Elegivel[]
-  comparecimentos  Comparecimento[]
-  solicitacoes     SolicitacaoAluguel[]
-  contestacoes     ContestacaoChapa[]
-  linhasD8         LinhaD8[]
-  declaracoes      DeclaracaoEmitida[]
-  respostas        RespostaFormulario[]
-  documentos       DocumentoAfiliado[]
-  dependentes      DependenteAfiliado[]
+  tenant          Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  elegibilidades  Elegivel[]
+  comparecimentos Comparecimento[]
+  solicitacoes    SolicitacaoAluguel[]
+  contestacoes    ContestacaoChapa[]
+  linhasD8        LinhaD8[]
+  declaracoes     DeclaracaoEmitida[]
+  respostas       RespostaFormulario[]
+  documentos      DocumentoAfiliado[]
+  dependentes     DependenteAfiliado[]
 
   @@unique([tenantId, cpf])
   @@unique([tenantId, matricula])
@@ -246,15 +246,15 @@ model Afiliado {
 }
 
 model DocumentoAfiliado {
-  id            String                 @id @default(cuid())
-  tenantId      String
-  afiliadoId    String
-  tipo          TipoDocumentoFiliacao
-  arquivoChave  String
-  nomeOriginal  String
-  mimeType      String
-  tamanhoBytes  Int
-  createdAt     DateTime               @default(now()) @db.Timestamptz
+  id           String                @id @default(cuid())
+  tenantId     String
+  afiliadoId   String
+  tipo         TipoDocumentoFiliacao
+  arquivoChave String
+  nomeOriginal String
+  mimeType     String
+  tamanhoBytes Int
+  createdAt    DateTime              @default(now()) @db.Timestamptz
 
   tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   afiliado Afiliado @relation(fields: [afiliadoId], references: [id], onDelete: Cascade)
@@ -285,15 +285,15 @@ model DependenteAfiliado {
 // =====================================================================
 
 model ImportacaoD8 {
-  id               String   @id @default(cuid())
-  tenantId         String
-  competenciaAno   Int
-  competenciaMes   Int
-  tipo             TipoD8
-  arquivoNome      String
-  totalLinhas      Int
-  totalValor       Decimal  @db.Decimal(12, 2)
-  createdAt        DateTime @default(now()) @db.Timestamptz
+  id             String   @id @default(cuid())
+  tenantId       String
+  competenciaAno Int
+  competenciaMes Int
+  tipo           TipoD8
+  arquivoNome    String
+  totalLinhas    Int
+  totalValor     Decimal  @db.Decimal(12, 2)
+  createdAt      DateTime @default(now()) @db.Timestamptz
 
   tenant Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   linhas LinhaD8[]
@@ -304,7 +304,7 @@ model ImportacaoD8 {
 }
 
 model LinhaD8 {
-  id           String   @id @default(cuid())
+  id           String  @id @default(cuid())
   tenantId     String
   importacaoId String
   sequencia    Int
@@ -312,7 +312,7 @@ model LinhaD8 {
   nome         String
   cpf          String
   descricao    String
-  valor        Decimal  @db.Decimal(12, 2)
+  valor        Decimal @db.Decimal(12, 2)
   afiliadoId   String?
 
   tenant     Tenant       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
@@ -400,7 +400,7 @@ model Formulario {
 }
 
 model RespostaFormulario {
-  id           String @id @default(cuid())
+  id           String   @id @default(cuid())
   tenantId     String
   formularioId String
   /// Nulo quando o formulário é aberto e quem respondeu não estava logado.
@@ -476,7 +476,7 @@ model InstagramPost {
   mediaUrl     String
   permalink    String
   caption      String?  @db.Text
-  mediaType    String   // IMAGE, VIDEO, CAROUSEL_ALBUM
+  mediaType    String // IMAGE, VIDEO, CAROUSEL_ALBUM
   publicadoEm  DateTime @db.Timestamptz
   sincronizado DateTime @default(now()) @db.Timestamptz
 
@@ -498,28 +498,28 @@ enum ModeloDeclaracao {
 }
 
 model Convenio {
-  id                 String             @id @default(cuid())
-  tenantId           String
-  nome               String
-  categoria          String
-  descricao          String             @db.Text
-  logoUrl            String?
-  link               String?
-  contato            String?
-  vigenciaInicio     DateTime?          @db.Timestamptz
-  vigenciaFim        DateTime?          @db.Timestamptz
-  ativo              Boolean            @default(true)
+  id                String            @id @default(cuid())
+  tenantId          String
+  nome              String
+  categoria         String
+  descricao         String            @db.Text
+  logoUrl           String?
+  link              String?
+  contato           String?
+  vigenciaInicio    DateTime?         @db.Timestamptz
+  vigenciaFim       DateTime?         @db.Timestamptz
+  ativo             Boolean           @default(true)
   /// Permite ao afiliado emitir declaração/autorização em PDF.
-  emiteDeclaracao    Boolean            @default(false)
-  modeloDeclaracao   ModeloDeclaracao?
+  emiteDeclaracao   Boolean           @default(false)
+  modeloDeclaracao  ModeloDeclaracao?
   /// Ex.: "Unimed Ceará", "Sistema FECOMÉRCIO (SESC/SENAC)".
-  destinoDeclaracao  String?
+  destinoDeclaracao String?
   /// Trecho opcional extra no corpo (ex.: isenção de dependentes no SESC).
-  textoComplementar  String?            @db.Text
-  createdAt          DateTime           @default(now()) @db.Timestamptz
-  updatedAt          DateTime           @updatedAt @db.Timestamptz
+  textoComplementar String?           @db.Text
+  createdAt         DateTime          @default(now()) @db.Timestamptz
+  updatedAt         DateTime          @updatedAt @db.Timestamptz
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   declaracoes DeclaracaoEmitida[]
 
   @@index([tenantId, categoria])
@@ -534,22 +534,22 @@ enum StatusDeclaracao {
 
 /// Declaração/autorização emitida em PDF — validável via QR Code no site.
 model DeclaracaoEmitida {
-  id                 String           @id @default(cuid())
-  tenantId           String
+  id                String           @id @default(cuid())
+  tenantId          String
   /// Código público curto (QR / URL). Único por tenant.
-  codigo             String
-  convenioId         String
-  afiliadoId         String?
-  modelo             ModeloDeclaracao
-  destino            String
-  textoComplementar  String?          @db.Text
-  afiliadoNome       String
-  afiliadoCpf        String
-  dependenteNome     String?
-  dependenteCpf      String?
-  periodoInicio      DateTime?        @db.Timestamptz
-  periodoFim         DateTime?        @db.Timestamptz
-  emitidaEm          DateTime         @default(now()) @db.Timestamptz
+  codigo            String
+  convenioId        String
+  afiliadoId        String?
+  modelo            ModeloDeclaracao
+  destino           String
+  textoComplementar String?          @db.Text
+  afiliadoNome      String
+  afiliadoCpf       String
+  dependenteNome    String?
+  dependenteCpf     String?
+  periodoInicio     DateTime?        @db.Timestamptz
+  periodoFim        DateTime?        @db.Timestamptz
+  emitidaEm         DateTime         @default(now()) @db.Timestamptz
 
   status             StatusDeclaracao @default(PENDENTE)
   /// PDF gerado na emissão. Guardado para que o documento assinado depois
@@ -617,7 +617,7 @@ model Eleicao {
   createdAt             DateTime      @default(now()) @db.Timestamptz
   updatedAt             DateTime      @updatedAt @db.Timestamptz
 
-  tenant          Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant          Tenant                    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   chapas          Chapa[]
   elegiveis       Elegivel[]
   comparecimentos Comparecimento[]
@@ -652,17 +652,17 @@ model MembroComissaoEleitoral {
 }
 
 model Chapa {
-  id                        String      @id @default(cuid())
-  tenantId                  String
-  eleicaoId                 String
-  numero                    Int
-  nome                      String
-  slogan                    String?
-  status                    ChapaStatus @default(INSCRITA)
-  justificativaHomologacao  String?     @db.Text
-  homologadaEm              DateTime?   @db.Timestamptz
-  prazoContestacaoFim       DateTime?   @db.Timestamptz
-  createdAt                 DateTime    @default(now()) @db.Timestamptz
+  id                       String      @id @default(cuid())
+  tenantId                 String
+  eleicaoId                String
+  numero                   Int
+  nome                     String
+  slogan                   String?
+  status                   ChapaStatus @default(INSCRITA)
+  justificativaHomologacao String?     @db.Text
+  homologadaEm             DateTime?   @db.Timestamptz
+  prazoContestacaoFim      DateTime?   @db.Timestamptz
+  createdAt                DateTime    @default(now()) @db.Timestamptz
 
   tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   eleicao      Eleicao             @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
@@ -821,7 +821,7 @@ model Imovel {
   createdAt   DateTime @default(now()) @db.Timestamptz
   updatedAt   DateTime @updatedAt @db.Timestamptz
 
-  tenant       Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant       Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   fotos        FotoImovel[]
   periodos     Periodo[]
   solicitacoes SolicitacaoAluguel[]
@@ -884,12 +884,12 @@ model SolicitacaoAluguel {
 }
 
 model Mensagem {
-  id             String   @id @default(cuid())
-  tenantId       String
-  solicitacaoId  String
-  autorId        String
-  texto          String   @db.Text
-  criadoEm       DateTime @default(now()) @db.Timestamptz
+  id            String   @id @default(cuid())
+  tenantId      String
+  solicitacaoId String
+  autorId       String
+  texto         String   @db.Text
+  criadoEm      DateTime @default(now()) @db.Timestamptz
 
   tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   solicitacao SolicitacaoAluguel @relation(fields: [solicitacaoId], references: [id], onDelete: Cascade)

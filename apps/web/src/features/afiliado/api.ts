@@ -70,7 +70,7 @@ export async function cadastrarAfiliado(
     }
   }
   form.append('dataNascimento', dataIso(dataNascimento));
-  form.append('dataAdmissao', dataIso(dataAdmissao));
+  if (dataAdmissao) form.append('dataAdmissao', dataIso(dataAdmissao));
   form.append('aceiteEstatuto', String(aceiteEstatuto));
   form.append(
     'dependentes',

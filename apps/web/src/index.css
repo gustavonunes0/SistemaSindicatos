@@ -3213,6 +3213,47 @@ button.botao-primario {
   color: var(--cor-texto-suave);
 }
 
+.cadastro-tipo-opcoes {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cadastro-tipo-opcao {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.9rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+  cursor: pointer;
+  transition: border-color 180ms ease-out, background-color 180ms ease-out;
+}
+
+.cadastro-tipo-opcao:has(input:checked) {
+  border-color: var(--cor-primaria);
+  background: color-mix(in srgb, var(--cor-primaria) 6%, #fff);
+}
+
+.cadastro-tipo-opcao input {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.2rem;
+  accent-color: var(--cor-primaria);
+}
+
+.cadastro-tipo-opcao span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.cadastro-tipo-opcao small {
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--cor-texto-suave);
+}
+
 .cadastro-dependente {
   display: grid;
   gap: 0.65rem;
@@ -3347,6 +3388,10 @@ button.botao-primario {
   }
 
   .cadastro-grade {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cadastro-tipo-opcoes {
     grid-template-columns: 1fr 1fr;
   }
 
