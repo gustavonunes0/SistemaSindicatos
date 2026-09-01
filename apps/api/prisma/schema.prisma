@@ -382,6 +382,8 @@ model Formulario {
   titulo    String
   slug      String
   descricao String?           @db.Text
+  /// Link de formulário mantido em serviço externo, como Google Forms.
+  urlExterna String?
   /// Perguntas do formulário — ver campoFormularioSchema em @sindprf/types.
   /// JSON em vez de tabela: salvar o formulário é um único write e a ordem
   /// das perguntas vem de graça.

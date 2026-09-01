@@ -8,6 +8,7 @@ import {
   type CriarFormularioInput,
   type EnviarRespostaInput,
   type Formulario,
+  type FormularioExternoInput,
   type FormularioListagem,
   type FormularioPublico,
   type RespostasFormulario,
@@ -38,6 +39,19 @@ export async function listarRespostas(formularioId: string): Promise<RespostasFo
 
 export async function criarFormulario(input: CriarFormularioInput): Promise<Formulario> {
   const { data } = await api.post('/formularios', input);
+  return formularioSchema.parse(data);
+}
+
+export async function criarFormularioExterno(input: FormularioExternoInput): Promise<Formulario> {
+  const { data } = await api.post('/formularios/externos', input);
+  return formularioSchema.parse(data);
+}
+
+export async function atualizarFormularioExterno(
+  id: string,
+  input: FormularioExternoInput,
+): Promise<Formulario> {
+  const { data } = await api.patch(`/formularios/externos/${id}`, input);
   return formularioSchema.parse(data);
 }
 

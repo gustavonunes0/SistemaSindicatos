@@ -159,6 +159,23 @@ export function FormularioPublicoPage() {
               </Link>
             </div>
           </div>
+        ) : formulario.urlExterna ? (
+          <div className="formulario-aviso">
+            <p>Este formulário é respondido no Google Forms.</p>
+            <div className="formularios-vazio-acoes">
+              <a
+                href={formulario.urlExterna}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="botao-primario"
+              >
+                Abrir formulário
+              </a>
+              <Link to="/" className="botao-secundario">
+                Voltar ao início
+              </Link>
+            </div>
+          </div>
         ) : (
           <form className="form-area formulario-publico-form" onSubmit={onEnviar} noValidate>
             {formulario.campos.map((campo, indice) => (

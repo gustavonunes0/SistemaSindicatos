@@ -4,6 +4,7 @@ import type {
   CriarFormularioInput,
   EnviarRespostaInput,
   Formulario,
+  FormularioExternoInput,
   FormularioListagem,
 } from '@sindprf/types';
 import { useAuthStore } from '../auth/store';
@@ -63,6 +64,29 @@ export function useCriarFormulario() {
       queryClient.setQueryData(['formularios', 'admin', criado.id], criado);
       const atual = queryClient.getQueryData<FormularioListagem[]>([...CHAVE_ADMIN]) ?? [];
       gravarLista(queryClient, [paraLinhaDaTabela(criado, 0), ...atual]);
+    },
+  });
+}
+
+export function useSalvarFormularioExterno() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, ...input }: FormularioExternoInput & { id?: string }) =>
+      id
+        ? formulariosApi.atualizarFormularioExterno(id, input)
+        : formulariosApi.criarFormularioExterno(input),
+    onSuccess: (salvo) => {
+      queryClient.setQueryData(['formularios', 'admin', salvo.id], salvo);
+      const atual = queryClient.getQueryData<FormularioListagem[]>([...CHAVE_ADMIN]) ?? [];
+      const existente = atual.find((item) => item.id === salvo.id);
+      const linha = paraLinhaDaTabela(salvo, existente?.totalRespostas ?? 0);
+      gravarLista(
+        queryClient,
+        existente
+          ? atual.map((item) => (item.id === salvo.id ? linha : item))
+          : [linha, ...atual],
+      );
+      void queryClient.invalidateQueries({ queryKey: ['formularios', 'disponiveis'] });
     },
   });
 }

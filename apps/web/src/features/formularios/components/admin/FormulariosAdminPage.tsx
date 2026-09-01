@@ -11,14 +11,15 @@ import { TabelaDados, type ColunaTabela } from '../../../../components/ui/Tabela
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import { useFormulariosAdmin, useRemoverFormulario } from '../../hooks';
+import { FormularioExternoModal } from './FormularioExternoModal';
 
 const publicoCurto: Record<FormularioListagem['publico'], string> = {
   TODOS: 'Aberto',
   FILIADOS: 'Só filiados',
 };
 
-function linkPublico(slug: string): string {
-  return `${window.location.origin}/formularios/${slug}`;
+function linkPublico(formulario: FormularioListagem): string {
+  return `${window.location.origin}/formularios/${formulario.slug}`;
 }
 
 export function FormulariosAdminPage() {
@@ -27,11 +28,13 @@ export function FormulariosAdminPage() {
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState<string | null>(null);
+  const [modalExternoAberto, setModalExternoAberto] = useState(false);
+  const [externoEmEdicao, setExternoEmEdicao] = useState<FormularioListagem | null>(null);
   const mutarRemover = remover.mutateAsync;
   const removendo = remover.isPending;
 
   const onCopiarLink = useCallback(async (formulario: FormularioListagem) => {
-    await navigator.clipboard.writeText(linkPublico(formulario.slug));
+    await navigator.clipboard.writeText(linkPublico(formulario));
     setCopiado(formulario.id);
     window.setTimeout(() => setCopiado(null), 2000);
   }, []);
@@ -73,8 +76,11 @@ export function FormulariosAdminPage() {
                   — {PUBLICO_FORMULARIO_ROTULO[formulario.publico]}
                 </span>
                 {' · '}
-                {formulario.totalCampos}{' '}
-                {formulario.totalCampos === 1 ? 'pergunta' : 'perguntas'}
+                {formulario.urlExterna
+                  ? 'Google Forms'
+                  : `${formulario.totalCampos} ${
+                      formulario.totalCampos === 1 ? 'pergunta' : 'perguntas'
+                    }`}
               </span>
             </div>
           );
@@ -94,9 +100,12 @@ export function FormulariosAdminPage() {
         id: 'respostas',
         header: 'Respostas',
         enableSorting: false,
-        cell: ({ row }) => (
-          <span className="tabela-numerico">{row.original.totalRespostas}</span>
-        ),
+        cell: ({ row }) =>
+          row.original.urlExterna ? (
+            <span className="texto-secundario">No Google</span>
+          ) : (
+            <span className="tabela-numerico">{row.original.totalRespostas}</span>
+          ),
       },
       {
         id: 'createdAt',
@@ -115,17 +124,35 @@ export function FormulariosAdminPage() {
           const rascunho = formulario.status === 'RASCUNHO';
           return (
             <div className="tabela-acoes">
-              <button
-                type="button"
-                className="botao-tabela botao-tabela--destaque"
-                onClick={() => navigate(`/admin/formularios/${formulario.id}/respostas`)}
-              >
-                Respostas
-              </button>
+              {formulario.urlExterna ? (
+                <a
+                  className="botao-tabela botao-tabela--destaque"
+                  href={formulario.urlExterna}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Abrir
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  className="botao-tabela botao-tabela--destaque"
+                  onClick={() => navigate(`/admin/formularios/${formulario.id}/respostas`)}
+                >
+                  Respostas
+                </button>
+              )}
               <button
                 type="button"
                 className="botao-tabela"
-                onClick={() => navigate(`/admin/formularios/${formulario.id}`)}
+                onClick={() => {
+                  if (formulario.urlExterna) {
+                    setExternoEmEdicao(formulario);
+                    setModalExternoAberto(true);
+                  } else {
+                    navigate(`/admin/formularios/${formulario.id}`);
+                  }
+                }}
               >
                 Editar
               </button>
@@ -137,7 +164,7 @@ export function FormulariosAdminPage() {
                 title={
                   rascunho
                     ? 'Publique o formulário para compartilhar o link'
-                    : linkPublico(formulario.slug)
+                    : linkPublico(formulario)
                 }
               >
                 {copiado === formulario.id ? 'Copiado!' : 'Copiar link'}
@@ -164,13 +191,25 @@ export function FormulariosAdminPage() {
       titulo="Formulários"
       descricao="Crie formulários, compartilhe o link e acompanhe as respostas."
       acoes={
-        <button
-          type="button"
-          className="botao-primario"
-          onClick={() => navigate('/admin/formularios/novo')}
-        >
-          Novo formulário
-        </button>
+        <div className="form-acoes">
+          <button
+            type="button"
+            className="botao-secundario"
+            onClick={() => {
+              setExternoEmEdicao(null);
+              setModalExternoAberto(true);
+            }}
+          >
+            Cadastrar Google Forms
+          </button>
+          <button
+            type="button"
+            className="botao-primario"
+            onClick={() => navigate('/admin/formularios/novo')}
+          >
+            Criar formulário
+          </button>
+        </div>
       }
     >
       {isLoading && !formularios && <EstadoCarregando mensagem="Carregando formulários…" />}
@@ -221,6 +260,14 @@ export function FormulariosAdminPage() {
       )}
 
       {modalConfirmacao}
+      <FormularioExternoModal
+        aberto={modalExternoAberto}
+        formulario={externoEmEdicao}
+        onFechar={() => {
+          setModalExternoAberto(false);
+          setExternoEmEdicao(null);
+        }}
+      />
     </AreaLayout>
   );
 }

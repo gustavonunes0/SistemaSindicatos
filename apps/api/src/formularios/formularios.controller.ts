@@ -22,9 +22,11 @@ import {
   atualizarFormularioSchema,
   criarFormularioSchema,
   enviarRespostaSchema,
+  formularioExternoSchema,
   type AtualizarFormularioInput,
   type CriarFormularioInput,
   type EnviarRespostaInput,
+  type FormularioExternoInput,
   type UploadArquivoFormularioResponse,
 } from '@sindprf/types';
 import { CurrentUser, Public, Roles } from '../common/decorators';
@@ -84,6 +86,23 @@ export class FormulariosController {
   @Post()
   criar(@Body(new ZodValidationPipe(criarFormularioSchema)) body: CriarFormularioInput) {
     return this.formulariosService.criar(body);
+  }
+
+  @Roles('ADMIN')
+  @Post('externos')
+  criarExterno(
+    @Body(new ZodValidationPipe(formularioExternoSchema)) body: FormularioExternoInput,
+  ) {
+    return this.formulariosService.criarExterno(body);
+  }
+
+  @Roles('ADMIN')
+  @Patch('externos/:id')
+  atualizarExterno(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(formularioExternoSchema)) body: FormularioExternoInput,
+  ) {
+    return this.formulariosService.atualizarExterno(id, body);
   }
 
   @Roles('ADMIN')
@@ -180,7 +199,7 @@ export class FormulariosController {
     const [formulario, afiliado] = await Promise.all([
       this.prisma.formulario.findFirst({
         where: { slug, status: 'PUBLICADO' },
-        select: { publico: true },
+        select: { publico: true, urlExterna: true },
       }),
       user?.role === 'AFILIADO'
         ? this.prisma.afiliado.findUnique({
@@ -192,6 +211,9 @@ export class FormulariosController {
 
     if (!formulario) {
       throw new NotFoundException('Formulário não encontrado');
+    }
+    if (formulario.urlExterna) {
+      throw new ForbiddenException('Este formulário recebe arquivos em um serviço externo');
     }
     if (formulario.publico === 'FILIADOS' && afiliado?.status !== 'APROVADO') {
       throw new ForbiddenException('Este formulário é exclusivo para filiados aprovados');

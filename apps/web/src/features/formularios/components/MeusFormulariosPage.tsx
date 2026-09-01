@@ -32,14 +32,19 @@ export function MeusFormulariosPage() {
             <li key={formulario.id} className="card-formulario">
               <div className="card-formulario-corpo">
                 <div className="card-formulario-topo">
-                  {formulario.jaRespondeu ? (
+                  {formulario.urlExterna ? (
+                    <span className="badge badge-formulario-publicado">Google Forms</span>
+                  ) : formulario.jaRespondeu ? (
                     <span className="badge badge-formulario-publicado">Respondido</span>
                   ) : (
                     <span className="badge badge-formulario-rascunho">Pendente</span>
                   )}
                   <span className="card-formulario-meta">
-                    {formulario.totalCampos}{' '}
-                    {formulario.totalCampos === 1 ? 'pergunta' : 'perguntas'}
+                    {formulario.urlExterna
+                      ? 'Link externo'
+                      : `${formulario.totalCampos} ${
+                          formulario.totalCampos === 1 ? 'pergunta' : 'perguntas'
+                        }`}
                   </span>
                 </div>
                 <h2>{formulario.titulo}</h2>
@@ -49,12 +54,23 @@ export function MeusFormulariosPage() {
                   </p>
                 )}
               </div>
-              <Link
-                to={`/formularios/${formulario.slug}`}
-                className={formulario.jaRespondeu ? 'botao-secundario' : 'botao-primario'}
-              >
-                {formulario.jaRespondeu ? 'Ver formulário' : 'Responder'}
-              </Link>
+              {formulario.urlExterna ? (
+                <a
+                  href={formulario.urlExterna}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="botao-primario"
+                >
+                  Abrir formulário
+                </a>
+              ) : (
+                <Link
+                  to={`/formularios/${formulario.slug}`}
+                  className={formulario.jaRespondeu ? 'botao-secundario' : 'botao-primario'}
+                >
+                  {formulario.jaRespondeu ? 'Ver formulário' : 'Responder'}
+                </Link>
+              )}
             </li>
           ))}
         </ul>

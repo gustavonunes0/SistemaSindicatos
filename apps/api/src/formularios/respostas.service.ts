@@ -28,7 +28,7 @@ export class RespostasService {
     const [formulario, afiliado] = await Promise.all([
       this.prisma.formulario.findFirst({
         where: { slug },
-        select: { id: true, campos: true, publico: true, status: true },
+        select: { id: true, campos: true, publico: true, status: true, urlExterna: true },
       }),
       user?.role === 'AFILIADO'
         ? this.prisma.afiliado.findUnique({
@@ -43,6 +43,9 @@ export class RespostasService {
     }
     if (formulario.status === 'ENCERRADO') {
       throw new ForbiddenException('Este formulário está encerrado');
+    }
+    if (formulario.urlExterna) {
+      throw new ForbiddenException('Este formulário recebe respostas em um serviço externo');
     }
 
     const aprovado = afiliado?.status === 'APROVADO';

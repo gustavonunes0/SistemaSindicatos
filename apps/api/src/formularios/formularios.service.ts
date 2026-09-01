@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import type {
   AtualizarFormularioInput,
   CriarFormularioInput,
+  FormularioExternoInput,
   FormularioPublico,
 } from '@sindprf/types';
 import type { RequestUser } from '../common/request-user';
@@ -17,6 +18,7 @@ const CAMPOS_LISTAGEM_ADMIN = {
   titulo: true,
   slug: true,
   descricao: true,
+  urlExterna: true,
   publico: true,
   status: true,
   createdAt: true,
@@ -66,6 +68,42 @@ export class FormulariosService {
       },
     });
     return { ...formulario, campos: lerCampos(formulario.campos) };
+  }
+
+  async criarExterno(input: FormularioExternoInput) {
+    const formulario = await this.prisma.formulario.create({
+      data: {
+        tenantId: requireTenantId(),
+        titulo: input.titulo,
+        slug: await this.slugDisponivel(gerarSlug(input.titulo)),
+        descricao: input.descricao ?? null,
+        urlExterna: input.urlExterna,
+        campos: [],
+        publico: input.publico,
+        status: input.status,
+      },
+    });
+    return { ...formulario, campos: [] };
+  }
+
+  async atualizarExterno(id: string, input: FormularioExternoInput) {
+    const tenantId = requireTenantId();
+    try {
+      const formulario = await this.prisma.formulario.update({
+        where: { id, tenantId, urlExterna: { not: null } },
+        data: {
+          titulo: input.titulo,
+          slug: await this.slugDisponivel(gerarSlug(input.titulo), id),
+          descricao: input.descricao ?? null,
+          urlExterna: input.urlExterna,
+          publico: input.publico,
+          status: input.status,
+        },
+      });
+      return { ...formulario, campos: [] };
+    } catch (error) {
+      throw this.traduzirAusencia(error);
+    }
   }
 
   async atualizar(id: string, input: AtualizarFormularioInput) {
@@ -130,6 +168,7 @@ export class FormulariosService {
           titulo: true,
           slug: true,
           descricao: true,
+          urlExterna: true,
           campos: true,
           publico: true,
           status: true,
@@ -168,6 +207,7 @@ export class FormulariosService {
       titulo: formulario.titulo,
       slug: formulario.slug,
       descricao: formulario.descricao,
+      urlExterna: formulario.urlExterna,
       publico: formulario.publico,
       status: formulario.status,
       // Já respondeu ainda vê as perguntas; quem está barrado por acesso, não.

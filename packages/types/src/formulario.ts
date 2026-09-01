@@ -84,6 +84,8 @@ export const formularioSchema = z.object({
   titulo: z.string(),
   slug: z.string(),
   descricao: z.string().nullable(),
+  /** Link de um formulário mantido fora da plataforma, como Google Forms. */
+  urlExterna: z.string().url().nullable(),
   campos: z.array(campoFormularioSchema),
   publico: publicoFormularioSchema,
   status: statusFormularioSchema,
@@ -111,6 +113,24 @@ const formularioCamposSchema = z.object({
   publico: publicoFormularioSchema.default('FILIADOS'),
   status: statusFormularioSchema.default('RASCUNHO'),
 });
+
+export const formularioExternoSchema = z.object({
+  titulo: z.string().trim().min(3, 'Título deve ter no mínimo 3 caracteres').max(150),
+  descricao: z
+    .string()
+    .trim()
+    .max(2000)
+    .nullable()
+    .optional()
+    .transform((valor) => valor || null),
+  urlExterna: z
+    .string()
+    .trim()
+    .url('Informe o endereço completo do formulário, começando com https://'),
+  publico: publicoFormularioSchema.default('FILIADOS'),
+  status: statusFormularioSchema.default('PUBLICADO'),
+});
+export type FormularioExternoInput = z.infer<typeof formularioExternoSchema>;
 
 function validarFormulario(
   dados: Partial<z.infer<typeof formularioCamposSchema>>,
@@ -151,6 +171,7 @@ export const formularioPublicoSchema = z.object({
   titulo: z.string(),
   slug: z.string(),
   descricao: z.string().nullable(),
+  urlExterna: z.string().url().nullable(),
   publico: publicoFormularioSchema,
   status: statusFormularioSchema,
   campos: z.array(campoFormularioSchema),
