@@ -1,10 +1,15 @@
-import type { Imovel } from '@sindprf/types';
+import type { Imovel, StatusSolicitacao } from '@sindprf/types';
 import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarMoeda } from '../../../../lib/moeda';
 import { urlDaApi } from '../../../../lib/urls';
+import {
+  FiltroStatusSolicitacao,
+  SolicitacoesAdminPainel,
+} from '../../../solicitacoes/components/admin/SolicitacoesAdminPainel';
 import { useImoveisAdmin, useRemoverImovel } from '../../hooks';
 import { ImovelFormModal } from './ImovelFormModal';
 
@@ -12,11 +17,16 @@ type ModalImovel = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 
 const COMODIDADES_VISIVEIS = 3;
 
-export function ImoveisAdminPage() {
-  const { data: imoveis, isLoading, isError } = useImoveisAdmin();
+type ImoveisAdminPageProps = {
+  aba?: 'cadastro' | 'solicitacoes';
+};
+
+export function ImoveisAdminPage({ aba = 'cadastro' }: ImoveisAdminPageProps) {
+  const { data: imoveis, isLoading, isError } = useImoveisAdmin(aba === 'cadastro');
   const remover = useRemoverImovel();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [modal, setModal] = useState<ModalImovel>(null);
+  const [status, setStatus] = useState<StatusSolicitacao | ''>('');
 
   const onRemover = (imovel: Imovel) => {
     pedirConfirmacao({
@@ -34,127 +44,154 @@ export function ImoveisAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Apartamentos"
-      descricao="Cadastre os imóveis de lazer, as fotos e os períodos indisponíveis."
+      descricao="Cadastre os imóveis de lazer e acompanhe as solicitações de locação na mesma tela."
       acoes={
-        <button
-          type="button"
-          className="botao-primario"
-          onClick={() => setModal({ modo: 'criar' })}
-        >
-          Novo apartamento
-        </button>
-      }
-    >
-      {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
-      {isError && (
-        <p className="erro">Não foi possível carregar os imóveis. Tente novamente.</p>
-      )}
-
-      {imoveis && imoveis.length === 0 && (
-        <div className="estado-vazio formularios-vazio">
-          <p className="eyebrow">Comece por aqui</p>
-          <h2>Nenhum apartamento cadastrado</h2>
-          <p>
-            Cadastre o primeiro imóvel com fotos, valor da diária e comodidades para os filiados
-            consultarem.
-          </p>
+        aba === 'cadastro' ? (
           <button
             type="button"
             className="botao-primario"
             onClick={() => setModal({ modo: 'criar' })}
           >
-            Cadastrar o primeiro
+            Novo apartamento
           </button>
-        </div>
-      )}
+        ) : (
+          <FiltroStatusSolicitacao status={status} onChange={setStatus} />
+        )
+      }
+    >
+      <nav className="abas imoveis-admin-abas" aria-label="Seções de apartamentos">
+        <NavLink
+          to="/admin/imoveis"
+          end
+          className={({ isActive }) => (isActive ? 'aba aba--ativa' : 'aba')}
+        >
+          Cadastro
+        </NavLink>
+        <NavLink
+          to="/admin/imoveis/solicitacoes"
+          end
+          className={({ isActive }) => (isActive ? 'aba aba--ativa' : 'aba')}
+        >
+          Solicitações
+        </NavLink>
+      </nav>
 
-      {imoveis && imoveis.length > 0 && (
+      {aba === 'solicitacoes' ? (
+        <SolicitacoesAdminPainel status={status} />
+      ) : (
         <>
-          <dl className="formularios-meta">
-            <div>
-              <dt>Total</dt>
-              <dd>{imoveis.length}</dd>
-            </div>
-            <div>
-              <dt>Visíveis</dt>
-              <dd>{ativos}</dd>
-            </div>
-            {semFoto > 0 && (
-              <div>
-                <dt>Sem foto</dt>
-                <dd>{semFoto}</dd>
-              </div>
-            )}
-          </dl>
+          {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
+          {isError && (
+            <p className="erro">Não foi possível carregar os imóveis. Tente novamente.</p>
+          )}
 
-          <ul className="imoveis-admin-grade">
-            {imoveis.map((imovel) => {
-              const fotos = imovel.fotos ?? [];
-              const capa = fotos[0];
-              const extras = imovel.comodidades.length - COMODIDADES_VISIVEIS;
+          {imoveis && imoveis.length === 0 && (
+            <div className="estado-vazio formularios-vazio">
+              <p className="eyebrow">Comece por aqui</p>
+              <h2>Nenhum apartamento cadastrado</h2>
+              <p>
+                Cadastre o primeiro imóvel com fotos, valor da diária e comodidades para os
+                filiados consultarem.
+              </p>
+              <button
+                type="button"
+                className="botao-primario"
+                onClick={() => setModal({ modo: 'criar' })}
+              >
+                Cadastrar o primeiro
+              </button>
+            </div>
+          )}
 
-              return (
-                <li key={imovel.id} className="imovel-admin-card">
-                  <div className="imovel-admin-capa">
-                    {capa ? (
-                      <img src={urlDaApi(capa.url)} alt="" loading="lazy" />
-                    ) : (
-                      <span className="imovel-admin-capa-vazia">Sem foto</span>
-                    )}
-                    <span
-                      className={`badge ${imovel.ativo ? 'badge-ativo' : 'badge-inativo'} imovel-admin-selo`}
-                    >
-                      {imovel.ativo ? 'Visível' : 'Oculto'}
-                    </span>
+          {imoveis && imoveis.length > 0 && (
+            <>
+              <dl className="formularios-meta">
+                <div>
+                  <dt>Total</dt>
+                  <dd>{imoveis.length}</dd>
+                </div>
+                <div>
+                  <dt>Visíveis</dt>
+                  <dd>{ativos}</dd>
+                </div>
+                {semFoto > 0 && (
+                  <div>
+                    <dt>Sem foto</dt>
+                    <dd>{semFoto}</dd>
                   </div>
+                )}
+              </dl>
 
-                  <div className="imovel-admin-corpo">
-                    <h2>{imovel.titulo}</h2>
-                    <p className="imovel-admin-endereco">{imovel.endereco}</p>
+              <ul className="imoveis-admin-grade">
+                {imoveis.map((imovel) => {
+                  const fotos = imovel.fotos ?? [];
+                  const capa = fotos[0];
+                  const extras = imovel.comodidades.length - COMODIDADES_VISIVEIS;
 
-                    <p className="imovel-admin-valor">
-                      {formatarMoeda(imovel.valor)}
-                      <span> por dia</span>
-                    </p>
-
-                    {imovel.comodidades.length > 0 && (
-                      <ul className="imovel-comodidades">
-                        {imovel.comodidades.slice(0, COMODIDADES_VISIVEIS).map((item) => (
-                          <li key={item}>{item}</li>
-                        ))}
-                        {extras > 0 && <li className="imovel-comodidade-extra">+{extras}</li>}
-                      </ul>
-                    )}
-
-                    <footer className="imovel-admin-rodape">
-                      <span className="texto-secundario">
-                        {fotos.length === 0
-                          ? 'Nenhuma foto'
-                          : `${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}`}
-                      </span>
-                      <div className="tabela-acoes">
-                        <button
-                          type="button"
-                          className="botao-tabela botao-tabela--destaque"
-                          onClick={() => setModal({ modo: 'editar', id: imovel.id })}
+                  return (
+                    <li key={imovel.id} className="imovel-admin-card">
+                      <div className="imovel-admin-capa">
+                        {capa ? (
+                          <img src={urlDaApi(capa.url)} alt="" loading="lazy" />
+                        ) : (
+                          <span className="imovel-admin-capa-vazia">Sem foto</span>
+                        )}
+                        <span
+                          className={`badge ${imovel.ativo ? 'badge-ativo' : 'badge-inativo'} imovel-admin-selo`}
                         >
-                          Editar
-                        </button>
-                        <button
-                          type="button"
-                          className="botao-tabela botao-tabela--perigo"
-                          disabled={remover.isPending}
-                          onClick={() => onRemover(imovel)}
-                        >
-                          Excluir
-                        </button>
+                          {imovel.ativo ? 'Visível' : 'Oculto'}
+                        </span>
                       </div>
-                    </footer>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
+
+                      <div className="imovel-admin-corpo">
+                        <h2>{imovel.titulo}</h2>
+                        <p className="imovel-admin-endereco">{imovel.endereco}</p>
+
+                        <p className="imovel-admin-valor">
+                          {formatarMoeda(imovel.valor)}
+                          <span> por dia</span>
+                        </p>
+
+                        {imovel.comodidades.length > 0 && (
+                          <ul className="imovel-comodidades">
+                            {imovel.comodidades.slice(0, COMODIDADES_VISIVEIS).map((item) => (
+                              <li key={item}>{item}</li>
+                            ))}
+                            {extras > 0 && <li className="imovel-comodidade-extra">+{extras}</li>}
+                          </ul>
+                        )}
+
+                        <footer className="imovel-admin-rodape">
+                          <span className="texto-secundario">
+                            {fotos.length === 0
+                              ? 'Nenhuma foto'
+                              : `${fotos.length} ${fotos.length === 1 ? 'foto' : 'fotos'}`}
+                          </span>
+                          <div className="tabela-acoes">
+                            <button
+                              type="button"
+                              className="botao-tabela botao-tabela--destaque"
+                              onClick={() => setModal({ modo: 'editar', id: imovel.id })}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              type="button"
+                              className="botao-tabela botao-tabela--perigo"
+                              disabled={remover.isPending}
+                              onClick={() => onRemover(imovel)}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+                        </footer>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </>
+          )}
         </>
       )}
 

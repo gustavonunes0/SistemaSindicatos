@@ -17,7 +17,7 @@ export function SolicitacaoResumoLinha({
   mostrarAfiliado = false,
 }: {
   solicitacao: SolicitacaoResumo;
-  linkPrefix: '/afiliado/solicitacoes' | '/admin/solicitacoes';
+  linkPrefix: '/afiliado/solicitacoes' | '/admin/solicitacoes' | '/admin/imoveis/solicitacoes';
   mostrarAfiliado?: boolean;
 }) {
   return (

@@ -39,7 +39,6 @@ const gruposAdmin: GrupoNav[] = [
       { to: '/admin/tutoriais', rotulo: 'Tutoriais' },
       { to: '/admin/afiliados', rotulo: 'Filiados' },
       { to: '/admin/financeiro', rotulo: 'Financeiro' },
-      { to: '/admin/solicitacoes', rotulo: 'Solicitações' },
       { to: '/admin/declaracoes', rotulo: 'Declarações' },
       { to: '/admin/juridico', rotulo: 'Jurídico' },
       { to: '/admin/eleicoes', rotulo: 'Eleições' },

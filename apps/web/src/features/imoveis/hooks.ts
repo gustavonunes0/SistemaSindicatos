@@ -38,10 +38,11 @@ export function useDisponibilidadeImovel(id: string, consulta: ConsultaDisponibi
   });
 }
 
-export function useImoveisAdmin() {
+export function useImoveisAdmin(enabled = true) {
   return useQuery({
     queryKey: ['imoveis', 'admin'],
     queryFn: imoveisApi.listarImoveisAdmin,
+    enabled,
   });
 }
 

@@ -11704,6 +11704,11 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   background: var(--cor-fundo);
 }
 
+.imoveis-admin-abas {
+  width: fit-content;
+  margin-bottom: 1.25rem;
+}
+
 .aba {
   padding: 0.45rem 0.9rem;
   border: none;
@@ -11713,6 +11718,9 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   font-size: 0.875rem;
   font-weight: 500;
   cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
   transition:
     background 0.2s ease,
     color 0.2s ease;

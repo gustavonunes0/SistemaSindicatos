@@ -20,7 +20,7 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   const voltar =
-    visao === 'admin' ? '/admin/solicitacoes' : '/afiliado/solicitacoes';
+    visao === 'admin' ? '/admin/imoveis/solicitacoes' : '/afiliado/solicitacoes';
   const rotuloVoltar = visao === 'admin' ? '← Solicitações' : '← Minhas solicitações';
 
   const onMudarStatus = (status: StatusSolicitacao) => {

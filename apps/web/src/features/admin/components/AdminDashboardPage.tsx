@@ -34,12 +34,6 @@ const modulos: ModuloAdmin[] = [
     acao: 'Abrir financeiro',
   },
   {
-    to: '/admin/solicitacoes',
-    titulo: 'Solicitações de locação',
-    descricao: 'Acompanhe e responda as conversas abertas pelos afiliados.',
-    acao: 'Abrir fila',
-  },
-  {
     to: '/admin/juridico',
     titulo: 'Jurídico',
     descricao: 'Consulta pública de processos, RPV e precatórios no TRF1 e no TRF5.',
@@ -66,7 +60,7 @@ const modulos: ModuloAdmin[] = [
   {
     to: '/admin/imoveis',
     titulo: 'Apartamentos',
-    descricao: 'Controle imóveis, fotos e períodos de disponibilidade.',
+    descricao: 'Cadastre imóveis e acompanhe as solicitações de locação.',
     acao: 'Gerenciar imóveis',
   },
 ];
@@ -134,7 +128,7 @@ export function AdminDashboardPage() {
                       ? 'Nenhuma solicitação registrada'
                       : `${totalSolicitacoes} no total`}
                   </p>
-                  <Link to="/admin/solicitacoes" className="dash-metrica-link">
+                  <Link to="/admin/imoveis/solicitacoes" className="dash-metrica-link">
                     Ver solicitações
                   </Link>
                 </article>
@@ -184,7 +178,7 @@ export function AdminDashboardPage() {
                     : `Há ${solicitacoesAbertas} solicitações abertas ou em andamento aguardando retorno.`}
                 </p>
               </div>
-              <Link to="/admin/solicitacoes" className="botao-primario">
+              <Link to="/admin/imoveis/solicitacoes" className="botao-primario">
                 Ir para solicitações
               </Link>
             </aside>

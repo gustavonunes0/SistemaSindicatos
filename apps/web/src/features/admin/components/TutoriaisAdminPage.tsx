@@ -82,12 +82,12 @@ const TUTORIAIS: Tutorial[] = [
   {
     id: 'solicitacoes',
     titulo: 'Atender solicitações de locação',
-    grupo: 'Operação',
+    grupo: 'Conteúdo',
     resumo: 'Fluxo legado de chat de locação. A reserva dos afiliados agora é feita pelo link externo abre.ai/sindprfcereserva.',
-    rota: '/admin/solicitacoes',
+    rota: '/admin/imoveis/solicitacoes',
     acao: 'Abrir solicitações',
     passos: [
-      'Abra Solicitações no menu.',
+      'Abra Apartamentos e clique na aba Solicitações.',
       'Filtre por status (Aberta, Em andamento ou Fechada).',
       'Clique na solicitação para ver os detalhes e o período desejado.',
       'Altere o status conforme o andamento do atendimento.',
@@ -217,7 +217,7 @@ const TUTORIAIS: Tutorial[] = [
     rota: '/admin/imoveis',
     acao: 'Abrir apartamentos',
     passos: [
-      'Abra Apartamentos e clique em Novo apartamento.',
+      'Abra Apartamentos, aba Cadastro, e clique em Novo apartamento.',
       'Preencha título, endereço, valor por dia e comodidades.',
       'Adicione fotos e marque se está ativo.',
       'Salve o cadastro.',

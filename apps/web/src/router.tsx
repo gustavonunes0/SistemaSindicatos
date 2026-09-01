@@ -161,11 +161,6 @@ const ImoveisAdminPage = lazy(() =>
     default: m.ImoveisAdminPage,
   })),
 );
-const SolicitacoesAdminPage = lazy(() =>
-  import('./features/solicitacoes/components/admin/SolicitacoesAdminPage').then((m) => ({
-    default: m.SolicitacoesAdminPage,
-  })),
-);
 const SolicitacaoDetalhePage = lazy(() =>
   import('./features/solicitacoes/components/SolicitacaoDetalhePage').then((m) => ({
     default: m.SolicitacaoDetalhePage,
@@ -230,6 +225,11 @@ function RedirecionarD8Detalhe() {
   return <Navigate to={`/admin/financeiro/d8/${id ?? ''}`} replace />;
 }
 
+function RedirecionarSolicitacaoAdmin() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={`/admin/imoveis/solicitacoes/${id ?? ''}`} replace />;
+}
+
 export const router = createBrowserRouter([
   {
     element: <PublicLayout />,
@@ -287,13 +287,18 @@ export const router = createBrowserRouter([
   { path: '/admin/eleicoes', element: protegidaAdmin(<EleicoesAdminPage />) },
   { path: '/admin/eleicoes/:id', element: protegidaAdmin(<EleicaoDetalheAdminPage />) },
   { path: '/admin/imoveis', element: protegidaAdmin(<ImoveisAdminPage />) },
-  { path: '/admin/imoveis/novo', element: <Navigate to="/admin/imoveis" replace /> },
-  { path: '/admin/imoveis/:id/editar', element: <Navigate to="/admin/imoveis" replace /> },
-  { path: '/admin/solicitacoes', element: protegidaAdmin(<SolicitacoesAdminPage />) },
   {
-    path: '/admin/solicitacoes/:id',
+    path: '/admin/imoveis/solicitacoes',
+    element: protegidaAdmin(<ImoveisAdminPage aba="solicitacoes" />),
+  },
+  {
+    path: '/admin/imoveis/solicitacoes/:id',
     element: protegidaAdmin(<SolicitacaoDetalhePage visao="admin" />),
   },
+  { path: '/admin/imoveis/novo', element: <Navigate to="/admin/imoveis" replace /> },
+  { path: '/admin/imoveis/:id/editar', element: <Navigate to="/admin/imoveis" replace /> },
+  { path: '/admin/solicitacoes', element: <Navigate to="/admin/imoveis/solicitacoes" replace /> },
+  { path: '/admin/solicitacoes/:id', element: <RedirecionarSolicitacaoAdmin /> },
   { path: '/afiliado', element: protegidaAfiliado(<AfiliadoDashboardPage />) },
   { path: '/afiliado/convenios', element: protegidaAfiliado(<ConveniosPage />) },
   { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
