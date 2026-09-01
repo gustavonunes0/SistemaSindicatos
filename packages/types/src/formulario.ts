@@ -128,7 +128,8 @@ export const formularioExternoSchema = z.object({
     .trim()
     .url('Informe o endereço completo do formulário, começando com https://'),
   publico: publicoFormularioSchema.default('FILIADOS'),
-  status: statusFormularioSchema.default('PUBLICADO'),
+  // Link nasce guardado: só vai para a área do filiado quando o admin liberar.
+  status: statusFormularioSchema.default('RASCUNHO'),
 });
 export type FormularioExternoInput = z.infer<typeof formularioExternoSchema>;
 

@@ -4,17 +4,33 @@ import {
   type FormularioExternoInput,
   type FormularioListagem,
 } from '@sindprf/types';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
 import { Modal } from '../../../../components/ui/Modal';
 import { useSalvarFormularioExterno } from '../../hooks';
+import {
+  DISPONIBILIDADE_EXTERNA_ROTULO,
+  paraCompartilhamento,
+  paraDisponibilidade,
+  type DisponibilidadeExterna,
+} from './disponibilidade-externa';
 
 type Props = {
   aberto: boolean;
   formulario: FormularioListagem | null;
   onFechar: () => void;
 };
+
+type CamposDoLink = Pick<FormularioExternoInput, 'titulo' | 'descricao' | 'urlExterna'>;
+
+const AJUDA_DISPONIBILIDADE: Record<DisponibilidadeExterna, string> = {
+  PAINEL: 'Fica guardado aqui. Nenhum filiado vê este link.',
+  FILIADOS: 'Aparece em “Formulários” na área do filiado aprovado.',
+  ABERTO: 'Qualquer pessoa com o endereço da plataforma chega ao formulário.',
+};
+
+const OPCOES: DisponibilidadeExterna[] = ['PAINEL', 'FILIADOS', 'ABERTO'];
 
 function mensagemErro(erro: unknown): string {
   const mensagem = (erro as { response?: { data?: { message?: unknown } } }).response?.data
@@ -26,16 +42,13 @@ function mensagemErro(erro: unknown): string {
 
 export function FormularioExternoModal({ aberto, formulario, onFechar }: Props) {
   const salvar = useSalvarFormularioExterno();
+  const [disponibilidade, setDisponibilidade] = useState<DisponibilidadeExterna>('PAINEL');
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<
-    z.input<typeof formularioExternoSchema>,
-    unknown,
-    FormularioExternoInput
-  >({
+  } = useForm<z.input<typeof formularioExternoSchema>, unknown, FormularioExternoInput>({
     resolver: zodResolver(formularioExternoSchema),
   });
 
@@ -45,9 +58,8 @@ export function FormularioExternoModal({ aberto, formulario, onFechar }: Props) 
       titulo: formulario?.titulo ?? '',
       descricao: formulario?.descricao ?? null,
       urlExterna: formulario?.urlExterna ?? '',
-      publico: formulario?.publico ?? 'FILIADOS',
-      status: formulario?.status ?? 'PUBLICADO',
     });
+    setDisponibilidade(formulario ? paraDisponibilidade(formulario) : 'PAINEL');
     salvar.reset();
   }, [aberto, formulario, reset]);
 
@@ -56,20 +68,18 @@ export function FormularioExternoModal({ aberto, formulario, onFechar }: Props) 
     onFechar();
   };
 
-  const onSubmit = (dados: FormularioExternoInput) => {
+  const onSubmit = (dados: CamposDoLink) => {
     salvar.mutate(
-      { ...dados, id: formulario?.id },
-      {
-        onSuccess: fechar,
-      },
+      { ...dados, ...paraCompartilhamento(disponibilidade), id: formulario?.id },
+      { onSuccess: fechar },
     );
   };
 
   return (
     <Modal
       aberto={aberto}
-      titulo={formulario ? 'Editar link de formulário' : 'Cadastrar Google Forms'}
-      descricao="Organize aqui os formulários que continuam sendo respondidos no Google."
+      titulo={formulario ? 'Editar link' : 'Adicionar link externo'}
+      descricao="Guarde aqui os formulários que continuam sendo respondidos no Google."
       tamanho="lg"
       onFechar={fechar}
     >
@@ -81,7 +91,7 @@ export function FormularioExternoModal({ aberto, formulario, onFechar }: Props) 
         </label>
 
         <label className="campo">
-          <span className="campo-rotulo">Link do Google Forms</span>
+          <span className="campo-rotulo">Link do formulário</span>
           <input
             type="url"
             inputMode="url"
@@ -92,29 +102,31 @@ export function FormularioExternoModal({ aberto, formulario, onFechar }: Props) 
         </label>
 
         <label className="campo">
-          <span className="campo-rotulo">Descrição (opcional)</span>
-          <textarea rows={3} {...register('descricao')} />
+          <span className="campo-rotulo">Anotação (opcional)</span>
+          <textarea
+            rows={2}
+            placeholder="Para que serve, quem organiza, prazo…"
+            {...register('descricao')}
+          />
           {errors.descricao && <span className="erro">{errors.descricao.message}</span>}
         </label>
 
-        <div className="form-grid">
-          <label className="campo">
-            <span className="campo-rotulo">Quem pode acessar</span>
-            <select {...register('publico')}>
-              <option value="FILIADOS">Somente filiados aprovados</option>
-              <option value="TODOS">Qualquer pessoa com o link</option>
-            </select>
-          </label>
-
-          <label className="campo">
-            <span className="campo-rotulo">Situação</span>
-            <select {...register('status')}>
-              <option value="PUBLICADO">Publicado</option>
-              <option value="RASCUNHO">Rascunho</option>
-              <option value="ENCERRADO">Encerrado</option>
-            </select>
-          </label>
-        </div>
+        <label className="campo">
+          <span className="campo-rotulo">Quem enxerga</span>
+          <select
+            value={disponibilidade}
+            onChange={(evento) =>
+              setDisponibilidade(evento.target.value as DisponibilidadeExterna)
+            }
+          >
+            {OPCOES.map((opcao) => (
+              <option key={opcao} value={opcao}>
+                {DISPONIBILIDADE_EXTERNA_ROTULO[opcao]}
+              </option>
+            ))}
+          </select>
+          <span className="campo-ajuda">{AJUDA_DISPONIBILIDADE[disponibilidade]}</span>
+        </label>
 
         {salvar.isError && <p className="erro">{mensagemErro(salvar.error)}</p>}
 

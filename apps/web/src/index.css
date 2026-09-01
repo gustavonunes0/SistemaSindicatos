@@ -10690,9 +10690,39 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 }
 
 .formularios-vazio h1,
-.formularios-vazio h2 {
+.formularios-vazio h2,
+.formularios-vazio h3 {
   margin: 0 0 0.5rem;
   font-size: clamp(1.2rem, 2.5vw, 1.45rem);
+}
+
+/* Formulários do sistema e links guardados dividem a tela, sem se confundir. */
+.formularios-secoes {
+  display: grid;
+  gap: 2.25rem;
+}
+
+.formularios-secao-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: var(--borda-fina);
+}
+
+.formularios-secao-topo h2 {
+  margin: 0 0 0.2rem;
+  font-size: var(--texto-base);
+}
+
+.formularios-secao-topo p {
+  margin: 0;
+  max-width: 46ch;
+  font-size: 0.85rem;
+  line-height: 1.5;
 }
 
 .formularios-vazio > p {
