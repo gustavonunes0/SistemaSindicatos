@@ -3,8 +3,12 @@ import { Link } from 'react-router-dom';
 import { formatarMoeda } from '../../../lib/moeda';
 import { urlDaApi } from '../../../lib/urls';
 
+const COMODIDADES_VISIVEIS = 3;
+
 export function ImovelCard({ imovel }: { imovel: Imovel }) {
-  const capa = imovel.fotos?.[0];
+  const fotos = imovel.fotos ?? [];
+  const capa = fotos[0];
+  const extras = imovel.comodidades.length - COMODIDADES_VISIVEIS;
 
   return (
     <Link to={`/afiliado/imoveis/${imovel.id}`} className="imovel-card">
@@ -14,18 +18,30 @@ export function ImovelCard({ imovel }: { imovel: Imovel }) {
         ) : (
           <span className="imovel-card-sem-foto">Sem foto</span>
         )}
+        {fotos.length > 1 && (
+          <span className="imovel-card-contador">{fotos.length} fotos</span>
+        )}
       </div>
+
       <div className="imovel-card-corpo">
         <h3>{imovel.titulo}</h3>
         <p className="imovel-card-endereco">{imovel.endereco}</p>
-        <p className="imovel-card-valor">{formatarMoeda(imovel.valor)}</p>
+
+        <p className="imovel-card-valor">
+          {formatarMoeda(imovel.valor)}
+          <span> por dia</span>
+        </p>
+
         {imovel.comodidades.length > 0 && (
           <ul className="imovel-card-comodidades">
-            {imovel.comodidades.slice(0, 3).map((item) => (
+            {imovel.comodidades.slice(0, COMODIDADES_VISIVEIS).map((item) => (
               <li key={item}>{item}</li>
             ))}
+            {extras > 0 && <li className="imovel-comodidade-extra">+{extras}</li>}
           </ul>
         )}
+
+        <span className="imovel-card-acao">Ver detalhes e datas</span>
       </div>
     </Link>
   );

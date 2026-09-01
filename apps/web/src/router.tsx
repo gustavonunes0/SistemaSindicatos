@@ -189,6 +189,11 @@ const ConvenioDetalhePage = lazy(() =>
 const ImoveisPage = lazy(() =>
   import('./features/imoveis/components/ImoveisPage').then((m) => ({ default: m.ImoveisPage })),
 );
+const ImovelDetalhePage = lazy(() =>
+  import('./features/imoveis/components/ImovelDetalhePage').then((m) => ({
+    default: m.ImovelDetalhePage,
+  })),
+);
 const EleicoesPage = lazy(() =>
   import('./features/eleicao/components/EleicoesPage').then((m) => ({ default: m.EleicoesPage })),
 );
@@ -296,7 +301,7 @@ export const router = createBrowserRouter([
   { path: '/afiliado/formularios', element: protegidaAfiliado(<MeusFormulariosPage />) },
   { path: '/afiliado/juridico', element: protegidaAfiliado(<JuridicoPage tipo="afiliado" />) },
   { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },
-  { path: '/afiliado/imoveis/:id', element: <Navigate to="/afiliado/imoveis" replace /> },
+  { path: '/afiliado/imoveis/:id', element: protegidaAfiliado(<ImovelDetalhePage />) },
   { path: '/afiliado/eleicoes', element: protegidaAfiliado(<EleicoesPage />) },
   { path: '/afiliado/eleicoes/:id', element: protegidaAfiliado(<EleicaoVotacaoPage />) },
   {

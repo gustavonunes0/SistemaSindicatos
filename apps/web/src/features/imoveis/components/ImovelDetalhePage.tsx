@@ -6,7 +6,7 @@ import { formatarMoeda } from '../../../lib/moeda';
 import { urlDaApi } from '../../../lib/urls';
 import { useImovel } from '../hooks';
 import { CalendarioDisponibilidade } from './CalendarioDisponibilidade';
-import { SolicitarAluguelForm } from '../../solicitacoes/components/SolicitarAluguelForm';
+import { ReservaExterna } from './ReservaExterna';
 
 export function ImovelDetalhePage() {
   const { id = '' } = useParams();
@@ -15,19 +15,19 @@ export function ImovelDetalhePage() {
 
   if (isLoading) {
     return (
-      <AreaLayout tipo="afiliado" titulo="Imóvel">
-        <EstadoCarregando mensagem="Carregando imóvel…" />
+      <AreaLayout tipo="afiliado" titulo="Apartamento">
+        <EstadoCarregando mensagem="Carregando apartamento…" />
       </AreaLayout>
     );
   }
 
   if (isError || !imovel) {
     return (
-      <AreaLayout tipo="afiliado" titulo="Imóvel não encontrado">
+      <AreaLayout tipo="afiliado" titulo="Apartamento não encontrado">
         <div className="estado-vazio">
-          <p>Este imóvel não está mais disponível.</p>
+          <p>Este apartamento não está mais disponível.</p>
           <Link to="/afiliado/imoveis" className="botao-primario">
-            Voltar aos imóveis
+            Voltar aos apartamentos
           </Link>
         </div>
       </AreaLayout>
@@ -42,56 +42,76 @@ export function ImovelDetalhePage() {
     <AreaLayout
       tipo="afiliado"
       titulo={imovel.titulo}
-      acoes={<Link to="/afiliado/imoveis">← Apartamentos</Link>}
+      descricao={imovel.endereco}
+      acoes={
+        <Link to="/afiliado/imoveis" className="botao-secundario">
+          ← Apartamentos
+        </Link>
+      }
     >
       <article className="imovel-detalhe">
-        {fotoPrincipal ? (
-          <div className="imovel-galeria">
-            <img
-              className="imovel-galeria-principal"
-              src={urlDaApi(fotoPrincipal.url)}
-              alt={`Foto ${indiceCapa + 1} de ${fotos.length}`}
-            />
-            {fotos.length > 1 && (
-              <div className="imovel-galeria-miniaturas">
-                {fotos.map((foto, indice) => (
-                  <button
-                    key={foto.id}
-                    type="button"
-                    className={indice === indiceCapa ? 'ativa' : undefined}
-                    onClick={() => setFotoAtiva(indice)}
-                    aria-label={`Ver foto ${indice + 1}`}
-                  >
-                    <img src={urlDaApi(foto.url)} alt="" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="imovel-sem-foto">Fotos em breve</div>
-        )}
+        <div className="imovel-detalhe-principal">
+          {fotoPrincipal ? (
+            <div className="imovel-galeria">
+              <img
+                className="imovel-galeria-principal"
+                src={urlDaApi(fotoPrincipal.url)}
+                alt={`Foto ${indiceCapa + 1} de ${fotos.length}`}
+              />
+              {fotos.length > 1 && (
+                <div className="imovel-galeria-miniaturas">
+                  {fotos.map((foto, indice) => (
+                    <button
+                      key={foto.id}
+                      type="button"
+                      className={indice === indiceCapa ? 'ativa' : undefined}
+                      onClick={() => setFotoAtiva(indice)}
+                      aria-label={`Ver foto ${indice + 1}`}
+                      aria-current={indice === indiceCapa}
+                    >
+                      <img src={urlDaApi(foto.url)} alt="" loading="lazy" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="imovel-sem-foto">Fotos em breve</div>
+          )}
 
-        <div className="imovel-detalhe-info">
-          <p className="imovel-detalhe-valor">{formatarMoeda(imovel.valor)}</p>
-          <p className="imovel-detalhe-endereco">{imovel.endereco}</p>
-          <p className="imovel-detalhe-descricao">{imovel.descricao}</p>
+          <section className="imovel-bloco">
+            <h2 className="imovel-secao-titulo">Sobre o apartamento</h2>
+            <p className="imovel-detalhe-descricao">{imovel.descricao}</p>
+          </section>
 
           {imovel.comodidades.length > 0 && (
-            <>
+            <section className="imovel-bloco">
               <h2 className="imovel-secao-titulo">Comodidades</h2>
               <ul className="imovel-comodidades">
                 {imovel.comodidades.map((item) => (
                   <li key={item}>{item}</li>
                 ))}
               </ul>
-            </>
+            </section>
           )}
+
+          <CalendarioDisponibilidade imovelId={imovel.id} />
         </div>
 
-        <CalendarioDisponibilidade imovelId={imovel.id} />
+        <aside className="imovel-detalhe-lateral">
+          <div className="imovel-resumo">
+            <p className="imovel-detalhe-valor">
+              {formatarMoeda(imovel.valor)}
+              <span> por dia</span>
+            </p>
+            <p className="imovel-detalhe-endereco">{imovel.endereco}</p>
+          </div>
 
-        <SolicitarAluguelForm imovelId={imovel.id} imovelTitulo={imovel.titulo} />
+          <ReservaExterna
+            titulo="Reservar este apartamento"
+            descricao="Confira as datas livres no calendário e conclua a reserva no sistema oficial do sindicato."
+          />
+        </aside>
       </article>
     </AreaLayout>
   );

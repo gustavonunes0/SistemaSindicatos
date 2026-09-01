@@ -5728,39 +5728,58 @@ textarea {
 }
 
 /* ============ Imóveis (área do afiliado) ============ */
-.reserva-externa-lista {
-  display: grid;
-  gap: 1rem;
-  margin-top: 1.5rem;
-  max-width: 36rem;
-}
-
-.reserva-externa {
-  margin-top: 0;
-  max-width: none;
+/* A reserva é concluída fora do sistema: a faixa institucional marca esse bloco. */
+.reserva-destaque {
   padding: 1.5rem 1.6rem;
   background: var(--cor-superficie);
   border: var(--borda-fina);
+  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
   border-radius: var(--raio-lg);
 }
 
-.reserva-externa-titulo {
-  margin: 0 0 0.6rem;
+.reserva-destaque .eyebrow {
+  margin: 0 0 0.35rem;
+}
+
+.reserva-destaque h2 {
+  margin: 0 0 0.5rem;
   font-size: var(--texto-lg);
   color: var(--cor-primaria);
 }
 
-.reserva-externa-texto {
+.reserva-destaque > p {
   margin: 0 0 1.25rem;
+  max-width: 62ch;
   line-height: 1.55;
-  color: var(--cor-texto);
 }
 
-.reserva-externa-ajuda {
-  margin: 1rem 0 0;
+.reserva-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
+.reserva-acoes a {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.reserva-acoes p {
+  margin: 0;
+}
+
+.imoveis-vitrine {
+  margin-top: 2rem;
+}
+
+.imoveis-vitrine-titulo {
+  margin: 0;
   font-size: var(--texto-sm);
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
   color: var(--cor-texto-suave);
-  word-break: break-all;
 }
 
 .imoveis-filtros {
@@ -5771,7 +5790,9 @@ textarea {
   display: grid;
   gap: 1rem;
   grid-template-columns: 1fr;
-  margin-top: 1.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
 }
 
 @media (min-width: 560px) {
@@ -5809,11 +5830,24 @@ textarea {
 }
 
 .imovel-card-foto {
+  position: relative;
   aspect-ratio: 4 / 3;
   background: var(--cor-fundo);
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+
+.imovel-card-contador {
+  position: absolute;
+  right: 0.55rem;
+  bottom: 0.55rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: var(--raio);
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
 }
 
 .imovel-card-foto img {
@@ -5828,6 +5862,9 @@ textarea {
 }
 
 .imovel-card-corpo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
   padding: 1rem;
 }
 
@@ -5847,7 +5884,27 @@ textarea {
   margin: 0.5rem 0 0;
   font-family: var(--fonte-display);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--cor-texto);
+}
+
+.imovel-card-valor span {
+  font-family: var(--fonte-corpo, inherit);
+  font-size: var(--texto-sm);
+  font-weight: 400;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-card-acao {
+  margin-top: auto;
+  padding-top: 0.85rem;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  color: var(--cor-primaria);
+}
+
+.imovel-card:hover .imovel-card-acao {
+  text-decoration: underline;
 }
 
 .imovel-card-comodidades {
@@ -5869,9 +5926,46 @@ textarea {
 
 /* ---- Detalhe ---- */
 .imovel-detalhe {
+  display: grid;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .imovel-detalhe {
+    grid-template-columns: minmax(0, 1fr) 20rem;
+  }
+}
+
+.imovel-detalhe-principal {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-width: 0;
+}
+
+.imovel-detalhe-lateral {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 960px) {
+  .imovel-detalhe-lateral {
+    position: sticky;
+    top: 1.5rem;
+  }
+}
+
+.imovel-resumo {
+  padding: 1.1rem 1.25rem;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.imovel-bloco > .imovel-secao-titulo:first-child {
+  margin-top: 0;
 }
 
 .imovel-galeria-principal {
@@ -5924,9 +6018,17 @@ textarea {
 .imovel-detalhe-valor {
   margin: 0;
   font-family: var(--fonte-display);
-  font-size: var(--texto-lg);
+  font-size: 1.5rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--cor-primaria);
+}
+
+.imovel-detalhe-valor span {
+  font-family: var(--fonte-corpo, inherit);
+  font-size: var(--texto-sm);
+  font-weight: 400;
+  color: var(--cor-texto-suave);
 }
 
 .imovel-detalhe-endereco {
@@ -6095,45 +6197,343 @@ textarea {
   text-decoration: line-through;
 }
 
-/* ---- Admin imóveis ---- */
-.imovel-admin-fotos {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-top: 0.75rem;
-}
-
-.imovel-admin-fotos figure {
+/* ---- Admin imóveis: listagem ---- */
+.imoveis-admin-grade {
+  display: grid;
+  gap: 1rem;
   margin: 0;
-  width: 120px;
+  padding: 0;
+  list-style: none;
+  grid-template-columns: 1fr;
 }
 
-.imovel-admin-fotos img {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  object-fit: cover;
-  border-radius: var(--raio);
+@media (min-width: 640px) {
+  .imoveis-admin-grade {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .imoveis-admin-grade {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.imovel-admin-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--cor-superficie);
   border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  overflow: hidden;
 }
 
-.imovel-admin-fotos figcaption,
-.imovel-admin-fotos button {
-  font-size: var(--texto-sm);
-  margin-top: 0.25rem;
+.imovel-admin-capa {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  background: var(--cor-fundo);
+  border-bottom: var(--borda-fina);
 }
 
-.imovel-fotos-pendentes {
-  margin: 0.35rem 0 0;
+.imovel-admin-capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.imovel-admin-capa-vazia {
   font-size: var(--texto-sm);
   color: var(--cor-texto-suave);
 }
 
-.imovel-admin-periodos {
-  margin-top: 2rem;
-  padding: 1.25rem;
-  background: var(--cor-superficie);
-  border: var(--borda-fina);
+.imovel-admin-selo {
+  position: absolute;
+  top: 0.6rem;
+  left: 0.6rem;
+}
+
+.imovel-admin-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+  padding: 1rem 1.1rem 1.1rem;
+}
+
+.imovel-admin-corpo h2 {
+  margin: 0;
+  font-size: var(--texto-base);
+  color: var(--cor-primaria);
+}
+
+.imovel-admin-endereco {
+  margin: 0;
+  font-size: var(--texto-sm);
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-admin-valor {
+  margin: 0;
+  font-family: var(--fonte-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.imovel-admin-valor span {
+  font-family: var(--fonte-corpo, inherit);
+  font-size: var(--texto-sm);
+  font-weight: 400;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-comodidade-extra {
+  color: var(--cor-texto-suave);
+}
+
+.imovel-admin-rodape {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: auto;
+  padding-top: 0.85rem;
+  border-top: var(--borda-fina);
+  font-size: var(--texto-sm);
+}
+
+/* ---- Admin imóveis: formulário ---- */
+.imovel-form-bloco {
+  margin: 0;
+  padding: 1.15rem 0 0;
+  border: none;
+  border-top: var(--borda-fina);
+  min-inline-size: 0;
+}
+
+.imovel-form .imovel-form-bloco:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.imovel-form-bloco > legend,
+.imovel-form-bloco-topo h3 {
+  padding: 0;
+  margin: 0 0 0.75rem;
+  font-family: var(--fonte-display);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-form-bloco-topo {
+  margin-bottom: 0.9rem;
+}
+
+.imovel-form-bloco-topo h3 {
+  margin-bottom: 0.2rem;
+}
+
+.imovel-form-bloco-topo p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+.imovel-form-linha {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .imovel-form-linha {
+    grid-template-columns: minmax(0, 2fr) minmax(9rem, 1fr);
+    align-items: start;
+  }
+}
+
+.campo-com-prefixo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: 0.7rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.campo-com-prefixo:focus-within {
+  border-color: var(--cor-primaria);
+}
+
+.campo-com-prefixo span {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.campo-com-prefixo input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.campo-com-prefixo input:focus {
+  outline: none;
+}
+
+.imovel-comodidades--previa {
+  margin-top: 0.6rem;
+}
+
+.imovel-form-nota {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.imovel-fotos-drop {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
+  padding: 1.25rem 1rem;
+  border: 1px dashed var(--cor-borda);
   border-radius: var(--raio-lg);
+  background: var(--cor-fundo);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transicao), background-color var(--transicao);
+}
+
+.imovel-fotos-drop:hover,
+.imovel-fotos-drop:focus-within,
+input:focus-visible + .imovel-fotos-drop {
+  border-color: var(--cor-primaria);
+}
+
+.imovel-fotos-drop strong {
+  font-size: 0.95rem;
+  color: var(--cor-primaria);
+}
+
+.imovel-fotos-drop span {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-fotos-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.65rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.imovel-fotos-grade li {
+  position: relative;
+  border-radius: var(--raio);
+  overflow: hidden;
+  border: var(--borda-fina);
+  background: var(--cor-fundo);
+}
+
+.imovel-fotos-grade img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.imovel-foto--pendente img {
+  opacity: 0.75;
+}
+
+.imovel-foto-capa {
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--raio);
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+}
+
+.imovel-foto-remover {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 50%;
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.imovel-foto-remover:hover:not(:disabled) {
+  background: var(--cor-erro);
+}
+
+.imovel-form-switch {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+  cursor: pointer;
+}
+
+.imovel-form-switch input {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin-top: 0.15rem;
+  accent-color: var(--cor-primaria);
+}
+
+.imovel-form-switch span {
+  display: grid;
+  gap: 0.15rem;
+}
+
+.imovel-form-switch small {
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-periodo-form {
+  display: grid;
+  gap: 0.75rem;
+  align-items: end;
+  margin-bottom: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .imovel-periodo-form {
+    grid-template-columns: 1fr 1fr 1fr auto;
+  }
+}
+
+.imovel-periodo-form .campo {
+  margin: 0;
 }
 
 .imovel-periodos-lista {

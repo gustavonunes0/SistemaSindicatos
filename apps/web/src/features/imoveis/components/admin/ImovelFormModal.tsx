@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { criarImovelSchema, type CriarImovelInput } from '@sindprf/types';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
@@ -67,51 +67,55 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
   };
 
   return (
-    <section className="imovel-admin-periodos">
-      <h3 className="imovel-secao-titulo">Disponibilidade</h3>
-      <p className="area-subtitulo">
-        Bloqueie ou marque reservas para o calendário dos afiliados.
-      </p>
+    <section className="imovel-form-bloco">
+      <header className="imovel-form-bloco-topo">
+        <h3>Disponibilidade</h3>
+        <p className="texto-secundario">
+          Marque os intervalos em que o apartamento não pode ser reservado.
+        </p>
+      </header>
 
-      <div className="form-grid">
-        <label>
-          Início
+      <div className="imovel-periodo-form">
+        <label className="campo">
+          <span className="campo-rotulo">Início</span>
           <input type="date" value={inicio} onChange={(e) => setInicio(e.target.value)} />
         </label>
-        <label>
-          Fim
+        <label className="campo">
+          <span className="campo-rotulo">Fim</span>
           <input type="date" value={fim} onChange={(e) => setFim(e.target.value)} />
         </label>
-        <label>
-          Tipo
-          <select
-            value={tipo}
-            onChange={(e) => setTipo(e.target.value as 'BLOQUEADO' | 'RESERVADO')}
-          >
+        <label className="campo">
+          <span className="campo-rotulo">Motivo</span>
+          <select value={tipo} onChange={(e) => setTipo(e.target.value as typeof tipo)}>
             <option value="BLOQUEADO">Indisponível</option>
             <option value="RESERVADO">Reservado</option>
           </select>
         </label>
+        <button
+          type="button"
+          className="botao-secundario"
+          disabled={criarPeriodo.isPending}
+          onClick={onBloquear}
+        >
+          {criarPeriodo.isPending ? 'Salvando…' : 'Adicionar'}
+        </button>
       </div>
 
       {erro && <p className="erro">{erro}</p>}
 
-      <button
-        type="button"
-        className="botao-primario"
-        disabled={criarPeriodo.isPending}
-        onClick={onBloquear}
-      >
-        {criarPeriodo.isPending ? 'Salvando…' : 'Adicionar período'}
-      </button>
-
-      {periodos && periodos.length > 0 && (
+      {periodos && periodos.length > 0 ? (
         <ul className="imovel-periodos-lista">
           {periodos.map((periodo) => (
             <li key={periodo.id}>
               <span>
-                {formatarData(periodo.inicio)} — {formatarData(periodo.fim)} ·{' '}
-                {periodo.tipo === 'BLOQUEADO' ? 'Indisponível' : 'Reservado'}
+                <span
+                  className={`badge ${
+                    periodo.tipo === 'BLOQUEADO' ? 'badge-inativo' : 'badge-ativo'
+                  }`}
+                >
+                  {periodo.tipo === 'BLOQUEADO' ? 'Indisponível' : 'Reservado'}
+                </span>{' '}
+                {formatarData(periodo.inicio)} — {formatarData(periodo.fim)}
               </span>
               <button
                 type="button"
@@ -132,6 +136,10 @@ function ImovelPeriodosAdmin({ imovelId }: { imovelId: string }) {
             </li>
           ))}
         </ul>
+      ) : (
+        <p className="texto-secundario imovel-form-nota">
+          Nenhum período cadastrado — o apartamento aparece livre o ano todo.
+        </p>
       )}
       {modalConfirmacao}
     </section>
@@ -159,6 +167,7 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors },
   } = useForm<ImovelFormValues, unknown, ImovelFormValues>({
     resolver: zodResolver(imovelFormSchema),
@@ -198,6 +207,16 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
     }
   }, [aberto, id, imovelExistente, reset]);
 
+  // Miniatura das fotos ainda não enviadas: sem isso o admin escolhe às cegas.
+  const previas = useMemo(
+    () => arquivosPendentes.map((arquivo) => ({ arquivo, url: URL.createObjectURL(arquivo) })),
+    [arquivosPendentes],
+  );
+  useEffect(() => {
+    return () => previas.forEach((previa) => URL.revokeObjectURL(previa.url));
+  }, [previas]);
+
+  const comodidades = parseComodidades(watch('comodidadesTexto'));
   const salvando = criar.isPending || atualizar.isPending || uploadFotos.isPending;
 
   const montarPayload = (dados: ImovelFormValues): CriarImovelInput => ({
@@ -250,118 +269,198 @@ export function ImovelFormModal({ aberto, id, onFechar }: ImovelFormModalProps) 
         aberto={aberto}
         onFechar={onFechar}
         titulo={editando ? 'Editar apartamento' : 'Novo apartamento'}
-        descricao="Cadastre o imóvel, fotos e, após salvar, os períodos de disponibilidade."
+        descricao="Os dados abaixo são o que o filiado vê ao consultar o apartamento."
         tamanho="xl"
       >
         {editando && isLoading ? (
           <EstadoCarregando mensagem="Carregando imóvel…" />
         ) : (
           <>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate className="form-area form-area--modal">
-              <label>
-                Título
-                <input type="text" {...register('titulo')} autoComplete="off" />
-                {errors.titulo && <span className="erro">{errors.titulo.message}</span>}
-              </label>
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              noValidate
+              className="form-area form-area--modal imovel-form"
+            >
+              <fieldset className="imovel-form-bloco">
+                <legend>Identificação</legend>
 
-            <label>
-              Endereço
-              <input type="text" {...register('endereco')} autoComplete="off" />
-              {errors.endereco && <span className="erro">{errors.endereco.message}</span>}
-            </label>
+                <label className="campo">
+                  <span className="campo-rotulo">Título</span>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Ex.: Apartamento 302 — Praia do Futuro"
+                    {...register('titulo')}
+                  />
+                  {errors.titulo && <span className="erro">{errors.titulo.message}</span>}
+                </label>
 
-            <label>
-              Valor por dia (R$)
-              <input type="number" step="0.01" min="0" {...register('valor')} />
-              {errors.valor && <span className="erro">{errors.valor.message}</span>}
-            </label>
+                <div className="imovel-form-linha">
+                  <label className="campo">
+                    <span className="campo-rotulo">Endereço</span>
+                    <input
+                      type="text"
+                      autoComplete="off"
+                      placeholder="Rua, número, bairro e cidade"
+                      {...register('endereco')}
+                    />
+                    {errors.endereco && <span className="erro">{errors.endereco.message}</span>}
+                  </label>
 
-            <label>
-              Descrição
-              <textarea rows={4} {...register('descricao')} />
-              {errors.descricao && <span className="erro">{errors.descricao.message}</span>}
-            </label>
-
-            <label>
-              Comodidades
-              <textarea
-                rows={3}
-                {...register('comodidadesTexto')}
-                placeholder="Uma comodidade por linha (ex.: Wi-Fi, Garagem)"
-              />
-            </label>
-
-            <div className="campo">
-              <span className="campo-rotulo">Fotos</span>
-              <input
-                ref={inputFotosRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                multiple
-                onChange={(evento) => onSelecionarFotos(evento.target.files)}
-              />
-              {uploadFotos.isPending && <span>Enviando fotos…</span>}
-              {uploadFotos.isError && <span className="erro">Erro ao enviar as fotos.</span>}
-
-              {!id && arquivosPendentes.length > 0 && (
-                <p className="imovel-fotos-pendentes">
-                  {arquivosPendentes.length} foto(s) serão enviadas ao salvar.
-                </p>
-              )}
-
-              {fotos.length > 0 && (
-                <div className="imovel-admin-fotos">
-                  {fotos.map((foto) => (
-                    <figure key={foto.id}>
-                      <img src={urlDaApi(foto.url)} alt="" />
-                      <button
-                        type="button"
-                        className="botao-link botao-perigo-texto"
-                        disabled={removerFoto.isPending}
-                        onClick={() =>
-                          pedirConfirmacao({
-                            titulo: 'Remover foto?',
-                            descricao: 'A foto será excluída permanentemente deste apartamento.',
-                            confirmarRotulo: 'Remover',
-                            onConfirmar: () =>
-                              removerFoto.mutateAsync({ imovelId: id!, fotoId: foto.id }),
-                          })
-                        }
-                      >
-                        Remover
-                      </button>
-                    </figure>
-                  ))}
+                  <label className="campo">
+                    <span className="campo-rotulo">Valor por dia</span>
+                    <div className="campo-com-prefixo">
+                      <span aria-hidden="true">R$</span>
+                      <input type="number" step="0.01" min="0" {...register('valor')} />
+                    </div>
+                    {errors.valor && <span className="erro">{errors.valor.message}</span>}
+                  </label>
                 </div>
+
+                <label className="campo">
+                  <span className="campo-rotulo">Descrição</span>
+                  <textarea
+                    rows={4}
+                    placeholder="Quantos quartos, capacidade, o que está incluso e regras da casa."
+                    {...register('descricao')}
+                  />
+                  {errors.descricao && <span className="erro">{errors.descricao.message}</span>}
+                </label>
+
+                <label className="campo">
+                  <span className="campo-rotulo">Comodidades</span>
+                  <textarea
+                    rows={3}
+                    placeholder={'Wi-Fi\nGaragem\nAr-condicionado'}
+                    {...register('comodidadesTexto')}
+                  />
+                  <span className="campo-ajuda">
+                    Uma por linha ou separadas por vírgula. Viram etiquetas na página do
+                    apartamento.
+                  </span>
+                  {comodidades.length > 0 && (
+                    <ul className="imovel-comodidades imovel-comodidades--previa">
+                      {comodidades.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  )}
+                </label>
+              </fieldset>
+
+              <fieldset className="imovel-form-bloco">
+                <legend>Fotos</legend>
+                <p className="texto-secundario imovel-form-nota">
+                  A primeira foto vira a capa na listagem. JPG, PNG ou WebP.
+                </p>
+
+                <input
+                  ref={inputFotosRef}
+                  id="imovel-fotos"
+                  className="visually-hidden"
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  onChange={(evento) => onSelecionarFotos(evento.target.files)}
+                />
+                <label htmlFor="imovel-fotos" className="imovel-fotos-drop">
+                  <strong>Escolher fotos</strong>
+                  <span>Você pode selecionar várias de uma vez</span>
+                </label>
+
+                {uploadFotos.isPending && <p role="status">Enviando fotos…</p>}
+                {uploadFotos.isError && <p className="erro">Erro ao enviar as fotos.</p>}
+
+                {(fotos.length > 0 || previas.length > 0) && (
+                  <ul className="imovel-fotos-grade">
+                    {fotos.map((foto, indice) => (
+                      <li key={foto.id}>
+                        <img src={urlDaApi(foto.url)} alt={`Foto ${indice + 1}`} />
+                        {indice === 0 && <span className="imovel-foto-capa">Capa</span>}
+                        <button
+                          type="button"
+                          className="imovel-foto-remover"
+                          aria-label={`Remover foto ${indice + 1}`}
+                          disabled={removerFoto.isPending}
+                          onClick={() =>
+                            pedirConfirmacao({
+                              titulo: 'Remover foto?',
+                              descricao:
+                                'A foto será excluída permanentemente deste apartamento.',
+                              confirmarRotulo: 'Remover',
+                              onConfirmar: () =>
+                                removerFoto.mutateAsync({ imovelId: id!, fotoId: foto.id }),
+                            })
+                          }
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+
+                    {previas.map((previa, indice) => (
+                      <li key={previa.url} className="imovel-foto--pendente">
+                        <img src={previa.url} alt={previa.arquivo.name} />
+                        <span className="imovel-foto-capa">Ao salvar</span>
+                        <button
+                          type="button"
+                          className="imovel-foto-remover"
+                          aria-label={`Remover ${previa.arquivo.name}`}
+                          onClick={() =>
+                            setArquivosPendentes((atual) =>
+                              atual.filter((_, posicao) => posicao !== indice),
+                            )
+                          }
+                        >
+                          ×
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </fieldset>
+
+              <fieldset className="imovel-form-bloco">
+                <legend>Publicação</legend>
+                <label className="imovel-form-switch">
+                  <input type="checkbox" {...register('ativo')} />
+                  <span>
+                    <strong>Visível para os filiados</strong>
+                    <small>
+                      Desmarque para tirar da listagem sem apagar o cadastro, as fotos ou os
+                      períodos.
+                    </small>
+                  </span>
+                </label>
+              </fieldset>
+
+              {(criar.isError || atualizar.isError) && (
+                <p className="erro">Erro ao salvar o apartamento. Tente novamente.</p>
               )}
-            </div>
 
-            <label className="campo-checkbox">
-              <input type="checkbox" {...register('ativo')} />
-              Apartamento ativo (visível para afiliados aprovados)
-            </label>
+              <div className="form-acoes">
+                <button type="button" className="botao-secundario" onClick={onFechar}>
+                  Cancelar
+                </button>
+                <button type="submit" className="botao-primario" disabled={salvando}>
+                  {salvando
+                    ? 'Salvando…'
+                    : editando
+                      ? 'Salvar alterações'
+                      : 'Cadastrar apartamento'}
+                </button>
+              </div>
+            </form>
 
-            {(criar.isError || atualizar.isError) && (
-              <p className="erro">Erro ao salvar o apartamento. Tente novamente.</p>
+            {id ? (
+              <ImovelPeriodosAdmin imovelId={id} />
+            ) : (
+              <p className="texto-secundario imovel-form-nota">
+                Os períodos de bloqueio ficam disponíveis assim que o apartamento for salvo.
+              </p>
             )}
-
-            <div className="form-acoes">
-              <button type="button" className="botao-secundario" onClick={onFechar}>
-                Cancelar
-              </button>
-              <button type="submit" className="botao-primario" disabled={salvando}>
-                {salvando
-                  ? 'Salvando…'
-                  : editando
-                    ? 'Salvar alterações'
-                    : 'Cadastrar apartamento'}
-              </button>
-            </div>
-          </form>
-
-          {id && <ImovelPeriodosAdmin imovelId={id} />}
-        </>
-      )}
+          </>
+        )}
       </Modal>
       {modalConfirmacao}
     </>
