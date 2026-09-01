@@ -35,6 +35,14 @@ const beneficios = [
   },
 ] as const;
 
+const servicos = [
+  {
+    to: '/afiliado/juridico',
+    titulo: 'Jurídico',
+    descricao: 'Consulte processos, RPV e precatórios nos portais da Justiça Federal.',
+  },
+] as const;
+
 export function AfiliadoDashboardPage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useMe();
   const afiliado = data?.afiliado;
@@ -114,6 +122,18 @@ export function AfiliadoDashboardPage() {
                   </div>
                 ),
               )}
+            </nav>
+          </section>
+
+          <section className="painel-secao">
+            <h2 className="painel-secao-titulo">Serviços</h2>
+            <nav className="painel-atalhos">
+              {servicos.map((item) => (
+                <Link key={item.to} to={item.to} className="painel-atalho">
+                  <span className="painel-atalho-titulo">{item.titulo}</span>
+                  <span className="painel-atalho-desc">{item.descricao}</span>
+                </Link>
+              ))}
             </nav>
           </section>
 

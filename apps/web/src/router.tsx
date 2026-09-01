@@ -136,6 +136,11 @@ const MeusFormulariosPage = lazy(() =>
     default: m.MeusFormulariosPage,
   })),
 );
+const JuridicoPage = lazy(() =>
+  import('./features/juridico/components/JuridicoPage').then((m) => ({
+    default: m.JuridicoPage,
+  })),
+);
 const ConveniosAdminPage = lazy(() =>
   import('./features/convenios/components/admin/ConveniosAdminPage').then((m) => ({
     default: m.ConveniosAdminPage,
@@ -263,6 +268,7 @@ export const router = createBrowserRouter([
   { path: '/admin/noticias/:id/editar', element: <Navigate to="/admin/noticias" replace /> },
   { path: '/admin/alertas', element: protegidaAdmin(<AlertasAdminPage />) },
   { path: '/admin/declaracoes', element: protegidaAdmin(<DeclaracoesAdminPage />) },
+  { path: '/admin/juridico', element: protegidaAdmin(<JuridicoPage tipo="admin" />) },
   { path: '/admin/formularios', element: protegidaAdmin(<FormulariosAdminPage />) },
   { path: '/admin/formularios/novo', element: protegidaAdmin(<FormularioBuilderPage />) },
   { path: '/admin/formularios/:id', element: protegidaAdmin(<FormularioBuilderPage />) },
@@ -288,6 +294,7 @@ export const router = createBrowserRouter([
   { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
   { path: '/afiliado/declaracoes', element: protegidaAfiliado(<MinhasDeclaracoesPage />) },
   { path: '/afiliado/formularios', element: protegidaAfiliado(<MeusFormulariosPage />) },
+  { path: '/afiliado/juridico', element: protegidaAfiliado(<JuridicoPage tipo="afiliado" />) },
   { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },
   { path: '/afiliado/imoveis/:id', element: <Navigate to="/afiliado/imoveis" replace /> },
   { path: '/afiliado/eleicoes', element: protegidaAfiliado(<EleicoesPage />) },

@@ -11203,6 +11203,74 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   white-space: nowrap;
 }
 
+.juridico-secoes {
+  display: grid;
+  gap: 2.25rem;
+}
+
+.juridico-secao-topo {
+  margin-bottom: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: var(--borda-fina);
+}
+
+.juridico-secao-topo h2 {
+  margin: 0 0 0.25rem;
+  font-size: var(--texto-base);
+}
+
+.juridico-secao-topo p {
+  margin: 0;
+  max-width: 52ch;
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+
+.juridico-secao-topo .eyebrow {
+  margin-bottom: 0.25rem;
+}
+
+.lista-juridico {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.card-juridico {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.1rem 1.2rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.card-juridico-corpo {
+  flex: 1;
+  min-width: 14rem;
+}
+
+.card-juridico h3 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+}
+
+.card-juridico p {
+  margin: 0;
+}
+
+.card-juridico .botao-primario {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
 /* ============ Declarações emitidas e assinatura ============ */
 .badge-declaracao-pendente {
   background: #fdf1d6;

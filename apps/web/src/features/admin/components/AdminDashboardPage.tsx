@@ -40,6 +40,12 @@ const modulos: ModuloAdmin[] = [
     acao: 'Abrir fila',
   },
   {
+    to: '/admin/juridico',
+    titulo: 'Jurídico',
+    descricao: 'Consulta pública de processos, RPV e precatórios no TRF1 e no TRF5.',
+    acao: 'Abrir consultas',
+  },
+  {
     to: '/admin/eleicoes',
     titulo: 'Eleições',
     descricao: 'Chapas, homologação, votação eletrônica e apuração da diretoria.',
