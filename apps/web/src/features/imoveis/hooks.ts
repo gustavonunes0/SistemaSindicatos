@@ -4,8 +4,10 @@ import type {
   ConsultaDisponibilidadeInput,
   CriarImovelInput,
   CriarPeriodoInput,
+  DefinirImoveisConfigInput,
   FiltroImoveisInput,
 } from '@sindprf/types';
+import { useTenantStore } from '../tenant/store';
 import * as imoveisApi from './api';
 
 export function useImoveis(filtro: FiltroImoveisInput, enabled = true) {
@@ -21,6 +23,7 @@ export function useImovel(id: string) {
   return useQuery({
     queryKey: ['imoveis', 'detalhe', id],
     queryFn: () => imoveisApi.buscarImovel(id),
+    enabled: Boolean(id),
   });
 }
 
@@ -125,5 +128,15 @@ export function useRemoverPeriodoImovel() {
     mutationFn: ({ imovelId, periodoId }: { imovelId: string; periodoId: string }) =>
       imoveisApi.removerPeriodoImovel(imovelId, periodoId),
     onSuccess: invalidar,
+  });
+}
+
+/** A config mora no branding (store de tenant), não no React Query. */
+export function useDefinirImoveisConfig() {
+  return useMutation({
+    mutationFn: (input: DefinirImoveisConfigInput) => imoveisApi.definirImoveisConfig(input),
+    onSuccess: () => {
+      void useTenantStore.getState().carregar();
+    },
   });
 }

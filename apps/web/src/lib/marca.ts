@@ -17,6 +17,7 @@ export const marcaFallback: TenantBranding = {
   },
   reservaApartamentosUrl: 'https://abre.ai/sindprfcereserva',
   regulamentoApartamentosUrl: '/imoveis/regulamento-apartamentos.pdf',
+  imoveisModo: 'VITRINE',
   estatutoUrl: '/institucional/estatuto-sindprf-ce.pdf',
   themeColor: '#0b3d6b',
   diretoria: {
@@ -168,6 +169,7 @@ function completarBrandingSindicato(parcial: TenantBranding): TenantBranding {
       parcial.reservaApartamentosUrl ?? marcaFallback.reservaApartamentosUrl,
     regulamentoApartamentosUrl:
       parcial.regulamentoApartamentosUrl ?? marcaFallback.regulamentoApartamentosUrl,
+    imoveisModo: parcial.imoveisModo ?? marcaFallback.imoveisModo ?? 'VITRINE',
     estatutoUrl: parcial.estatutoUrl ?? marcaFallback.estatutoUrl,
   };
 }

@@ -85,3 +85,32 @@ export const uploadFotoImovelResponseSchema = z.object({
   url: z.string(),
 });
 export type UploadFotoImovelResponse = z.infer<typeof uploadFotoImovelResponseSchema>;
+
+/** Modo de exibição dos apartamentos na área do filiado. */
+export const imoveisModoSchema = z.enum(['LINK', 'VITRINE']);
+export type ImoveisModo = z.infer<typeof imoveisModoSchema>;
+
+export const IMOVEIS_MODO_ROTULO: Record<ImoveisModo, string> = {
+  LINK: 'Somente link de reserva',
+  VITRINE: 'Vitrine de apartamentos',
+};
+
+export const definirImoveisConfigSchema = z.object({
+  modo: imoveisModoSchema,
+  reservaUrl: z.preprocess(
+    (valor) => (typeof valor === 'string' && valor.trim() === '' ? null : valor),
+    z
+      .string()
+      .trim()
+      .url('Informe o endereço completo, começando com https://')
+      .nullable()
+      .optional(),
+  ),
+});
+export type DefinirImoveisConfigInput = z.infer<typeof definirImoveisConfigSchema>;
+
+export const imoveisConfigSchema = z.object({
+  modo: imoveisModoSchema,
+  reservaUrl: z.string().url().nullable(),
+});
+export type ImoveisConfig = z.infer<typeof imoveisConfigSchema>;

@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Put,
   Query,
   UploadedFiles,
   UseGuards,
@@ -18,11 +19,13 @@ import {
   consultaDisponibilidadeSchema,
   criarImovelSchema,
   criarPeriodoSchema,
+  definirImoveisConfigSchema,
   filtroImoveisSchema,
   type AtualizarImovelInput,
   type ConsultaDisponibilidadeInput,
   type CriarImovelInput,
   type CriarPeriodoInput,
+  type DefinirImoveisConfigInput,
   type FiltroImoveisInput,
 } from '@sindprf/types';
 import { Roles } from '../common/decorators';
@@ -43,6 +46,13 @@ export class ImoveisController {
   ) {}
 
   // ---- Gestão (ADMIN) ----
+  @Roles('ADMIN')
+  @Put('config')
+  definirConfig(
+    @Body(new ZodValidationPipe(definirImoveisConfigSchema)) body: DefinirImoveisConfigInput,
+  ) {
+    return this.imoveisService.definirConfig(body);
+  }
   @Roles('ADMIN')
   @Get('admin')
   listarAdmin() {

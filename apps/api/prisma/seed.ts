@@ -26,6 +26,7 @@ const BRANDING_SINDPRF = {
   },
   reservaApartamentosUrl: 'https://abre.ai/sindprfcereserva',
   regulamentoApartamentosUrl: '/imoveis/regulamento-apartamentos.pdf',
+  imoveisModo: 'VITRINE',
   estatutoUrl: '/institucional/estatuto-sindprf-ce.pdf',
   themeColor: '#0b3d6b',
   contatoDestinoEmail: 'sindprfce@sindprfce.com.br',

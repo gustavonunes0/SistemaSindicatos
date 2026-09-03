@@ -12,6 +12,7 @@ import {
 } from '../../../solicitacoes/components/admin/SolicitacoesAdminPainel';
 import { useImoveisAdmin, useRemoverImovel } from '../../hooks';
 import { ImovelFormModal } from './ImovelFormModal';
+import { ModoImoveisCard } from './ModoImoveisCard';
 
 type ModalImovel = { modo: 'criar' } | { modo: 'editar'; id: string } | null;
 
@@ -80,6 +81,8 @@ export function ImoveisAdminPage({ aba = 'cadastro' }: ImoveisAdminPageProps) {
         <SolicitacoesAdminPainel status={status} />
       ) : (
         <>
+          <ModoImoveisCard />
+
           {isLoading && <EstadoCarregando mensagem="Carregando imóveis…" />}
           {isError && (
             <p className="erro">Não foi possível carregar os imóveis. Tente novamente.</p>

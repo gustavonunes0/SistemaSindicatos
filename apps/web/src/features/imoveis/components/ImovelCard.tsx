@@ -16,11 +16,15 @@ export function ImovelCard({ imovel }: { imovel: Imovel }) {
         {capa ? (
           <img src={urlDaApi(capa.url)} alt="" loading="lazy" />
         ) : (
-          <span className="imovel-card-sem-foto">Sem foto</span>
+          <span className="imovel-card-sem-foto">Fotos em breve</span>
         )}
-        {fotos.length > 1 && (
-          <span className="imovel-card-contador">{fotos.length} fotos</span>
-        )}
+        <div className="imovel-card-foto-meta">
+          {fotos.length > 0 && (
+            <span className="imovel-card-contador">
+              {fotos.length} {fotos.length === 1 ? 'foto' : 'fotos'}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="imovel-card-corpo">
@@ -29,7 +33,7 @@ export function ImovelCard({ imovel }: { imovel: Imovel }) {
 
         <p className="imovel-card-valor">
           {formatarMoeda(imovel.valor)}
-          <span> por dia</span>
+          <span> / dia</span>
         </p>
 
         {imovel.comodidades.length > 0 && (
@@ -41,7 +45,10 @@ export function ImovelCard({ imovel }: { imovel: Imovel }) {
           </ul>
         )}
 
-        <span className="imovel-card-acao">Ver detalhes e datas</span>
+        <span className="imovel-card-acao">
+          Ver datas e detalhes
+          <span aria-hidden="true"> →</span>
+        </span>
       </div>
     </Link>
   );

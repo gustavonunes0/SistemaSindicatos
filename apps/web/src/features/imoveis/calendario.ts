@@ -55,3 +55,33 @@ export function estadoDoDia(
   }
   return estado;
 }
+
+export function ehHoje(referencia: Date, dia: number): boolean {
+  const agora = new Date();
+  return (
+    dia === agora.getDate() &&
+    referencia.getMonth() === agora.getMonth() &&
+    referencia.getFullYear() === agora.getFullYear()
+  );
+}
+
+export function rotuloEstadoDia(estado: EstadoDia): string {
+  if (estado === 'livre') return 'livre';
+  if (estado === 'reservado') return 'reservado';
+  return 'indisponível';
+}
+
+export function resumirMes(
+  referencia: Date,
+  periodos: Periodo[],
+): { livres: number; ocupados: number; total: number } {
+  const total = new Date(referencia.getFullYear(), referencia.getMonth() + 1, 0).getDate();
+  let livres = 0;
+  let ocupados = 0;
+  for (let dia = 1; dia <= total; dia += 1) {
+    const estado = estadoDoDia(referencia, dia, periodos);
+    if (estado === 'livre') livres += 1;
+    else ocupados += 1;
+  }
+  return { livres, ocupados, total };
+}

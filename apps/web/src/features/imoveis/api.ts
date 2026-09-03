@@ -1,12 +1,15 @@
 import {
   disponibilidadeImovelSchema,
   imovelSchema,
+  imoveisConfigSchema,
   periodoSchema,
   type AtualizarImovelInput,
   type ConsultaDisponibilidadeInput,
   type CriarImovelInput,
   type CriarPeriodoInput,
+  type DefinirImoveisConfigInput,
   type FiltroImoveisInput,
+  type ImoveisConfig,
   type Imovel,
   type Periodo,
 } from '@sindprf/types';
@@ -88,4 +91,11 @@ export async function criarPeriodoImovel(
 
 export async function removerPeriodoImovel(imovelId: string, periodoId: string): Promise<void> {
   await api.delete(`/imoveis/${imovelId}/periodos/${periodoId}`);
+}
+
+export async function definirImoveisConfig(
+  input: DefinirImoveisConfigInput,
+): Promise<ImoveisConfig> {
+  const { data } = await api.put('/imoveis/config', input);
+  return imoveisConfigSchema.parse(data);
 }

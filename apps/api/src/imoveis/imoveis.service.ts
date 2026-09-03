@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -9,10 +10,14 @@ import type {
   ConsultaDisponibilidadeInput,
   CriarImovelInput,
   CriarPeriodoInput,
+  DefinirImoveisConfigInput,
   FiltroImoveisInput,
+  ImoveisConfig,
+  ImoveisModo,
 } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
+import { TenantService } from '../tenant/tenant.service';
 import {
   intervalosSobrepostos,
   serializarImovel,
@@ -24,7 +29,59 @@ const includeFotos = { fotos: { orderBy: { ordem: 'asc' as const } } };
 
 @Injectable()
 export class ImoveisService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tenantService: TenantService,
+  ) {}
+
+  /**
+   * Modo da área do filiado + link externo de reserva.
+   * Guardado no branding: o front já recebe isso no bootstrap.
+   */
+  async definirConfig(input: DefinirImoveisConfigInput): Promise<ImoveisConfig> {
+    const tenantId = requireTenantId();
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { branding: true },
+    });
+
+    if (!tenant?.branding || typeof tenant.branding !== 'object' || Array.isArray(tenant.branding)) {
+      throw new BadRequestException('Este sindicato ainda não tem identidade visual configurada');
+    }
+
+    const branding = { ...(tenant.branding as Prisma.JsonObject) };
+    branding.imoveisModo = input.modo;
+
+    if (input.reservaUrl !== undefined) {
+      branding.reservaApartamentosUrl = input.reservaUrl;
+    }
+
+    await this.prisma.tenant.update({
+      where: { id: tenantId },
+      data: { branding },
+    });
+
+    this.tenantService.invalidarCache();
+
+    return {
+      modo: input.modo,
+      reservaUrl:
+        typeof branding.reservaApartamentosUrl === 'string'
+          ? branding.reservaApartamentosUrl
+          : null,
+    };
+  }
+
+  lerConfigDoBranding(branding: unknown): ImoveisConfig {
+    if (!branding || typeof branding !== 'object' || Array.isArray(branding)) {
+      return { modo: 'VITRINE', reservaUrl: null };
+    }
+    const dados = branding as Record<string, unknown>;
+    const modo: ImoveisModo = dados.imoveisModo === 'LINK' ? 'LINK' : 'VITRINE';
+    const reservaUrl =
+      typeof dados.reservaApartamentosUrl === 'string' ? dados.reservaApartamentosUrl : null;
+    return { modo, reservaUrl };
+  }
 
   async criar(input: CriarImovelInput) {
     const imovel = await this.prisma.imovel.create({

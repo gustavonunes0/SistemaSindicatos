@@ -2509,6 +2509,17 @@ button.botao-primario {
   font-size: var(--texto-sm);
 }
 
+.site-footer-inner a {
+  color: #fff;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.site-footer-inner a:hover {
+  color: #fff;
+  opacity: 0.9;
+}
+
 .site-footer-telefones {
   margin: 0.25rem 0 0;
   font-size: var(--texto-sm);
@@ -5728,40 +5739,125 @@ textarea {
 }
 
 /* ============ Imóveis (área do afiliado) ============ */
-/* A reserva é concluída fora do sistema: a faixa institucional marca esse bloco. */
-.reserva-destaque {
-  padding: 1.5rem 1.6rem;
-  background: var(--cor-superficie);
+.imoveis-afiliado {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.imoveis-roteiro {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: roteiro;
+}
+
+@media (min-width: 720px) {
+  .imoveis-roteiro {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+}
+
+.imoveis-roteiro li {
+  counter-increment: roteiro;
+  display: grid;
+  gap: 0.25rem;
+  padding: 1rem 1.1rem 1rem 3rem;
+  position: relative;
   border: var(--borda-fina);
-  border-left: var(--faixa-altura) solid var(--amarelo-faixa);
+  border-radius: var(--raio-lg);
+  background: var(--cor-superficie, #fff);
+}
+
+.imoveis-roteiro li::before {
+  content: counter(roteiro);
+  position: absolute;
+  left: 0.95rem;
+  top: 1rem;
+  width: 1.45rem;
+  height: 1.45rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--cor-primaria);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.imoveis-roteiro strong {
+  font-size: var(--texto-sm);
+  color: var(--cor-primaria);
+}
+
+.imoveis-roteiro span {
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+.imoveis-vazio {
+  text-align: left;
+}
+
+.imoveis-vazio h2 {
+  margin: 0.2rem 0 0.45rem;
+}
+
+.reserva-destaque {
+  padding: 1.35rem 1.45rem;
+  background:
+    linear-gradient(135deg, rgb(11 61 107 / 0.04), transparent 42%),
+    var(--cor-superficie, #fff);
+  border: var(--borda-fina);
+  border-left: 4px solid var(--amarelo-faixa, #f4b301);
   border-radius: var(--raio-lg);
 }
 
+.reserva-destaque--compacta {
+  padding: 1.15rem 1.2rem;
+}
+
 .reserva-destaque .eyebrow {
-  margin: 0 0 0.35rem;
+  margin: 0 0 0.3rem;
 }
 
 .reserva-destaque h2 {
-  margin: 0 0 0.5rem;
+  margin: 0 0 0.45rem;
   font-size: var(--texto-lg);
   color: var(--cor-primaria);
 }
 
 .reserva-destaque > p {
-  margin: 0 0 1.25rem;
-  max-width: 62ch;
+  margin: 0 0 1.1rem;
+  max-width: 58ch;
   line-height: 1.55;
+  color: var(--cor-texto-suave);
+}
+
+.reserva-destaque--compacta > p {
+  font-size: var(--texto-sm);
 }
 
 .reserva-acoes {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: 0.6rem;
+}
+
+.reserva-destaque--compacta .reserva-acoes {
+  flex-direction: column;
+  align-items: stretch;
 }
 
 .reserva-acoes a {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   text-decoration: none;
 }
 
@@ -5769,28 +5865,29 @@ textarea {
   margin: 0;
 }
 
-.imoveis-vitrine {
-  margin-top: 2rem;
+.imoveis-vitrine-cabecalho {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
 }
 
-.imoveis-vitrine-titulo {
+.imoveis-vitrine-cabecalho .eyebrow {
+  margin: 0 0 0.2rem;
+}
+
+.imoveis-vitrine-cabecalho h2 {
   margin: 0;
-  font-size: var(--texto-sm);
-  font-weight: 600;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--cor-texto-suave);
-}
-
-.imoveis-filtros {
-  margin-top: 1.25rem;
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
 }
 
 .imoveis-grid {
   display: grid;
-  gap: 1rem;
+  gap: 1.1rem;
   grid-template-columns: 1fr;
-  margin: 1rem 0 0;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
@@ -5801,7 +5898,7 @@ textarea {
   }
 }
 
-@media (min-width: 880px) {
+@media (min-width: 980px) {
   .imoveis-grid {
     grid-template-columns: repeat(3, 1fr);
   }
@@ -5810,18 +5907,25 @@ textarea {
 .imovel-card {
   display: flex;
   flex-direction: column;
-  background: var(--cor-superficie);
+  height: 100%;
+  background: var(--cor-superficie, #fff);
   border: var(--borda-fina);
   border-radius: var(--raio-lg);
   overflow: hidden;
   text-decoration: none;
   color: var(--cor-texto);
-  transition: border-color var(--transicao), transform var(--transicao);
+  transition:
+    border-color 180ms ease-out,
+    transform 180ms ease-out,
+    box-shadow 180ms ease-out;
 }
 
 .imovel-card:hover {
-  border-color: var(--cor-primaria);
-  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--cor-primaria) 45%, var(--cor-borda));
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgb(11 61 107 / 8%);
+  color: var(--cor-texto);
+  background: var(--cor-superficie, #fff);
 }
 
 .imovel-card:focus-visible {
@@ -5831,29 +5935,41 @@ textarea {
 
 .imovel-card-foto {
   position: relative;
-  aspect-ratio: 4 / 3;
-  background: var(--cor-fundo);
+  aspect-ratio: 16 / 11;
+  background:
+    linear-gradient(160deg, rgb(11 61 107 / 0.08), transparent),
+    var(--cor-fundo);
   display: grid;
   place-items: center;
   overflow: hidden;
-}
-
-.imovel-card-contador {
-  position: absolute;
-  right: 0.55rem;
-  bottom: 0.55rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: var(--raio);
-  background: rgb(0 0 0 / 65%);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 600;
 }
 
 .imovel-card-foto img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 280ms ease-out;
+}
+
+.imovel-card:hover .imovel-card-foto img {
+  transform: scale(1.03);
+}
+
+.imovel-card-foto-meta {
+  position: absolute;
+  inset: auto 0.65rem 0.65rem auto;
+  display: flex;
+  gap: 0.35rem;
+}
+
+.imovel-card-contador {
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgb(7 31 56 / 72%);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .imovel-card-sem-foto {
@@ -5865,24 +5981,31 @@ textarea {
   display: flex;
   flex-direction: column;
   flex: 1;
-  padding: 1rem;
+  gap: 0.35rem;
+  padding: 1.05rem 1.1rem 1.15rem;
 }
 
 .imovel-card-corpo h3 {
-  margin: 0 0 0.35rem;
-  font-size: var(--texto-base);
+  margin: 0;
+  font-size: 1.05rem;
   color: var(--cor-primaria);
 }
 
 .imovel-card-endereco {
   margin: 0;
   font-size: var(--texto-sm);
+  line-height: 1.4;
   color: var(--cor-texto-suave);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .imovel-card-valor {
-  margin: 0.5rem 0 0;
+  margin: 0.35rem 0 0;
   font-family: var(--fonte-display);
+  font-size: 1.15rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--cor-texto);
@@ -5897,30 +6020,34 @@ textarea {
 
 .imovel-card-acao {
   margin-top: auto;
-  padding-top: 0.85rem;
+  padding-top: 0.95rem;
   font-size: var(--texto-sm);
   font-weight: 600;
   color: var(--cor-primaria);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .imovel-card:hover .imovel-card-acao {
-  text-decoration: underline;
+  gap: 0.45rem;
 }
 
 .imovel-card-comodidades {
   display: flex;
   flex-wrap: wrap;
   gap: 0.35rem;
-  margin: 0.65rem 0 0;
+  margin: 0.45rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .imovel-card-comodidades li {
   font-size: 0.72rem;
-  padding: 0.15rem 0.45rem;
+  padding: 0.18rem 0.5rem;
   background: var(--cor-fundo);
-  border-radius: var(--raio);
+  border: 1px solid transparent;
+  border-radius: 999px;
   color: var(--cor-texto-suave);
 }
 
@@ -5933,33 +6060,51 @@ textarea {
 
 @media (min-width: 960px) {
   .imovel-detalhe {
-    grid-template-columns: minmax(0, 1fr) 20rem;
+    grid-template-columns: minmax(0, 1fr) minmax(17rem, 21rem);
+    gap: 1.75rem;
   }
 }
 
 .imovel-detalhe-principal {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.35rem;
   min-width: 0;
 }
 
 .imovel-detalhe-lateral {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.85rem;
 }
 
 @media (min-width: 960px) {
   .imovel-detalhe-lateral {
     position: sticky;
-    top: 1.5rem;
+    top: 1.25rem;
   }
 }
 
 .imovel-resumo {
-  padding: 1.1rem 1.25rem;
-  background: var(--cor-superficie);
+  padding: 1.15rem 1.25rem;
+  background: var(--cor-superficie, #fff);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.imovel-resumo .eyebrow {
+  margin: 0 0 0.25rem;
+}
+
+.imovel-resumo-meta {
+  margin: 0.65rem 0 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.imovel-bloco {
+  padding: 1.15rem 1.25rem;
+  background: var(--cor-superficie, #fff);
   border: var(--borda-fina);
   border-radius: var(--raio-lg);
 }
@@ -5968,36 +6113,100 @@ textarea {
   margin-top: 0;
 }
 
-.imovel-galeria-principal {
-  width: 100%;
-  max-height: 420px;
-  object-fit: cover;
+.imovel-galeria-palco {
+  position: relative;
   border-radius: var(--raio-lg);
+  overflow: hidden;
   border: var(--borda-fina);
   background: var(--cor-fundo);
+}
+
+.imovel-galeria-principal {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 460px;
+  object-fit: cover;
+  display: block;
+}
+
+.imovel-galeria-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 999px;
+  background: rgb(7 31 56 / 72%);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 160ms ease-out;
+}
+
+.imovel-galeria-nav:hover:not(:disabled) {
+  background: rgb(7 31 56 / 88%);
+  color: #fff;
+}
+
+.imovel-galeria-nav--ant {
+  left: 0.75rem;
+}
+
+.imovel-galeria-nav--prox {
+  right: 0.75rem;
+}
+
+.imovel-galeria-indice {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(7 31 56 / 72%);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 
 .imovel-galeria-miniaturas {
   display: flex;
   gap: 0.5rem;
-  margin-top: 0.65rem;
+  margin-top: 0.7rem;
   overflow-x: auto;
+  padding-bottom: 0.15rem;
+  scrollbar-width: thin;
 }
 
 .imovel-galeria-miniaturas button {
   flex-shrink: 0;
   padding: 0;
   border: 2px solid transparent;
-  border-radius: var(--raio);
+  border-radius: calc(var(--raio) - 2px);
   background: none;
   cursor: pointer;
-  width: 72px;
-  height: 54px;
+  width: 4.6rem;
+  height: 3.4rem;
   overflow: hidden;
+  opacity: 0.72;
+  transition:
+    opacity 160ms ease-out,
+    border-color 160ms ease-out;
+}
+
+.imovel-galeria-miniaturas button:hover:not(:disabled) {
+  opacity: 1;
+  background: none;
+  color: inherit;
 }
 
 .imovel-galeria-miniaturas button.ativa {
   border-color: var(--cor-primaria);
+  opacity: 1;
 }
 
 .imovel-galeria-miniaturas img {
@@ -6007,7 +6216,7 @@ textarea {
 }
 
 .imovel-sem-foto {
-  padding: 3rem 1rem;
+  padding: 3.5rem 1rem;
   text-align: center;
   background: var(--cor-fundo);
   border: 1px dashed var(--cor-borda);
@@ -6018,10 +6227,11 @@ textarea {
 .imovel-detalhe-valor {
   margin: 0;
   font-family: var(--fonte-display);
-  font-size: 1.5rem;
+  font-size: clamp(1.45rem, 2vw, 1.75rem);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--cor-primaria);
+  line-height: 1.15;
 }
 
 .imovel-detalhe-valor span {
@@ -6032,135 +6242,175 @@ textarea {
 }
 
 .imovel-detalhe-endereco {
-  margin: 0.35rem 0 0;
+  margin: 0.45rem 0 0;
   color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.45;
 }
 
 .imovel-detalhe-descricao {
-  margin: 1rem 0 0;
-  line-height: 1.6;
+  margin: 0.55rem 0 0;
+  line-height: 1.65;
+  color: var(--cor-texto);
+  white-space: pre-wrap;
 }
 
 .imovel-secao-titulo {
-  margin: 1.25rem 0 0.5rem;
+  margin: 0;
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  letter-spacing: 0.06em;
   color: var(--cor-texto-suave);
 }
 
 .imovel-comodidades {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin: 0;
+  gap: 0.45rem;
+  margin: 0.75rem 0 0;
   padding: 0;
   list-style: none;
 }
 
 .imovel-comodidades li {
-  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.7rem;
   background: var(--cor-fundo);
   border: var(--borda-fina);
-  border-radius: var(--raio);
-  font-size: var(--texto-sm);
+  border-radius: 999px;
+  color: var(--cor-texto);
 }
 
-/* ---- Calendário ---- */
 .calendario-disponibilidade {
-  padding: 1.25rem;
-  background: var(--cor-superficie);
+  padding: 1.2rem 1.25rem 1.35rem;
+  background: var(--cor-superficie, #fff);
   border: var(--borda-fina);
   border-radius: var(--raio-lg);
+  transition: opacity 160ms ease-out;
+}
+
+.calendario-disponibilidade--atualizando {
+  opacity: 0.72;
 }
 
 .calendario-cabecalho {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 1rem;
   flex-wrap: wrap;
-  margin-bottom: 1rem;
+  margin-bottom: 0.85rem;
+}
+
+.calendario-cabecalho .eyebrow {
+  margin: 0 0 0.15rem;
 }
 
 .calendario-cabecalho h2 {
   margin: 0;
-  font-size: var(--texto-base);
-  color: var(--cor-primaria);
+  font-size: var(--texto-lg);
 }
 
 .calendario-navegacao {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.35rem;
+  padding: 0.2rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
 }
 
 .calendario-navegacao button {
-  padding: 0.25rem 0.55rem;
-  background: var(--cor-fundo);
-  border: var(--borda-fina);
-  border-radius: var(--raio);
-  font-size: var(--texto-sm);
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: calc(var(--raio) - 2px);
+  background: transparent;
+  color: var(--cor-primaria);
+  font-weight: 600;
   cursor: pointer;
 }
 
-.calendario-navegacao button:hover {
-  border-color: var(--cor-primaria);
+.calendario-navegacao button:hover:not(:disabled) {
+  background: var(--cor-superficie, #fff);
+  color: var(--cor-primaria);
 }
 
 .calendario-mes {
+  min-width: 9.5rem;
+  text-align: center;
   font-size: var(--texto-sm);
   font-weight: 600;
   text-transform: capitalize;
-  min-width: 9rem;
-  text-align: center;
+  color: var(--cor-texto);
+}
+
+.calendario-resumo {
+  margin: 0 0 0.75rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.calendario-resumo strong {
+  color: var(--cor-texto);
+  font-variant-numeric: tabular-nums;
 }
 
 .calendario-legenda {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
-  font-size: 0.72rem;
+  gap: 0.75rem 1.1rem;
+  margin-bottom: 0.85rem;
+  font-size: 0.75rem;
   color: var(--cor-texto-suave);
+}
+
+.calendario-legenda-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .calendario-legenda-item::before {
   content: '';
-  display: inline-block;
-  width: 0.65rem;
-  height: 0.65rem;
-  border-radius: 2px;
-  margin-right: 0.35rem;
-  vertical-align: middle;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 3px;
+  border: 1px solid var(--cor-borda);
 }
 
 .calendario-legenda-item.livre::before {
-  background: var(--cor-fundo);
-  border: var(--borda-fina);
+  background: #e8f5ec;
+  border-color: #2f6b45;
 }
 
 .calendario-legenda-item.reservado::before {
   background: #fff3cd;
-  border: 1px solid #856404;
+  border-color: #856404;
 }
 
 .calendario-legenda-item.bloqueado::before {
   background: #eceef1;
-  border: 1px solid var(--cor-texto-suave);
+  border-color: #9aa3ad;
 }
 
 .calendario-grade {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 0.35rem;
 }
 
 .calendario-dia-semana {
-  font-size: 0.72rem;
-  font-weight: 600;
   text-align: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--cor-texto-suave);
   padding-bottom: 0.25rem;
 }
@@ -6169,24 +6419,29 @@ textarea {
   aspect-ratio: 1;
   display: grid;
   place-items: center;
-  font-size: var(--texto-sm);
-  border-radius: var(--raio);
-  border: var(--borda-fina);
+  border-radius: calc(var(--raio) - 2px);
+  border: 1px solid transparent;
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
   background: var(--cor-fundo);
+  color: var(--cor-texto);
 }
 
 .calendario-celula.vazia {
-  border: none;
   background: transparent;
+  border: none;
 }
 
 .calendario-celula.livre {
-  background: #fff;
+  background: #e8f5ec;
+  border-color: rgb(47 107 69 / 0.2);
+  color: #1f5133;
+  font-weight: 600;
 }
 
 .calendario-celula.reservado {
   background: #fff3cd;
-  border-color: #856404;
+  border-color: rgb(133 100 4 / 0.25);
   color: #856404;
   font-weight: 600;
 }
@@ -6195,6 +6450,29 @@ textarea {
   background: #eceef1;
   color: var(--cor-texto-suave);
   text-decoration: line-through;
+}
+
+.calendario-celula.hoje {
+  box-shadow: inset 0 0 0 2px var(--cor-primaria);
+}
+
+.calendario-nota {
+  margin: 0.9rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--cor-texto-suave);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .imovel-card,
+  .imovel-card:hover,
+  .imovel-card-foto img,
+  .imovel-card:hover .imovel-card-foto img,
+  .imovel-card-acao,
+  .calendario-disponibilidade {
+    transition: none;
+    transform: none;
+  }
 }
 
 /* ---- Admin imóveis: listagem ---- */
@@ -11707,6 +11985,95 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 .imoveis-admin-abas {
   width: fit-content;
   margin-bottom: 1.25rem;
+}
+
+.imoveis-modo-card {
+  margin-bottom: 1.5rem;
+  padding: 1.15rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.imoveis-modo-topo h2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0 0 0.2rem;
+  font-size: var(--texto-base);
+}
+
+.imoveis-modo-topo p {
+  margin: 0;
+}
+
+.imoveis-modo-opcoes {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.imoveis-modo-opcao {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  padding: 0.9rem 1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+  text-align: left;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease-out,
+    box-shadow 180ms ease-out,
+    background 180ms ease-out;
+}
+
+.imoveis-modo-opcao strong {
+  font-size: var(--texto-sm);
+}
+
+.imoveis-modo-opcao span {
+  color: var(--cor-texto-suave);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.imoveis-modo-opcao:hover:not(:disabled) {
+  background: var(--cor-fundo);
+  border-color: var(--cor-primaria);
+  color: var(--cor-texto);
+}
+
+.imoveis-modo-opcao--ativa,
+.imoveis-modo-opcao--ativa:hover:not(:disabled) {
+  border-color: var(--cor-primaria);
+  background: var(--cor-superficie, #fff);
+  box-shadow: 0 0 0 1px var(--cor-primaria);
+  color: var(--cor-texto);
+}
+
+.imoveis-modo-campo {
+  margin: 0 0 0.85rem;
+}
+
+.imoveis-modo-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.imoveis-modo-acoes .sucesso,
+.imoveis-modo-acoes .erro {
+  margin: 0;
+  font-size: var(--texto-sm);
 }
 
 .aba {

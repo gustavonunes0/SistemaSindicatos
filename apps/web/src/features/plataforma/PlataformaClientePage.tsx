@@ -89,6 +89,7 @@ export function PlataformaClientePage() {
             branding.reservaApartamentosUrl ?? data?.branding?.reservaApartamentosUrl,
           regulamentoApartamentosUrl:
             branding.regulamentoApartamentosUrl ?? data?.branding?.regulamentoApartamentosUrl,
+          imoveisModo: branding.imoveisModo ?? data?.branding?.imoveisModo,
           nome: branding.nome.trim(),
           nomeCompleto: branding.nomeCompleto.trim(),
           logoUrl: branding.logoUrl.trim() || '/logo-sindicato.png',

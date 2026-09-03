@@ -3,14 +3,23 @@ import { useMarca } from '../../../lib/marca';
 type ReservaExternaProps = {
   titulo: string;
   descricao: string;
+  /** Painel lateral do detalhe — menos respiro, ações empilhadas. */
+  compacta?: boolean;
+  /** Destaque do CTA principal. */
+  ctaRotulo?: string;
 };
 
 /** A reserva acontece no sistema oficial do sindicato, fora desta aplicação. */
-export function ReservaExterna({ titulo, descricao }: ReservaExternaProps) {
+export function ReservaExterna({
+  titulo,
+  descricao,
+  compacta = false,
+  ctaRotulo = 'Fazer reserva',
+}: ReservaExternaProps) {
   const marca = useMarca();
 
   return (
-    <section className="reserva-destaque">
+    <section className={`reserva-destaque${compacta ? ' reserva-destaque--compacta' : ''}`}>
       <p className="eyebrow">Reserva</p>
       <h2>{titulo}</h2>
       <p>{descricao}</p>
@@ -23,7 +32,7 @@ export function ReservaExterna({ titulo, descricao }: ReservaExternaProps) {
             target="_blank"
             rel="noreferrer"
           >
-            Fazer reserva
+            {ctaRotulo}
             <span aria-hidden="true"> ↗</span>
           </a>
         ) : (
@@ -40,7 +49,7 @@ export function ReservaExterna({ titulo, descricao }: ReservaExternaProps) {
             target="_blank"
             rel="noreferrer"
           >
-            Ler o regulamento (PDF)
+            Regulamento (PDF)
             <span aria-hidden="true"> ↗</span>
           </a>
         )}

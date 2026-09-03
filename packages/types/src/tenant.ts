@@ -59,6 +59,13 @@ export const tenantBrandingSchema = z.object({
   }),
   reservaApartamentosUrl: z.string().url().nullable().optional(),
   regulamentoApartamentosUrl: z.string().nullable().optional(),
+  /**
+   * Como o filiado vê Apartamentos:
+   * - LINK — só o botão para o sistema externo de reserva
+   * - VITRINE — lista fotos, valores e calendário (reserva continua no link)
+   * Ausente = VITRINE (comportamento histórico).
+   */
+  imoveisModo: z.enum(['LINK', 'VITRINE']).optional(),
   /** PDF do estatuto sindical (site institucional). */
   estatutoUrl: z.string().nullable().optional(),
   /** Rubrica desenhada acima do carimbo nas declarações em PDF. */
