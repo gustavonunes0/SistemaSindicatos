@@ -183,11 +183,22 @@ A Home exibe o feed do Instagram do sindicato via [Instagram Graph API](https://
 
 ### Obtendo as credenciais
 
-1. No painel do app, gere um **access token de curta duração** para a conta (Graph API Explorer ou fluxo de login).
-2. Troque por um **long-lived token** (60 dias):
-   `GET https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=<APP_SECRET>&access_token=<TOKEN_CURTO>`
-3. Descubra o **user id** da conta:
-   `GET https://graph.instagram.com/me?fields=id,username&access_token=<TOKEN>`
+Há dois caminhos. O do Facebook (página ligada ao Instagram) é o que o sindicato usa hoje.
+
+**Página do Facebook (Graph API Explorer)**
+
+1. [Graph API Explorer](https://developers.facebook.com/tools/explorer/) → app do sindicato.
+2. Permissões: `pages_show_list`, `pages_read_engagement`, `instagram_basic`, `instagram_content_publish` (opcional).
+3. `GET /me/accounts` → copie o `access_token` da página **SINDPRF/CE** (não o token do usuário).
+4. `GET /{page-id}?fields=instagram_business_account` → o `id` retornado é o `INSTAGRAM_USER_ID` (não use o ID da página).
+5. Troque o token da página por um de longa duração:
+   `GET https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=<APP_ID>&client_secret=<APP_SECRET>&fb_exchange_token=<TOKEN_DA_PAGINA>`
+
+**Instagram Login** (alternativa)
+
+1. Token curto no painel do app.
+2. Long-lived: `GET https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=<APP_SECRET>&access_token=<TOKEN_CURTO>`
+3. User id: `GET https://graph.instagram.com/me?fields=id,username&access_token=<TOKEN>`
 
 ### Configuração
 

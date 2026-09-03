@@ -6,8 +6,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { runWithTenantAsync, requireTenantId } from '../tenant/tenant-context';
 import { FEED_MOCK } from './instagram.mock';
 
-const GRAPH_URL = 'https://graph.instagram.com';
 const FEED_LIMITE = 12;
+const CAMPOS = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp';
+
+/** Instagram Login usa graph.instagram.com; token de Página/Facebook usa graph.facebook.com. */
+const GRAPH_BASES = [
+  'https://graph.instagram.com',
+  'https://graph.facebook.com/v21.0',
+] as const;
 
 interface GraphMediaItem {
   id: string;
@@ -24,16 +30,15 @@ export class InstagramService implements OnModuleInit {
   private readonly logger = new Logger(InstagramService.name);
   private readonly userId: string | undefined;
   private readonly mockAtivo: boolean;
-
-  // Token em memória: pode ser rotacionado pelo job de refresh sem reiniciar a api.
   private accessToken: string | undefined;
+  private graphBase: string | undefined;
 
   constructor(
     private readonly prisma: PrismaService,
     config: ConfigService,
   ) {
-    this.accessToken = config.get<string>('INSTAGRAM_ACCESS_TOKEN');
-    this.userId = config.get<string>('INSTAGRAM_USER_ID');
+    this.accessToken = config.get<string>('INSTAGRAM_ACCESS_TOKEN')?.trim() || undefined;
+    this.userId = config.get<string>('INSTAGRAM_USER_ID')?.trim() || undefined;
     this.mockAtivo = config.get<string>('INSTAGRAM_MOCK') === 'true';
   }
 
@@ -42,7 +47,6 @@ export class InstagramService implements OnModuleInit {
   }
 
   onModuleInit(): void {
-    // Sincronização inicial em background; falha não impede o boot.
     void this.sincronizar();
   }
 
@@ -73,9 +77,9 @@ export class InstagramService implements OnModuleInit {
       return;
     }
 
-    // Cron sem request HTTP: roda no contexto de cada tenant ativo.
-    // Fase A: credenciais Instagram ainda são globais (mesmo feed para todos).
-    const tenants = await this.prisma.tenant.findMany({ where: { ativo: true } });
+    const tenants = await this.prisma.tenant.findMany({
+      where: { ativo: true, tipo: 'SINDICATO' },
+    });
     for (const tenant of tenants) {
       await runWithTenantAsync(
         {
@@ -92,21 +96,12 @@ export class InstagramService implements OnModuleInit {
 
   private async sincronizarNoTenant(): Promise<void> {
     try {
-      const campos = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp';
-      const url = `${GRAPH_URL}/${this.userId}/media?fields=${campos}&limit=${FEED_LIMITE}&access_token=${this.accessToken}`;
-      const resposta = await fetch(url);
-      if (!resposta.ok) {
-        throw new Error(`Graph API respondeu ${resposta.status}`);
-      }
-
-      const { data } = (await resposta.json()) as { data: GraphMediaItem[] };
+      const data = await this.buscarMedia();
       const tenantId = requireTenantId();
       for (const item of data) {
-        // Vídeos usam a thumbnail como imagem do grid.
         const mediaUrl = (item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url) ?? '';
-        if (!mediaUrl) {
-          continue;
-        }
+        if (!mediaUrl) continue;
+
         await this.prisma.instagramPost.upsert({
           where: { tenantId_externalId: { tenantId, externalId: item.id } },
           update: {
@@ -129,26 +124,54 @@ export class InstagramService implements OnModuleInit {
       }
       this.logger.log(`Feed do Instagram sincronizado (${data.length} posts)`);
     } catch (error) {
-      // Falha de sync não pode derrubar a api; o feed continua servindo o cache.
       this.logger.error(`Erro ao sincronizar Instagram: ${(error as Error).message}`);
     }
   }
 
-  // Long-lived tokens expiram em 60 dias; renovação semanal mantém folga.
-  @Cron(CronExpression.EVERY_WEEK)
-  async renovarToken(): Promise<void> {
-    if (!this.configurado) {
-      return;
-    }
+  private async buscarMedia(): Promise<GraphMediaItem[]> {
+    const bases = this.graphBase
+      ? [this.graphBase, ...GRAPH_BASES.filter((base) => base !== this.graphBase)]
+      : this.basesPreferidas();
 
-    try {
-      const url = `${GRAPH_URL}/refresh_access_token?grant_type=ig_refresh_token&access_token=${this.accessToken}`;
+    const erros: string[] = [];
+    for (const base of bases) {
+      const url = `${base}/${this.userId}/media?fields=${CAMPOS}&limit=${FEED_LIMITE}&access_token=${this.accessToken}`;
       const resposta = await fetch(url);
-      if (!resposta.ok) {
-        throw new Error(`Graph API respondeu ${resposta.status}`);
+      const corpo = await resposta.text();
+
+      if (resposta.ok) {
+        this.graphBase = base;
+        const json = JSON.parse(corpo) as { data?: GraphMediaItem[] };
+        return json.data ?? [];
       }
 
-      const { access_token: novoToken } = (await resposta.json()) as { access_token: string };
+      erros.push(`${base} → ${resposta.status} ${resumirErroGraph(corpo)}`);
+    }
+
+    throw new Error(erros.join(' | '));
+  }
+
+  private basesPreferidas(): string[] {
+    const token = this.accessToken ?? '';
+    if (token.startsWith('EAA')) {
+      return ['https://graph.facebook.com/v21.0', 'https://graph.instagram.com'];
+    }
+    return [...GRAPH_BASES];
+  }
+
+  @Cron(CronExpression.EVERY_WEEK)
+  async renovarToken(): Promise<void> {
+    if (!this.configurado) return;
+
+    try {
+      const url = `https://graph.instagram.com/refresh_access_token?grant_type=ig_refresh_token&access_token=${this.accessToken}`;
+      const resposta = await fetch(url);
+      const corpo = await resposta.text();
+      if (!resposta.ok) {
+        throw new Error(resumirErroGraph(corpo));
+      }
+
+      const { access_token: novoToken } = JSON.parse(corpo) as { access_token: string };
       this.accessToken = novoToken;
       this.logger.warn(
         'Token do Instagram renovado em memória — atualize INSTAGRAM_ACCESS_TOKEN no .env para persistir após reinício',
@@ -156,5 +179,18 @@ export class InstagramService implements OnModuleInit {
     } catch (error) {
       this.logger.error(`Erro ao renovar token do Instagram: ${(error as Error).message}`);
     }
+  }
+}
+
+function resumirErroGraph(corpo: string): string {
+  try {
+    const json = JSON.parse(corpo) as {
+      error?: { message?: string; type?: string; code?: number; error_subcode?: number };
+    };
+    const erro = json.error;
+    if (!erro) return corpo.slice(0, 300);
+    return [erro.type, erro.code, erro.error_subcode, erro.message].filter(Boolean).join(' — ');
+  } catch {
+    return corpo.slice(0, 300);
   }
 }
