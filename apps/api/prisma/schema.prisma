@@ -35,39 +35,42 @@ model Tenant {
   createdAt DateTime   @default(now()) @db.Timestamptz
   updatedAt DateTime   @updatedAt @db.Timestamptz
 
-  domains              TenantDomain[]
-  users                User[]
-  afiliados            Afiliado[]
-  importacoesD8        ImportacaoD8[]
-  linhasD8             LinhaD8[]
-  noticias             Noticia[]
-  pushSubscriptions    PushSubscription[]
-  instagramPosts       InstagramPost[]
-  convenios            Convenio[]
-  declaracoesEmitidas  DeclaracaoEmitida[]
-  eleicoes             Eleicao[]
-  membrosComissao      MembroComissaoEleitoral[]
-  chapas               Chapa[]
-  contestacoes         ContestacaoChapa[]
-  candidatos           Candidato[]
-  elegiveis            Elegivel[]
-  comparecimentos      Comparecimento[]
-  votos                Voto[]
-  resultados           ResultadoApuracao[]
-  imoveis              Imovel[]
-  fotosImovel          FotoImovel[]
-  periodos             Periodo[]
-  solicitacoes         SolicitacaoAluguel[]
-  mensagens            Mensagem[]
-  importacoesBalancete ImportacaoBalancete[]
-  linhasBalancete      LinhaBalancete[]
-  refreshTokens        RefreshToken[]
-  resetTokens          PasswordResetToken[]
-  alertas              Alerta[]
-  formularios          Formulario[]
-  respostasFormulario  RespostaFormulario[]
-  documentosAfiliados  DocumentoAfiliado[]
-  dependentesAfiliados DependenteAfiliado[]
+  domains                TenantDomain[]
+  users                  User[]
+  afiliados              Afiliado[]
+  importacoesD8          ImportacaoD8[]
+  linhasD8               LinhaD8[]
+  noticias               Noticia[]
+  pushSubscriptions      PushSubscription[]
+  instagramPosts         InstagramPost[]
+  convenios              Convenio[]
+  declaracoesEmitidas    DeclaracaoEmitida[]
+  eleicoes               Eleicao[]
+  membrosComissao        MembroComissaoEleitoral[]
+  chapas                 Chapa[]
+  contestacoes           ContestacaoChapa[]
+  candidatos             Candidato[]
+  elegiveis              Elegivel[]
+  comparecimentos        Comparecimento[]
+  votos                  Voto[]
+  resultados             ResultadoApuracao[]
+  imoveis                Imovel[]
+  fotosImovel            FotoImovel[]
+  periodos               Periodo[]
+  solicitacoes           SolicitacaoAluguel[]
+  mensagens              Mensagem[]
+  importacoesBalancete   ImportacaoBalancete[]
+  linhasBalancete        LinhaBalancete[]
+  refreshTokens          RefreshToken[]
+  resetTokens            PasswordResetToken[]
+  alertas                Alerta[]
+  formularios            Formulario[]
+  respostasFormulario    RespostaFormulario[]
+  documentosAfiliados    DocumentoAfiliado[]
+  dependentesAfiliados   DependenteAfiliado[]
+  contasFinanceiras      ContaFinanceira[]
+  importacoesFinanceiras ImportacaoFinanceira[]
+  lancamentosFinanceiros LancamentoFinanceiro[]
 
   @@map("tenants")
 }
@@ -110,6 +113,27 @@ enum StatusAfiliado {
 enum TipoD8 {
   SERVIDOR
   PENSIONISTA
+}
+
+enum InstituicaoFinanceira {
+  SICOOB
+  SICREDI
+}
+
+enum TipoDocumentoFinanceiro {
+  EXTRATO
+  FATURA
+}
+
+enum TipoLancamentoFinanceiro {
+  CREDITO
+  DEBITO
+}
+
+enum StatusValidacaoSaldo {
+  VALIDO
+  DIVERGENTE
+  NAO_APLICAVEL
 }
 
 enum TipoDocumentoFiliacao {
@@ -377,21 +401,21 @@ enum StatusFormulario {
 }
 
 model Formulario {
-  id        String            @id @default(cuid())
-  tenantId  String
-  titulo    String
-  slug      String
-  descricao String?           @db.Text
+  id         String            @id @default(cuid())
+  tenantId   String
+  titulo     String
+  slug       String
+  descricao  String?           @db.Text
   /// Link de formulário mantido em serviço externo, como Google Forms.
   urlExterna String?
   /// Perguntas do formulário — ver campoFormularioSchema em @sindprf/types.
   /// JSON em vez de tabela: salvar o formulário é um único write e a ordem
   /// das perguntas vem de graça.
-  campos    Json              @default("[]")
-  publico   PublicoFormulario @default(FILIADOS)
-  status    StatusFormulario  @default(RASCUNHO)
-  createdAt DateTime          @default(now()) @db.Timestamptz
-  updatedAt DateTime          @updatedAt @db.Timestamptz
+  campos     Json              @default("[]")
+  publico    PublicoFormulario @default(FILIADOS)
+  status     StatusFormulario  @default(RASCUNHO)
+  createdAt  DateTime          @default(now()) @db.Timestamptz
+  updatedAt  DateTime          @updatedAt @db.Timestamptz
 
   tenant    Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   respostas RespostaFormulario[]
@@ -966,4 +990,95 @@ model LinhaBalancete {
   @@index([importacaoId, categoriaSlug])
   @@index([tenantId])
   @@map("linhas_balancete")
+}
+
+// =====================================================================
+// IMPORTAÇÃO FINANCEIRA — EXTRATOS E FATURAS
+// =====================================================================
+
+model ContaFinanceira {
+  id               String                @id @default(cuid())
+  tenantId         String
+  instituicao      InstituicaoFinanceira
+  agencia          String
+  numero           String
+  nome             String
+  titularNome      String?
+  titularDocumento String?
+  ativo            Boolean               @default(true)
+  createdAt        DateTime              @default(now()) @db.Timestamptz
+  updatedAt        DateTime              @updatedAt @db.Timestamptz
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  importacoes ImportacaoFinanceira[]
+  lancamentos LancamentoFinanceiro[]
+
+  @@unique([tenantId, instituicao, agencia, numero])
+  @@index([tenantId, ativo])
+  @@map("contas_financeiras")
+}
+
+model ImportacaoFinanceira {
+  id                   String                  @id @default(cuid())
+  tenantId             String
+  contaId              String
+  instituicao          InstituicaoFinanceira
+  tipoDocumento        TipoDocumentoFinanceiro
+  layout               String
+  arquivoNome          String
+  sha256               String
+  competenciaAno       Int
+  competenciaMes       Int
+  periodoInicio        DateTime                @db.Date
+  periodoFim           DateTime                @db.Date
+  vencimento           DateTime?               @db.Date
+  totalDocumento       Decimal?                @db.Decimal(14, 2)
+  saldoInicial         Decimal?                @db.Decimal(14, 2)
+  saldoFinal           Decimal?                @db.Decimal(14, 2)
+  totalCreditos        Decimal                 @db.Decimal(14, 2)
+  totalDebitos         Decimal                 @db.Decimal(14, 2)
+  statusValidacaoSaldo StatusValidacaoSaldo
+  totalLancamentos     Int
+  createdAt            DateTime                @default(now()) @db.Timestamptz
+
+  tenant      Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  conta       ContaFinanceira        @relation(fields: [contaId], references: [id], onDelete: Restrict)
+  lancamentos LancamentoFinanceiro[]
+
+  @@unique([tenantId, sha256])
+  @@unique([tenantId, contaId, tipoDocumento, competenciaAno, competenciaMes], map: "import_fin_conta_tipo_comp_key")
+  @@index([tenantId, createdAt])
+  @@index([tenantId, contaId, periodoInicio])
+  @@map("importacoes_financeiras")
+}
+
+model LancamentoFinanceiro {
+  id                   String                   @id @default(cuid())
+  tenantId             String
+  importacaoId         String
+  contaId              String
+  sequencia            Int
+  data                 DateTime                 @db.Date
+  descricao            String
+  documento            String?
+  tipo                 TipoLancamentoFinanceiro
+  valor                Decimal                  @db.Decimal(14, 2)
+  saldoApos            Decimal?                 @db.Decimal(14, 2)
+  contraparteNome      String?
+  contraparteDocumento String?
+  portadorNome         String?
+  cartaoFinal          String?
+  parcelaNumero        Int?
+  parcelaTotal         Int?
+  fingerprint          String
+
+  tenant     Tenant               @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  importacao ImportacaoFinanceira @relation(fields: [importacaoId], references: [id], onDelete: Cascade)
+  conta      ContaFinanceira      @relation(fields: [contaId], references: [id], onDelete: Restrict)
+
+  @@unique([tenantId, contaId, fingerprint])
+  @@unique([importacaoId, sequencia])
+  @@index([tenantId, contaId, data])
+  @@index([importacaoId])
+  @@map("lancamentos_financeiros")
 }

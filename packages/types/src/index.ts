@@ -10,6 +10,7 @@ export * from './cpf';
 export * from './balancete';
 export * from './d8';
 export * from './eleicao';
+export * from './financeiro';
 export * from './formulario';
 export * from './health';
 export * from './imovel';

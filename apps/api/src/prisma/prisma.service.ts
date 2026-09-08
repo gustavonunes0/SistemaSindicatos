@@ -18,7 +18,6 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   private readonly client: TenantPrismaClient = criarClient();
 
   constructor() {
-    // eslint-disable-next-line no-constructor-return -- Nest + Prisma extensions
     return new Proxy(this, {
       get: (target, prop, receiver) => {
         if (prop === 'onModuleInit' || prop === 'onModuleDestroy' || prop === 'client') {
@@ -68,6 +67,9 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   declare mensagem: TenantPrismaClient['mensagem'];
   declare importacaoBalancete: TenantPrismaClient['importacaoBalancete'];
   declare linhaBalancete: TenantPrismaClient['linhaBalancete'];
+  declare contaFinanceira: TenantPrismaClient['contaFinanceira'];
+  declare importacaoFinanceira: TenantPrismaClient['importacaoFinanceira'];
+  declare lancamentoFinanceiro: TenantPrismaClient['lancamentoFinanceiro'];
   declare tenant: TenantPrismaClient['tenant'];
   declare tenantDomain: TenantPrismaClient['tenantDomain'];
   declare $transaction: TenantPrismaClient['$transaction'];

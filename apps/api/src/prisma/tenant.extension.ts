@@ -35,6 +35,9 @@ const MODELS_COM_TENANT = new Set([
   'Mensagem',
   'ImportacaoBalancete',
   'LinhaBalancete',
+  'ContaFinanceira',
+  'ImportacaoFinanceira',
+  'LancamentoFinanceiro',
 ]);
 
 function tenantIdAtivo(): string | undefined {

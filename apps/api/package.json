@@ -9,6 +9,8 @@
     "start": "node dist/main.js",
     "lint": "eslint src prisma test",
     "test": "jest --config ./test/jest-e2e.json --runInBand",
+    "test:unit": "jest --config ./test/jest-unit.json --runInBand",
+    "financeiro:validar-pdfs": "tsx scripts/validar-importacoes-financeiras.ts",
     "d8:importar-inicial": "node --env-file=.env scripts/importar-d8-host.mjs",
     "seed:convenios-declaracao": "tsx scripts/seed-convenios-declaracao.ts",
     "seed:convenios-educacao": "tsx scripts/seed-convenios-educacao.ts"
@@ -52,6 +54,7 @@
     "@types/web-push": "^3.6.4",
     "eslint": "^9.17.0",
     "jest": "^30.4.2",
+    "pdfjs-dist": "^4.10.38",
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.11",
     "tsx": "^4.22.4",

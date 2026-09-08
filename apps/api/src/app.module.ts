@@ -17,6 +17,7 @@ import { ConveniosModule } from './convenios/convenios.module';
 import { ContatoModule } from './contato/contato.module';
 import { D8Module } from './d8/d8.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
+import { FinanceiroModule } from './financeiro/financeiro.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
 import { InstagramModule } from './instagram/instagram.module';
 import { NoticiasModule } from './noticias/noticias.module';
@@ -56,6 +57,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
     EleicaoModule,
     D8Module,
     BalancetesModule,
+    FinanceiroModule,
   ],
   controllers: [AppController],
   providers: [

@@ -91,6 +91,11 @@ const D8DetalheAdminPage = lazy(() =>
     default: m.D8DetalheAdminPage,
   })),
 );
+const ExtratosFaturasAdminPage = lazy(() =>
+  import(
+    './features/extratos-faturas/components/admin/ExtratosFaturasAdminPage'
+  ).then((m) => ({ default: m.ExtratosFaturasAdminPage })),
+);
 const NoticiasAdminPage = lazy(() =>
   import('./features/noticias/components/admin/NoticiasAdminPage').then((m) => ({
     default: m.NoticiasAdminPage,
@@ -264,6 +269,10 @@ export const router = createBrowserRouter([
   },
   { path: '/admin/financeiro/d8', element: protegidaAdmin(<D8AdminPage />) },
   { path: '/admin/financeiro/d8/:id', element: protegidaAdmin(<D8DetalheAdminPage />) },
+  {
+    path: '/admin/financeiro/extratos-faturas',
+    element: protegidaAdmin(<ExtratosFaturasAdminPage />),
+  },
   { path: '/admin/balancetes', element: <Navigate to="/admin/financeiro/balancetes" replace /> },
   { path: '/admin/balancetes/:id', element: <RedirecionarBalanceteDetalhe /> },
   { path: '/admin/d8', element: <Navigate to="/admin/financeiro/d8" replace /> },

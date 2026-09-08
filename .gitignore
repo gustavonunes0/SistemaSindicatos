@@ -4,6 +4,9 @@ coverage/
 uploads/
 uploads-private/
 
+# Documentos financeiros reais são dados privados e nunca devem ir ao Git.
+EXTRATOS E FATURAS DE TODAS AS CONTAS DO SICOOB E SICREDI JAN A AGO2026 (1)/
+
 # Segredos: nunca versionar. O .env.example é a única exceção.
 .env
 .env.*

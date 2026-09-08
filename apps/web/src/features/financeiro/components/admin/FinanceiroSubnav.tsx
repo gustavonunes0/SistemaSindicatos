@@ -4,6 +4,11 @@ const links = [
   { to: '/admin/financeiro', rotulo: 'Visão geral', end: true },
   { to: '/admin/financeiro/balancetes', rotulo: 'Balancetes', end: false },
   { to: '/admin/financeiro/d8', rotulo: 'D8 (SIAPE)', end: false },
+  {
+    to: '/admin/financeiro/extratos-faturas',
+    rotulo: 'Extratos e faturas',
+    end: false,
+  },
 ] as const;
 
 export function FinanceiroSubnav() {

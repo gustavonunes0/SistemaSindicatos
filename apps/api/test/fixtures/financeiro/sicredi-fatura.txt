@@ -1,0 +1,12 @@
+SICREDI
+FATURA DO CARTÃO
+Visa Empresas final 1617
+Total fatura de abril R$ 750,00
+Fechamento da próxima fatura 09/05/2026
+Vencimento 23/abr
+Vencimento 23/04/2026
+Transações
+Cartão PORTADOR DEMONSTRACAO (final 1617)
+15/mar 10:20 Fortaleza Presencial HOSPEDAGEM EXEMPLO 01/03 R$ 300,00
+18/mar 11:30 Fortaleza Presencial PASSAGEM EXEMPLO R$ 450,00
+Total cartão (final 1617) R$ 750,00

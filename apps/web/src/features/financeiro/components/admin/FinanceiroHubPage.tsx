@@ -3,6 +3,7 @@ import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useImportacoesBalancete } from '../../../balancetes/hooks';
 import { useImportacoesD8 } from '../../../d8/hooks';
+import { useImportacoesFinanceiras } from '../../../extratos-faturas/hooks';
 import { FinanceiroSubnav } from './FinanceiroSubnav';
 
 function formatarMoeda(valor: number): string {
@@ -12,12 +13,14 @@ function formatarMoeda(valor: number): string {
 export function FinanceiroHubPage() {
   const balancetes = useImportacoesBalancete();
   const d8 = useImportacoesD8();
+  const documentos = useImportacoesFinanceiras({ pagina: 1, limite: 100 });
 
-  const carregando = balancetes.isLoading || d8.isLoading;
-  const erro = balancetes.isError || d8.isError;
+  const carregando = balancetes.isLoading || d8.isLoading || documentos.isLoading;
+  const erro = balancetes.isError || d8.isError || documentos.isError;
 
   const listaBal = balancetes.data ?? [];
   const listaD8 = d8.data ?? [];
+  const documentosBancarios = documentos.data?.itens ?? [];
 
   const totaisBal = listaBal.reduce(
     (acc, item) => {
@@ -37,7 +40,7 @@ export function FinanceiroHubPage() {
     <AreaLayout
       tipo="admin"
       titulo="Financeiro"
-      descricao="Balancetes contábeis e importação D8 (SIAPE) em um só lugar."
+      descricao="Balancetes, D8 (SIAPE), extratos bancários e faturas em um só lugar."
     >
       <FinanceiroSubnav />
 
@@ -69,6 +72,11 @@ export function FinanceiroHubPage() {
               <p className="bal-resumo-detalhe">
                 {competenciasD8} {competenciasD8 === 1 ? 'competência' : 'competências'} SIAPE
               </p>
+            </article>
+            <article className="bal-resumo-card">
+              <p className="bal-resumo-rotulo">Documentos bancários</p>
+              <p className="bal-resumo-valor">{documentos.data?.total ?? 0}</p>
+              <p className="bal-resumo-detalhe">Extratos e faturas confirmados</p>
             </article>
           </section>
 
@@ -109,6 +117,25 @@ export function FinanceiroHubPage() {
                 </div>
               </dl>
               <span className="fin-modulo-acao">Abrir D8</span>
+            </Link>
+
+            <Link to="/admin/financeiro/extratos-faturas" className="fin-modulo">
+              <p className="eyebrow">Contas bancárias</p>
+              <h2 className="fin-modulo-titulo">Extratos e faturas</h2>
+              <p className="fin-modulo-desc">
+                Importe PDFs em lote, revise a identificação e consulte o arquivo por banco e conta.
+              </p>
+              <dl className="fin-modulo-meta">
+                <div>
+                  <dt>Documentos</dt>
+                  <dd>{documentos.data?.total ?? 0}</dd>
+                </div>
+                <div>
+                  <dt>Contas</dt>
+                  <dd>{new Set(documentosBancarios.map((item) => item.conta.id)).size}</dd>
+                </div>
+              </dl>
+              <span className="fin-modulo-acao">Abrir documentos bancários</span>
             </Link>
           </section>
         </>
