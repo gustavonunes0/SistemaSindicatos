@@ -10010,20 +10010,25 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 
 .ef-arvore-mes button {
   display: flex;
-  width: 100%;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 0.55rem 0;
+  /* Recuo negativo: o realce do hover avança sobre o respiro da árvore. */
+  width: calc(100% + 1.2rem);
+  margin-inline: -0.6rem;
+  padding: 0.55rem 0.6rem;
   text-align: left;
   color: inherit;
   background: transparent;
   border: 0;
+  border-radius: var(--raio);
   cursor: pointer;
 }
 
-.ef-arvore-mes button:hover strong {
-  text-decoration: underline;
+.ef-arvore-mes button:hover:not(:disabled),
+.ef-arvore-mes button:focus-visible {
+  color: var(--cor-primaria);
+  background: var(--cor-fundo);
 }
 
 .ef-arvore-mes button span:first-child {

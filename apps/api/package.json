@@ -11,6 +11,7 @@
     "test": "jest --config ./test/jest-e2e.json --runInBand",
     "test:unit": "jest --config ./test/jest-unit.json --runInBand",
     "financeiro:validar-pdfs": "tsx scripts/validar-importacoes-financeiras.ts",
+    "financeiro:importar-pdfs": "tsx scripts/importar-extratos-faturas.ts",
     "d8:importar-inicial": "node --env-file=.env scripts/importar-d8-host.mjs",
     "seed:convenios-declaracao": "tsx scripts/seed-convenios-declaracao.ts",
     "seed:convenios-educacao": "tsx scripts/seed-convenios-educacao.ts"
