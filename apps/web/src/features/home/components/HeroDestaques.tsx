@@ -96,7 +96,7 @@ export function HeroDestaques() {
     );
   }
 
-  const slide = slides[indice] ?? slides[0];
+  const slide = slides[Math.min(indice, slides.length - 1)]!;
   const tituloCurto = encurtar(slide.titulo, LIMITE_TEXTO);
 
   const media =

@@ -17,6 +17,7 @@ import { rotuloDisponibilidade } from './disponibilidade-externa';
 const publicoCurto: Record<FormularioListagem['publico'], string> = {
   TODOS: 'Aberto',
   FILIADOS: 'Só filiados',
+  DIRETORIA: 'Só diretores',
 };
 
 function linkPublico(formulario: FormularioListagem): string {

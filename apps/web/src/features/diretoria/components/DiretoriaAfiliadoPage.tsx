@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
-import { AreaLayout } from '../../../../components/layout/AreaLayout';
-import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
-import { useMe } from '../../../auth/hooks';
-import { useFormulariosDisponiveis } from '../../../formularios/hooks';
-import { useRecursosDiretoria } from '../../hooks';
+import { AreaLayout } from '../../../components/layout/AreaLayout';
+import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
+import { useMe } from '../../auth/hooks';
+import { useFormulariosDisponiveis } from '../../formularios/hooks';
+import { useRecursosDiretoria } from '../hooks';
 
 export function DiretoriaAfiliadoPage() {
   const { data: me, isLoading: carregandoMe } = useMe();
