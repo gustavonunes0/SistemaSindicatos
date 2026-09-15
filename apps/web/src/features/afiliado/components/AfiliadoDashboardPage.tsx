@@ -41,6 +41,11 @@ const servicos = [
     titulo: 'Jurídico',
     descricao: 'Consulte processos, RPV e precatórios nos portais da Justiça Federal.',
   },
+  {
+    to: '/afiliado/estatutos',
+    titulo: 'Estatutos',
+    descricao: 'Consulte e baixe os documentos oficiais do estatuto sindical.',
+  },
 ] as const;
 
 export function AfiliadoDashboardPage() {

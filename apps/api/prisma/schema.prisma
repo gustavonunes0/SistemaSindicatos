@@ -67,6 +67,7 @@ model Tenant {
   formularios            Formulario[]
   respostasFormulario    RespostaFormulario[]
   recursosDiretoria      RecursoDiretoria[]
+  estatutos              Estatuto[]
   documentosAfiliados    DocumentoAfiliado[]
   dependentesAfiliados   DependenteAfiliado[]
   contasFinanceiras      ContaFinanceira[]
@@ -450,6 +451,27 @@ model RecursoDiretoria {
 
   @@index([tenantId, ativo, ordem])
   @@map("recursos_diretoria")
+}
+
+/// Documentos de estatuto disponíveis para filiados autenticados.
+model Estatuto {
+  id           String   @id @default(cuid())
+  tenantId     String
+  titulo       String
+  /// Chave no storage privado (fora da pasta pública).
+  arquivoChave String
+  nomeOriginal String
+  mimeType     String   @default("application/pdf")
+  tamanhoBytes Int
+  ativo        Boolean  @default(true)
+  ordem        Int      @default(0)
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, ativo, ordem])
+  @@map("estatutos")
 }
 
 model RespostaFormulario {

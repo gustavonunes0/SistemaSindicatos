@@ -43,6 +43,7 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   declare formulario: TenantPrismaClient['formulario'];
   declare respostaFormulario: TenantPrismaClient['respostaFormulario'];
   declare recursoDiretoria: TenantPrismaClient['recursoDiretoria'];
+  declare estatuto: TenantPrismaClient['estatuto'];
   declare refreshToken: TenantPrismaClient['refreshToken'];
   declare passwordResetToken: TenantPrismaClient['passwordResetToken'];
   declare importacaoD8: TenantPrismaClient['importacaoD8'];

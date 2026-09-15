@@ -18,6 +18,7 @@ import { ContatoModule } from './contato/contato.module';
 import { D8Module } from './d8/d8.module';
 import { DiretoriaModule } from './diretoria/diretoria.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
+import { EstatutosModule } from './estatutos/estatutos.module';
 import { FinanceiroModule } from './financeiro/financeiro.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
 import { InstagramModule } from './instagram/instagram.module';
@@ -54,6 +55,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
     ConveniosModule,
     ContatoModule,
     DiretoriaModule,
+    EstatutosModule,
     ImoveisModule,
     SolicitacoesModule,
     EleicaoModule,

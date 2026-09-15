@@ -39,6 +39,7 @@ const gruposAdmin: GrupoNav[] = [
       { to: '/admin/tutoriais', rotulo: 'Tutoriais' },
       { to: '/admin/afiliados', rotulo: 'Filiados' },
       { to: '/admin/diretoria', rotulo: 'Diretoria' },
+      { to: '/admin/estatutos', rotulo: 'Estatutos' },
       { to: '/admin/financeiro', rotulo: 'Financeiro' },
       { to: '/admin/declaracoes', rotulo: 'Declarações' },
       { to: '/admin/juridico', rotulo: 'Jurídico' },
@@ -81,6 +82,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         { to: '/afiliado/declaracoes', rotulo: 'Minhas declarações' },
         { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
         { to: '/afiliado/formularios', rotulo: 'Formulários' },
+        { to: '/afiliado/estatutos', rotulo: 'Estatutos' },
         { to: '/afiliado/juridico', rotulo: 'Jurídico' },
         { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
         {

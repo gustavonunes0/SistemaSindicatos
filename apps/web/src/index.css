@@ -623,16 +623,16 @@ button.botao-primario {
 .hero-destaques {
   position: relative;
   width: 100%;
-  min-height: min(78vh, 46rem);
-  height: min(78vh, 46rem);
+  min-height: min(68vh, 40rem);
+  height: min(68vh, 40rem);
   background: var(--azul-noite);
   isolation: isolate;
 }
 
 .hero-destaques--carregando,
 .hero-destaques--vazio {
-  min-height: min(78vh, 46rem);
-  height: min(78vh, 46rem);
+  min-height: min(68vh, 40rem);
+  height: min(68vh, 40rem);
 }
 
 .hero-destaques--carregando {
@@ -690,22 +690,36 @@ button.botao-primario {
 .hero-destaques-media {
   position: absolute;
   inset: 0;
-  background: rgb(0 0 0 / 30%);
+  background: var(--azul-noite);
   overflow: hidden;
 }
 
-.hero-destaques-media img {
+.hero-destaques-media-bg {
+  position: absolute;
+  inset: -8%;
+  width: 116%;
+  height: 116%;
+  object-fit: cover;
+  object-position: center;
+  filter: blur(28px) saturate(1.05);
+  transform: scale(1.08);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.hero-destaques-media-fg {
+  position: relative;
+  z-index: 1;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
   animation: hero-destaques-fade 480ms ease-out both;
-  transition: transform 600ms ease;
 }
 
-.hero-destaques-link:hover .hero-destaques-media img {
-  transform: scale(1.02);
+.hero-destaques-link:hover .hero-destaques-media-fg {
+  transform: none;
 }
 
 @keyframes hero-destaques-fade {
@@ -737,12 +751,6 @@ button.botao-primario {
   gap: 0.45rem;
   padding: clamp(3rem, 12vh, 6rem) clamp(1.25rem, 4vw, 3rem) 4.25rem;
   max-width: calc(var(--largura-conteudo) + 2rem);
-  background: linear-gradient(
-    to top,
-    rgb(6 18 36 / 88%) 0%,
-    rgb(6 18 36 / 42%) 55%,
-    transparent 100%
-  );
 }
 
 .hero-destaques-tipo {
@@ -917,6 +925,35 @@ button.botao-primario {
   color: var(--texto-suave, #5b6570);
 }
 
+.lista-estatutos {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.85rem;
+}
+
+.lista-estatutos-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+  border: 1px solid var(--borda, #e4e7eb);
+  border-radius: var(--raio);
+  background: #fff;
+}
+
+.lista-estatutos-item h2 {
+  margin: 0 0 0.35rem;
+  font-size: var(--texto-lg);
+}
+
+.lista-estatutos-item p {
+  margin: 0;
+}
+
 .admin-bloco-header {
   display: flex;
   flex-wrap: wrap;
@@ -1047,8 +1084,8 @@ button.botao-primario {
   }
 
   .hero-destaques {
-    min-height: min(82vh, 52rem);
-    height: min(82vh, 52rem);
+    min-height: min(72vh, 44rem);
+    height: min(72vh, 44rem);
   }
 
   .hero-destaques-corpo {

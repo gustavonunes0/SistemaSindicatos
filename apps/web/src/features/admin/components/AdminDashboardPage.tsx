@@ -34,6 +34,12 @@ const modulos: ModuloAdmin[] = [
     acao: 'Gerenciar diretoria',
   },
   {
+    to: '/admin/estatutos',
+    titulo: 'Estatutos',
+    descricao: 'Cadastre os PDFs do estatuto para os filiados consultarem.',
+    acao: 'Gerenciar estatutos',
+  },
+  {
     to: '/admin/financeiro',
     titulo: 'Financeiro',
     descricao: 'Balancetes Fortes e importação D8 (SIAPE) em um módulo só.',

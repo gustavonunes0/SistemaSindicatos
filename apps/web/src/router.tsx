@@ -78,6 +78,16 @@ const DiretoriaAfiliadoPage = lazy(() =>
     default: m.DiretoriaAfiliadoPage,
   })),
 );
+const EstatutosAdminPage = lazy(() =>
+  import('./features/estatutos/components/admin/EstatutosAdminPage').then((m) => ({
+    default: m.EstatutosAdminPage,
+  })),
+);
+const EstatutosAfiliadoPage = lazy(() =>
+  import('./features/estatutos/components/EstatutosAfiliadoPage').then((m) => ({
+    default: m.EstatutosAfiliadoPage,
+  })),
+);
 const FinanceiroHubPage = lazy(() =>
   import('./features/financeiro/components/admin/FinanceiroHubPage').then((m) => ({
     default: m.FinanceiroHubPage,
@@ -269,6 +279,7 @@ export const router = createBrowserRouter([
   { path: '/admin/tutoriais', element: protegidaAdmin(<TutoriaisAdminPage />) },
   { path: '/admin/afiliados', element: protegidaAdmin(<AfiliadosAdminPage />) },
   { path: '/admin/diretoria', element: protegidaAdmin(<DiretoriaAdminPage />) },
+  { path: '/admin/estatutos', element: protegidaAdmin(<EstatutosAdminPage />) },
   { path: '/admin/financeiro', element: protegidaAdmin(<FinanceiroHubPage />) },
   {
     path: '/admin/financeiro/balancetes',
@@ -324,6 +335,7 @@ export const router = createBrowserRouter([
   { path: '/afiliado/convenios/:id', element: protegidaAfiliado(<ConvenioDetalhePage />) },
   { path: '/afiliado/declaracoes', element: protegidaAfiliado(<MinhasDeclaracoesPage />) },
   { path: '/afiliado/formularios', element: protegidaAfiliado(<MeusFormulariosPage />) },
+  { path: '/afiliado/estatutos', element: protegidaAfiliado(<EstatutosAfiliadoPage />) },
   { path: '/afiliado/diretoria', element: protegidaAfiliado(<DiretoriaAfiliadoPage />) },
   { path: '/afiliado/juridico', element: protegidaAfiliado(<JuridicoPage tipo="afiliado" />) },
   { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },

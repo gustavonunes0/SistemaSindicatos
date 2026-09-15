@@ -13,6 +13,7 @@ const MODELS_COM_TENANT = new Set([
   'Formulario',
   'RespostaFormulario',
   'RecursoDiretoria',
+  'Estatuto',
   'ImportacaoD8',
   'LinhaD8',
   'Noticia',

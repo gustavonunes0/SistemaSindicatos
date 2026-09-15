@@ -98,15 +98,27 @@ export function HeroDestaques() {
 
   const slide = slides[Math.min(indice, slides.length - 1)]!;
   const tituloCurto = encurtar(slide.titulo, LIMITE_TEXTO);
+  const imagemSrc =
+    slide.tipo === 'noticia' && slide.imagem
+      ? urlDaApi(slide.imagem)
+      : slide.tipo === 'instagram'
+        ? slide.imagem
+        : null;
 
-  const media =
-    slide.tipo === 'noticia' && slide.imagem ? (
-      <img key={slide.id} src={urlDaApi(slide.imagem)} alt="" />
-    ) : slide.tipo === 'instagram' ? (
-      <img key={slide.id} src={slide.imagem} alt="" />
-    ) : (
-      <span key={slide.id} className="hero-destaques-placeholder" aria-hidden="true" />
-    );
+  const media = imagemSrc ? (
+    <>
+      <img
+        key={`${slide.id}-bg`}
+        className="hero-destaques-media-bg"
+        src={imagemSrc}
+        alt=""
+        aria-hidden="true"
+      />
+      <img key={`${slide.id}-fg`} className="hero-destaques-media-fg" src={imagemSrc} alt="" />
+    </>
+  ) : (
+    <span key={slide.id} className="hero-destaques-placeholder" aria-hidden="true" />
+  );
 
   const corpo = (
     <div className="hero-destaques-corpo">
