@@ -9,6 +9,7 @@ export * from './contato';
 export * from './cpf';
 export * from './balancete';
 export * from './d8';
+export * from './diretoria';
 export * from './eleicao';
 export * from './financeiro';
 export * from './formulario';

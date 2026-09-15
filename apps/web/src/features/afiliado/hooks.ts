@@ -19,6 +19,7 @@ import type { DocumentoAfiliado } from '@sindprf/types';
 type FiltroLista = {
   status?: StatusAfiliado;
   busca?: string;
+  diretor?: boolean;
   page: number;
   limit: number;
   ordenar: OrdenacaoAfiliado;
@@ -29,6 +30,7 @@ function chaveFiltro(filtro: FiltroLista): string {
   return [
     filtro.status ?? 'todos',
     filtro.busca ?? '',
+    filtro.diretor === undefined ? 'todos' : filtro.diretor ? 'sim' : 'nao',
     filtro.page,
     filtro.limit,
     filtro.ordenar,
@@ -46,6 +48,7 @@ export function opcoesListaAfiliadosAdmin(filtro: FiltroLista) {
       {
         status: filtro.status ?? 'todos',
         busca: filtro.busca ?? '',
+        diretor: filtro.diretor ?? 'todos',
         page: filtro.page,
         limit: filtro.limit,
         ordenar: filtro.ordenar,
@@ -70,15 +73,16 @@ export function useAfiliadosAdmin(
   const limit = filtro.limit ?? 20;
   const status = filtro.status;
   const busca = filtro.busca?.trim() || undefined;
+  const diretor = filtro.diretor;
   const enabled = filtro.enabled ?? true;
   const prefetchVizinhas = filtro.prefetchVizinhas ?? false;
   const ordenar = filtro.ordenar ?? 'nome';
   const direcao = filtro.direcao ?? 'asc';
-  const filtroKey = chaveFiltro({ status, busca, page, limit, ordenar, direcao });
+  const filtroKey = chaveFiltro({ status, busca, diretor, page, limit, ordenar, direcao });
   const cache = useMemo(() => lerCacheAfiliadosAdmin(filtroKey), [filtroKey]);
 
   const consulta = useQuery({
-    ...opcoesListaAfiliadosAdmin({ status, busca, page, limit, ordenar, direcao }),
+    ...opcoesListaAfiliadosAdmin({ status, busca, diretor, page, limit, ordenar, direcao }),
     placeholderData: keepPreviousData,
     initialData: cache,
     initialDataUpdatedAt: cache ? 0 : undefined,
@@ -95,7 +99,15 @@ export function useAfiliadosAdmin(
     for (const vizinha of [page + 1, page - 1]) {
       if (vizinha < 1 || vizinha > totalPages || vizinha === page) continue;
       void queryClient.prefetchQuery(
-        opcoesListaAfiliadosAdmin({ status, busca, page: vizinha, limit, ordenar, direcao }),
+        opcoesListaAfiliadosAdmin({
+          status,
+          busca,
+          diretor,
+          page: vizinha,
+          limit,
+          ordenar,
+          direcao,
+        }),
       );
     }
   }, [
@@ -106,6 +118,7 @@ export function useAfiliadosAdmin(
     totalPages,
     status,
     busca,
+    diretor,
     limit,
     ordenar,
     direcao,
@@ -170,6 +183,18 @@ export function useAtualizarStatusAfiliado() {
       // Sem limpar o sessionStorage de notícias/convênios — só afiliados.
       void queryClient.invalidateQueries({ queryKey: ['afiliados'] });
       void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
+    },
+  });
+}
+
+export function useDefinirDiretorAfiliado() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, diretor }: { id: string; diretor: boolean }) =>
+      afiliadosApi.definirDiretorAfiliado(id, diretor),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['afiliados'] });
+      void queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
     },
   });
 }

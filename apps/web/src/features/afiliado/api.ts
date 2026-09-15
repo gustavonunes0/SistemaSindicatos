@@ -36,6 +36,7 @@ export async function listarAfiliadosAdmin(
   const params: Record<string, string | number> = {};
   if (filtro.status) params.status = filtro.status;
   if (filtro.busca?.trim()) params.busca = filtro.busca.trim();
+  if (filtro.diretor !== undefined) params.diretor = filtro.diretor ? 'true' : 'false';
   if (filtro.page) params.page = filtro.page;
   if (filtro.limit) params.limit = filtro.limit;
   if (filtro.ordenar) params.ordenar = filtro.ordenar;
@@ -100,6 +101,11 @@ export async function cadastrarAfiliadoAdmin(input: CadastroAfiliadoAdminInput):
 
 export async function atualizarStatusAfiliado(id: string, status: StatusAfiliado) {
   const { data } = await api.patch(`/afiliados/${id}/status`, { status });
+  return afiliadoSchema.parse(data);
+}
+
+export async function definirDiretorAfiliado(id: string, diretor: boolean) {
+  const { data } = await api.patch(`/afiliados/${id}/diretor`, { diretor });
   return afiliadoSchema.parse(data);
 }
 

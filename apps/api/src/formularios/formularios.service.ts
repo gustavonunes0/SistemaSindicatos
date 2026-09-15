@@ -177,7 +177,7 @@ export class FormulariosService {
       user?.role === 'AFILIADO'
         ? this.prisma.afiliado.findUnique({
             where: { userId: user.id },
-            select: { id: true, status: true },
+            select: { id: true, status: true, diretor: true },
           })
         : null,
     ]);
@@ -187,6 +187,7 @@ export class FormulariosService {
     }
 
     const aprovado = afiliado?.status === 'APROVADO';
+    const ehDiretor = Boolean(afiliado?.diretor);
     const jaRespondeu =
       aprovado && afiliado
         ? (await this.prisma.respostaFormulario.count({
@@ -196,9 +197,10 @@ export class FormulariosService {
 
     const motivo = this.motivoDeBloqueio({
       status: formulario.status,
-      restrito: formulario.publico === 'FILIADOS',
+      publico: formulario.publico,
       logadoComoAfiliado: Boolean(afiliado),
       aprovado,
+      ehDiretor,
       jaRespondeu,
     });
     const podeResponder = motivo === 'OK';
@@ -223,15 +225,26 @@ export class FormulariosService {
 
   private motivoDeBloqueio(contexto: {
     status: 'RASCUNHO' | 'PUBLICADO' | 'ENCERRADO';
-    restrito: boolean;
+    publico: 'TODOS' | 'FILIADOS' | 'DIRETORIA';
     logadoComoAfiliado: boolean;
     aprovado: boolean;
+    ehDiretor: boolean;
     jaRespondeu: boolean;
   }): FormularioPublico['motivo'] {
     if (contexto.status === 'ENCERRADO') {
       return 'ENCERRADO';
     }
-    if (contexto.restrito) {
+    if (contexto.publico === 'DIRETORIA') {
+      if (!contexto.logadoComoAfiliado) {
+        return 'PRECISA_LOGIN';
+      }
+      if (!contexto.aprovado) {
+        return 'PRECISA_APROVACAO';
+      }
+      if (!contexto.ehDiretor) {
+        return 'PRECISA_DIRETORIA';
+      }
+    } else if (contexto.publico === 'FILIADOS') {
       if (!contexto.logadoComoAfiliado) {
         return 'PRECISA_LOGIN';
       }
@@ -256,7 +269,7 @@ export class FormulariosService {
       }),
       this.prisma.afiliado.findUnique({
         where: { userId: user.id },
-        select: { id: true, status: true },
+        select: { id: true, status: true, diretor: true },
       }),
     ]);
 
@@ -264,13 +277,20 @@ export class FormulariosService {
       return [];
     }
 
+    const visiveis = formularios.filter((formulario) => {
+      if (formulario.publico === 'DIRETORIA') {
+        return afiliado.diretor;
+      }
+      return true;
+    });
+
     const respondidos = await this.prisma.respostaFormulario.findMany({
-      where: { afiliadoId: afiliado.id, formularioId: { in: formularios.map((f) => f.id) } },
+      where: { afiliadoId: afiliado.id, formularioId: { in: visiveis.map((f) => f.id) } },
       select: { formularioId: true },
     });
     const jaRespondidos = new Set(respondidos.map((resposta) => resposta.formularioId));
 
-    return formularios.map(({ campos, ...formulario }) => ({
+    return visiveis.map(({ campos, ...formulario }) => ({
       ...formulario,
       totalCampos: lerCampos(campos).length,
       jaRespondeu: jaRespondidos.has(formulario.id),

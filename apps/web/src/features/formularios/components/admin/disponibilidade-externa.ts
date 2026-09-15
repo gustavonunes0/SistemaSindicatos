@@ -5,11 +5,12 @@ import type { PublicoFormulario, StatusFormulario } from '@sindprf/types';
  * público são a mesma decisão para quem cadastra ("quem enxerga isto?"), então
  * a tela usa um controle único e traduz para os dois campos do formulário.
  */
-export type DisponibilidadeExterna = 'PAINEL' | 'FILIADOS' | 'ABERTO';
+export type DisponibilidadeExterna = 'PAINEL' | 'FILIADOS' | 'DIRETORIA' | 'ABERTO';
 
 export const DISPONIBILIDADE_EXTERNA_ROTULO: Record<DisponibilidadeExterna, string> = {
   PAINEL: 'Somente no painel',
   FILIADOS: 'Filiados aprovados',
+  DIRETORIA: 'Somente diretores',
   ABERTO: 'Qualquer pessoa com o link',
 };
 
@@ -21,6 +22,9 @@ export function paraCompartilhamento(
   if (disponibilidade === 'PAINEL') {
     return { status: 'RASCUNHO', publico: 'FILIADOS' };
   }
+  if (disponibilidade === 'DIRETORIA') {
+    return { status: 'PUBLICADO', publico: 'DIRETORIA' };
+  }
   return {
     status: 'PUBLICADO',
     publico: disponibilidade === 'ABERTO' ? 'TODOS' : 'FILIADOS',
@@ -29,7 +33,9 @@ export function paraCompartilhamento(
 
 export function paraDisponibilidade(valores: Compartilhamento): DisponibilidadeExterna {
   if (valores.status !== 'PUBLICADO') return 'PAINEL';
-  return valores.publico === 'TODOS' ? 'ABERTO' : 'FILIADOS';
+  if (valores.publico === 'TODOS') return 'ABERTO';
+  if (valores.publico === 'DIRETORIA') return 'DIRETORIA';
+  return 'FILIADOS';
 }
 
 export function rotuloDisponibilidade(valores: Compartilhamento): string {

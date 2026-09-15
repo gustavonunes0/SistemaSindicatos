@@ -18,18 +18,20 @@ const CAMPOS_LISTAGEM_PUBLICA = {
   capaUrl: true,
   resumo: true,
   status: true,
+  destaque: true,
   publicadoEm: true,
   autorId: true,
   createdAt: true,
   updatedAt: true,
 } as const;
 
-/** Admin: tabela só precisa de título/status/data. */
+/** Admin: tabela só precisa de título/status/data/destaque. */
 const CAMPOS_LISTAGEM_ADMIN = {
   id: true,
   titulo: true,
   slug: true,
   status: true,
+  destaque: true,
   publicadoEm: true,
   createdAt: true,
 } as const;
@@ -79,6 +81,7 @@ export class NoticiasService {
         anexoUrl: input.anexoUrl ?? null,
         anexoNome: input.anexoNome ?? null,
         status: input.status,
+        destaque: input.destaque ?? false,
         publicadoEm: input.status === 'PUBLICADO' ? new Date() : null,
         autorId,
       },
@@ -126,6 +129,9 @@ export class NoticiasService {
       if (input.status === 'PUBLICADO' && !noticia.publicadoEm) {
         data.publicadoEm = new Date();
       }
+    }
+    if (input.destaque !== undefined) {
+      data.destaque = input.destaque;
     }
 
     const atualizada = await this.prisma.noticia.update({ where: { id }, data });
@@ -223,6 +229,17 @@ export class NoticiasService {
     });
 
     return payload;
+  }
+
+  /** Notícias publicadas marcadas para o carrossel da home. */
+  async listarDestaques(limite = 8) {
+    const tenantId = requireTenantId();
+    return this.prisma.noticia.findMany({
+      where: { tenantId, status: 'PUBLICADO', destaque: true },
+      orderBy: { publicadoEm: 'desc' },
+      take: Math.min(limite, 12),
+      select: CAMPOS_LISTAGEM_PUBLICA,
+    });
   }
 
   async buscarPublicadaPorSlug(slug: string) {

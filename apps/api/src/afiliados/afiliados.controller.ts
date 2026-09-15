@@ -22,11 +22,13 @@ import {
   atualizarStatusAfiliadoSchema,
   cadastroAfiliadoAdminSchema,
   cadastroAfiliadoSchema,
+  definirDiretorAfiliadoSchema,
   filtroAfiliadosSchema,
   type AdminAtualizarSenhaAfiliadoInput,
   type AtualizarStatusAfiliadoInput,
   type CadastroAfiliadoAdminInput,
   type CadastroAfiliadoInput,
+  type DefinirDiretorAfiliadoInput,
   type FiltroAfiliadosInput,
   type TipoDocumentoFiliacao,
 } from '@sindprf/types';
@@ -149,6 +151,15 @@ export class AfiliadosController {
     @Body(new ZodValidationPipe(atualizarStatusAfiliadoSchema)) body: AtualizarStatusAfiliadoInput,
   ) {
     return this.afiliadosService.atualizarStatus(id, body.status);
+  }
+
+  @Roles('ADMIN')
+  @Patch(':id/diretor')
+  definirDiretor(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(definirDiretorAfiliadoSchema)) body: DefinirDiretorAfiliadoInput,
+  ) {
+    return this.afiliadosService.definirDiretor(id, body.diretor);
   }
 
   @Roles('ADMIN')

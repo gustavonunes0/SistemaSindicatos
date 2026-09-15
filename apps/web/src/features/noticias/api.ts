@@ -20,6 +20,11 @@ export async function listarNoticias(page: number, limit: number): Promise<Notic
   return noticiasPaginadasSchema.parse(data);
 }
 
+export async function listarNoticiasDestaques(): Promise<NoticiaListagem[]> {
+  const { data } = await api.get('/noticias/destaques');
+  return z.array(noticiaListagemSchema).parse(data);
+}
+
 export async function buscarNoticiaPorSlug(slug: string): Promise<Noticia> {
   const { data } = await api.get(`/noticias/${slug}`);
   return noticiaSchema.parse(data);

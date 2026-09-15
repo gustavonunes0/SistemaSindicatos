@@ -22,7 +22,7 @@ export function RequireRole({ role, children }: RequireRoleProps) {
         <section className="auth-card">
           <h2>403 — Acesso negado</h2>
           <p>Você não tem permissão para acessar esta área.</p>
-          <Link to={areaPorRole(user.role)}>Ir para a minha área</Link>
+          <Link to={areaPorRole(user.role)}>Ir para a área do filiado(a)</Link>
         </section>
       </main>
     );

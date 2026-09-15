@@ -62,7 +62,7 @@ export function PublicLayout() {
               className="botao-area"
               onClick={() => setMenuAberto(false)}
             >
-              {user ? 'Minha área' : 'Entrar'}
+              {user ? 'Área do filiado(a)' : 'Entrar'}
             </Link>
           </nav>
         </div>

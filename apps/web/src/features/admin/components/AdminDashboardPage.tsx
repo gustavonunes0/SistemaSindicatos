@@ -28,6 +28,12 @@ const modulos: ModuloAdmin[] = [
     destaque: true,
   },
   {
+    to: '/admin/diretoria',
+    titulo: 'Diretoria',
+    descricao: 'Marque diretores e cadastre links exclusivos para eles.',
+    acao: 'Gerenciar diretoria',
+  },
+  {
     to: '/admin/financeiro',
     titulo: 'Financeiro',
     descricao: 'Balancetes Fortes e importação D8 (SIAPE) em um módulo só.',

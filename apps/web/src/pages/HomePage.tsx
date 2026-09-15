@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { EstadoCarregando } from '../components/ui/EstadoCarregando';
+import { HeroDestaques } from '../features/home/components/HeroDestaques';
 import { InstagramGrid } from '../features/instagram/components/InstagramGrid';
 import { useNoticias } from '../features/noticias/hooks';
 import { NoticiaCard } from '../features/noticias/components/NoticiaCard';
@@ -15,11 +16,15 @@ export function HomePage() {
 
   return (
     <main>
-      <section className="hero">
-        <div className="hero-inner">
-          <div className="hero-conteudo">
+      <section className="hero hero--midia" aria-label="Destaques">
+        <HeroDestaques />
+      </section>
+
+      <section className="home-apresentacao" aria-labelledby="home-apresentacao-titulo">
+        <div className="home-apresentacao-inner">
+          <div className="home-apresentacao-conteudo">
             <p className="hero-eyebrow">{marca.nomeCompleto}</p>
-            <h1>Defendendo quem protege as rodovias</h1>
+            <h1 id="home-apresentacao-titulo">Defendendo quem protege as rodovias</h1>
             <span className="hero-faixa" aria-hidden="true" />
             <p className="hero-texto">
               Representação, benefícios e serviços para os Policiais Rodoviários Federais e suas

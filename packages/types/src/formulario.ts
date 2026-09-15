@@ -34,12 +34,13 @@ export function campoTemOpcoes(tipo: TipoCampoFormulario): boolean {
   return TIPOS_COM_OPCOES.includes(tipo);
 }
 
-export const publicoFormularioSchema = z.enum(['TODOS', 'FILIADOS']);
+export const publicoFormularioSchema = z.enum(['TODOS', 'FILIADOS', 'DIRETORIA']);
 export type PublicoFormulario = z.infer<typeof publicoFormularioSchema>;
 
 export const PUBLICO_FORMULARIO_ROTULO: Record<PublicoFormulario, string> = {
   TODOS: 'Qualquer pessoa com o link',
   FILIADOS: 'Somente filiados aprovados',
+  DIRETORIA: 'Somente diretores',
 };
 
 export const statusFormularioSchema = z.enum(['RASCUNHO', 'PUBLICADO', 'ENCERRADO']);
@@ -180,7 +181,14 @@ export const formularioPublicoSchema = z.object({
   jaRespondeu: z.boolean(),
   /** Por que não pode responder, para a tela explicar em vez de só bloquear. */
   motivo: z
-    .enum(['OK', 'PRECISA_LOGIN', 'PRECISA_APROVACAO', 'ENCERRADO', 'JA_RESPONDEU'])
+    .enum([
+      'OK',
+      'PRECISA_LOGIN',
+      'PRECISA_APROVACAO',
+      'PRECISA_DIRETORIA',
+      'ENCERRADO',
+      'JA_RESPONDEU',
+    ])
     .default('OK'),
 });
 export type FormularioPublico = z.infer<typeof formularioPublicoSchema>;

@@ -66,6 +66,7 @@ model Tenant {
   alertas                Alerta[]
   formularios            Formulario[]
   respostasFormulario    RespostaFormulario[]
+  recursosDiretoria      RecursoDiretoria[]
   documentosAfiliados    DocumentoAfiliado[]
   dependentesAfiliados   DependenteAfiliado[]
   contasFinanceiras      ContaFinanceira[]
@@ -220,6 +221,8 @@ model Afiliado {
   telefone  String?
   categoria TipoD8?
   status    StatusAfiliado @default(PENDENTE)
+  /// Membro da diretoria — vê links e formulários exclusivos.
+  diretor   Boolean        @default(false)
 
   /// Ficha de filiação — nula nos cadastros feitos direto pela secretaria.
   dataNascimento    DateTime?    @db.Date
@@ -266,6 +269,7 @@ model Afiliado {
   @@index([tenantId])
   @@index([tenantId, status])
   @@index([tenantId, nome])
+  @@index([tenantId, diretor])
   @@map("afiliados")
 }
 
@@ -371,6 +375,8 @@ model Noticia {
   /// Texto plano curto para listagens (evita carregar o HTML completo).
   resumo      String        @default("")
   status      StatusNoticia @default(RASCUNHO)
+  /// Aparece no carrossel da home quando publicada.
+  destaque    Boolean       @default(false)
   publicadoEm DateTime?     @db.Timestamptz
   autorId     String
   createdAt   DateTime      @default(now()) @db.Timestamptz
@@ -381,6 +387,7 @@ model Noticia {
 
   @@unique([tenantId, slug])
   @@index([tenantId, status, publicadoEm])
+  @@index([tenantId, destaque, publicadoEm])
   @@map("noticias")
 }
 
@@ -392,6 +399,8 @@ model Noticia {
 enum PublicoFormulario {
   TODOS
   FILIADOS
+  /// Somente afiliados marcados como diretores.
+  DIRETORIA
 }
 
 enum StatusFormulario {
@@ -423,6 +432,24 @@ model Formulario {
   @@unique([tenantId, slug])
   @@index([tenantId, status])
   @@map("formularios")
+}
+
+/// Links e atalhos exclusivos da diretoria (área do filiado).
+model RecursoDiretoria {
+  id        String   @id @default(cuid())
+  tenantId  String
+  titulo    String
+  descricao String?  @db.Text
+  url       String
+  ordem     Int      @default(0)
+  ativo     Boolean  @default(true)
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, ativo, ordem])
+  @@map("recursos_diretoria")
 }
 
 model RespostaFormulario {
@@ -503,6 +530,8 @@ model InstagramPost {
   permalink    String
   caption      String?  @db.Text
   mediaType    String // IMAGE, VIDEO, CAROUSEL_ALBUM
+  /// Aparece no carrossel da home quando marcado pelo admin.
+  destaque     Boolean  @default(false)
   publicadoEm  DateTime @db.Timestamptz
   sincronizado DateTime @default(now()) @db.Timestamptz
 
@@ -510,6 +539,7 @@ model InstagramPost {
 
   @@unique([tenantId, externalId])
   @@index([tenantId, publicadoEm])
+  @@index([tenantId, destaque, publicadoEm])
   @@map("instagram_posts")
 }
 

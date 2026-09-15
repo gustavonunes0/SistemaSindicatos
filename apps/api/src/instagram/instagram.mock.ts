@@ -7,5 +7,6 @@ export const FEED_MOCK: InstagramPost[] = Array.from({ length: 6 }, (_, indice) 
   permalink: 'https://www.instagram.com/sindprfce/',
   caption: `Post de exemplo ${indice + 1} — configure as credenciais do Instagram para ver o feed real.`,
   mediaType: 'IMAGE',
+  destaque: indice < 2,
   publicadoEm: new Date(Date.now() - indice * 24 * 60 * 60 * 1000),
 }));

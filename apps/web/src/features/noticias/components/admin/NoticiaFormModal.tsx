@@ -30,6 +30,7 @@ const valoresVazios: NoticiaFormValues = {
   anexoUrl: null,
   anexoNome: null,
   status: 'RASCUNHO',
+  destaque: false,
 };
 
 export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps) {
@@ -65,6 +66,7 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
         anexoUrl: noticiaExistente.anexoUrl,
         anexoNome: noticiaExistente.anexoNome,
         status: noticiaExistente.status,
+        destaque: noticiaExistente.destaque,
       });
       return;
     }
@@ -205,6 +207,14 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
               <option value="RASCUNHO">Rascunho</option>
               <option value="PUBLICADO">Publicado</option>
             </select>
+          </label>
+
+          <label className="campo-checkbox">
+            <input type="checkbox" {...register('destaque')} />
+            <span>
+              Destacar na home
+              <small>Aparece no carrossel da página inicial junto com posts do Instagram.</small>
+            </span>
           </label>
 
           {(criar.isError || atualizar.isError) && (

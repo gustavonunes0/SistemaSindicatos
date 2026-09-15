@@ -29,6 +29,7 @@ function listagemAdminDeNoticia(n: Noticia): NoticiaListagem {
     capaUrl: n.capaUrl,
     resumo: resumoDeConteudo(n.conteudo),
     status: n.status,
+    destaque: n.destaque,
     publicadoEm: n.publicadoEm,
     autorId: n.autorId,
     createdAt: n.createdAt,
@@ -54,6 +55,7 @@ function sincronizarAposMutacao(
   }
   limparCacheNoticias();
   void queryClient.invalidateQueries({ queryKey: ['noticias', 'publicas'] });
+  void queryClient.invalidateQueries({ queryKey: ['noticias', 'destaques'] });
   void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
 }
 
@@ -74,6 +76,15 @@ export function useNoticias(page: number, limit = 9) {
     initialDataUpdatedAt: cache ? 0 : undefined,
     placeholderData: (anterior) => anterior ?? cache,
     refetchOnMount: 'always',
+  });
+}
+
+export function useNoticiasDestaques() {
+  return useQuery({
+    queryKey: ['noticias', 'destaques'],
+    queryFn: noticiasApi.listarNoticiasDestaques,
+    staleTime: STALE_PUBLICO,
+    gcTime: GC_PUBLICO,
   });
 }
 

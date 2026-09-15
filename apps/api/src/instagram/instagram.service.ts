@@ -1,4 +1,9 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  OnModuleInit,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import type { InstagramPost } from '@sindprf/types';
@@ -50,24 +55,65 @@ export class InstagramService implements OnModuleInit {
     void this.sincronizar();
   }
 
-  async feed(): Promise<InstagramPost[]> {
+  async feed(apenasDestaques = false): Promise<InstagramPost[]> {
     const posts = await this.prisma.instagramPost.findMany({
+      where: apenasDestaques ? { destaque: true } : undefined,
       orderBy: { publicadoEm: 'desc' },
       take: FEED_LIMITE,
     });
 
-    if (posts.length === 0 && this.mockAtivo) {
+    if (posts.length === 0 && this.mockAtivo && !apenasDestaques) {
       return FEED_MOCK;
     }
 
-    return posts.map((post) => ({
+    return posts.map((post) => this.serializar(post));
+  }
+
+  async listarAdmin(): Promise<InstagramPost[]> {
+    const posts = await this.prisma.instagramPost.findMany({
+      orderBy: { publicadoEm: 'desc' },
+      take: 24,
+    });
+    return posts.map((post) => this.serializar(post));
+  }
+
+  async definirDestaque(id: string, destaque: boolean): Promise<InstagramPost> {
+    const tenantId = requireTenantId();
+    const existente = await this.prisma.instagramPost.findFirst({
+      where: {
+        tenantId,
+        OR: [{ id }, { externalId: id }],
+      },
+    });
+    if (!existente) {
+      throw new NotFoundException('Post do Instagram não encontrado');
+    }
+
+    const atualizado = await this.prisma.instagramPost.update({
+      where: { id: existente.id },
+      data: { destaque },
+    });
+    return this.serializar(atualizado);
+  }
+
+  private serializar(post: {
+    externalId: string;
+    mediaUrl: string;
+    permalink: string;
+    caption: string | null;
+    mediaType: string;
+    destaque: boolean;
+    publicadoEm: Date;
+  }): InstagramPost {
+    return {
       id: post.externalId,
       mediaUrl: post.mediaUrl,
       permalink: post.permalink,
       caption: post.caption,
       mediaType: post.mediaType,
+      destaque: post.destaque,
       publicadoEm: post.publicadoEm,
-    }));
+    };
   }
 
   @Cron(CronExpression.EVERY_HOUR)
@@ -102,6 +148,7 @@ export class InstagramService implements OnModuleInit {
         const mediaUrl = (item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url) ?? '';
         if (!mediaUrl) continue;
 
+        // Não sobrescreve `destaque` no update — escolha do admin.
         await this.prisma.instagramPost.upsert({
           where: { tenantId_externalId: { tenantId, externalId: item.id } },
           update: {
@@ -118,6 +165,7 @@ export class InstagramService implements OnModuleInit {
             permalink: item.permalink,
             caption: item.caption ?? null,
             mediaType: item.media_type,
+            destaque: false,
             publicadoEm: new Date(item.timestamp),
           },
         });

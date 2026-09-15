@@ -47,11 +47,12 @@ export function AfiliadoDashboardPage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useMe();
   const afiliado = data?.afiliado;
   const aprovado = afiliado?.status === 'APROVADO';
+  const ehDiretor = Boolean(afiliado?.diretor);
 
   return (
     <AreaLayout
       tipo="afiliado"
-      titulo="Minha área"
+      titulo="Área do filiado(a)"
       descricao="Acompanhe sua filiação e acesse os benefícios disponíveis."
     >
       {isLoading && <EstadoCarregando />}
@@ -136,6 +137,20 @@ export function AfiliadoDashboardPage() {
               ))}
             </nav>
           </section>
+
+          {ehDiretor && (
+            <section className="painel-secao">
+              <h2 className="painel-secao-titulo">Diretoria</h2>
+              <nav className="painel-atalhos">
+                <Link to="/afiliado/diretoria" className="painel-atalho">
+                  <span className="painel-atalho-titulo">Área da diretoria</span>
+                  <span className="painel-atalho-desc">
+                    Links e formulários exclusivos para membros da diretoria.
+                  </span>
+                </Link>
+              </nav>
+            </section>
+          )}
 
           {afiliado.status === 'PENDENTE' && (
             <aside className="painel-aviso">

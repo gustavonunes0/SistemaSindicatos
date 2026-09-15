@@ -55,6 +55,13 @@ export class NoticiasController {
     return this.noticiasService.listarPublicadas(query);
   }
 
+  @Public()
+  @Get('destaques')
+  @Header('Cache-Control', 'public, max-age=30, stale-while-revalidate=120')
+  listarDestaques() {
+    return this.noticiasService.listarDestaques();
+  }
+
   @Roles('ADMIN')
   @Get('admin')
   @Header('Cache-Control', 'private, no-store')

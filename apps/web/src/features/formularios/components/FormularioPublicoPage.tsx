@@ -18,6 +18,7 @@ const MENSAGEM_BLOQUEIO: Record<FormularioPublico['motivo'], string> = {
   PRECISA_LOGIN: 'Este formulário é exclusivo para filiados. Entre na sua conta para responder.',
   PRECISA_APROVACAO:
     'Seu cadastro ainda está em análise. Assim que for aprovado você poderá responder.',
+  PRECISA_DIRETORIA: 'Este formulário é exclusivo para membros da diretoria.',
   ENCERRADO: 'Este formulário está encerrado e não recebe mais respostas.',
   JA_RESPONDEU: 'Você já respondeu este formulário. Obrigado pela participação!',
 };

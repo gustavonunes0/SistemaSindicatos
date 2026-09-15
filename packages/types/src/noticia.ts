@@ -12,6 +12,7 @@ export const noticiaSchema = z.object({
   anexoNome: z.string().nullable(),
   conteudo: z.string(),
   status: statusNoticiaSchema,
+  destaque: z.boolean(),
   publicadoEm: z.coerce.date().nullable(),
   autorId: z.string(),
   createdAt: z.coerce.date(),
@@ -27,6 +28,7 @@ export const noticiaListagemSchema = z.object({
   capaUrl: z.string().nullable(),
   resumo: z.string(),
   status: statusNoticiaSchema,
+  destaque: z.boolean(),
   publicadoEm: z.coerce.date().nullable(),
   autorId: z.string(),
   createdAt: z.coerce.date(),
@@ -41,6 +43,7 @@ export const criarNoticiaSchema = z.object({
   anexoUrl: z.string().nullable().optional(),
   anexoNome: z.string().nullable().optional(),
   status: statusNoticiaSchema.default('RASCUNHO'),
+  destaque: z.boolean().default(false),
 });
 export type CriarNoticiaInput = z.infer<typeof criarNoticiaSchema>;
 

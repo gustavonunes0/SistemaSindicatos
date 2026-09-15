@@ -2,6 +2,7 @@ import type { NoticiaListagem } from '@sindprf/types';
 import { useState } from 'react';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { InstagramDestaquesAdmin } from '../../../instagram/components/admin/InstagramDestaquesAdmin';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import { useNoticiasAdmin, useRemoverNoticia } from '../../hooks';
@@ -28,7 +29,7 @@ export function NoticiasAdminPage() {
     <AreaLayout
       tipo="admin"
       titulo="Notícias"
-      descricao="Publique comunicados e organize rascunhos do site."
+      descricao="Publique comunicados, marque destaques da home e organize rascunhos."
       acoes={
         <button
           type="button"
@@ -62,6 +63,7 @@ export function NoticiasAdminPage() {
               <tr>
                 <th>Título</th>
                 <th>Status</th>
+                <th>Home</th>
                 <th>Publicada em</th>
                 <th aria-label="Ações" />
               </tr>
@@ -74,6 +76,13 @@ export function NoticiasAdminPage() {
                     <span className={`badge badge-${noticia.status.toLowerCase()}`}>
                       {noticia.status === 'PUBLICADO' ? 'Publicado' : 'Rascunho'}
                     </span>
+                  </td>
+                  <td>
+                    {noticia.destaque ? (
+                      <span className="badge badge-destaque">Destaque</span>
+                    ) : (
+                      '—'
+                    )}
                   </td>
                   <td>{noticia.publicadoEm ? formatarData(noticia.publicadoEm) : '—'}</td>
                   <td className="tabela-acoes">
@@ -99,6 +108,8 @@ export function NoticiasAdminPage() {
           </table>
         </div>
       )}
+
+      <InstagramDestaquesAdmin />
 
       <NoticiaFormModal
         aberto={modal !== null}

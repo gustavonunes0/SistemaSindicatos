@@ -181,9 +181,9 @@ export class AfiliadosService {
 
   async listar(filtro: FiltroAfiliadosInput) {
     const tenantId = requireTenantId();
-    const { status, busca, page, limit, ordenar, direcao } = filtro;
+    const { status, busca, diretor, page, limit, ordenar, direcao } = filtro;
     const termo = busca?.trim() ?? '';
-    const chave = `${tenantId}:${status ?? ''}:${termo}:${page}:${limit}:${ordenar}:${direcao}`;
+    const chave = `${tenantId}:${status ?? ''}:${termo}:${diretor ?? ''}:${page}:${limit}:${ordenar}:${direcao}`;
     const cached = this.cacheLista.get(chave);
     if (cached && cached.expires > Date.now()) {
       return cached.payload;
@@ -194,6 +194,7 @@ export class AfiliadosService {
     const where: Prisma.AfiliadoWhereInput = {
       tenantId,
       ...(status ? { status } : {}),
+      ...(diretor !== undefined ? { diretor } : {}),
       ...(termo
         ? {
             OR: [
@@ -206,7 +207,7 @@ export class AfiliadosService {
 
     // O total não muda entre páginas do mesmo filtro: cachear evita repetir o
     // count a cada troca de página, que é a consulta mais cara da listagem.
-    const chaveTotal = `${tenantId}:${status ?? ''}:${termo}`;
+    const chaveTotal = `${tenantId}:${status ?? ''}:${termo}:${diretor ?? ''}`;
     const totalCache = this.cacheTotal.get(chaveTotal);
     const totalConhecido =
       totalCache && totalCache.expires > Date.now() ? totalCache.total : undefined;
@@ -224,6 +225,7 @@ export class AfiliadosService {
           telefone: true,
           categoria: true,
           status: true,
+          diretor: true,
           createdAt: true,
           updatedAt: true,
           user: { select: { email: true } },
@@ -312,6 +314,19 @@ export class AfiliadosService {
   async atualizarStatus(id: string, status: StatusAfiliado) {
     try {
       const atualizado = await this.prisma.afiliado.update({ where: { id }, data: { status } });
+      this.invalidarCacheLista(atualizado.tenantId);
+      return atualizado;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+        throw new NotFoundException('Afiliado não encontrado');
+      }
+      throw error;
+    }
+  }
+
+  async definirDiretor(id: string, diretor: boolean) {
+    try {
+      const atualizado = await this.prisma.afiliado.update({ where: { id }, data: { diretor } });
       this.invalidarCacheLista(atualizado.tenantId);
       return atualizado;
     } catch (error) {

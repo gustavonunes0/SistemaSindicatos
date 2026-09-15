@@ -27,10 +27,11 @@ type CamposDoLink = Pick<FormularioExternoInput, 'titulo' | 'descricao' | 'urlEx
 const AJUDA_DISPONIBILIDADE: Record<DisponibilidadeExterna, string> = {
   PAINEL: 'Fica guardado aqui. Nenhum filiado vê este link.',
   FILIADOS: 'Aparece em “Formulários” na área do filiado aprovado.',
+  DIRETORIA: 'Só aparece para filiados marcados como diretores.',
   ABERTO: 'Qualquer pessoa com o endereço da plataforma chega ao formulário.',
 };
 
-const OPCOES: DisponibilidadeExterna[] = ['PAINEL', 'FILIADOS', 'ABERTO'];
+const OPCOES: DisponibilidadeExterna[] = ['PAINEL', 'FILIADOS', 'DIRETORIA', 'ABERTO'];
 
 function mensagemErro(erro: unknown): string {
   const mensagem = (erro as { response?: { data?: { message?: unknown } } }).response?.data

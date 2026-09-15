@@ -14,8 +14,14 @@ export function NoticiasPage() {
   const [page, setPage] = useState(1);
   const { data, isLoading, isError, isFetching } = useNoticias(page);
 
-  const destaque = page === 1 ? data?.items[0] : undefined;
-  const demais = page === 1 && data ? data.items.slice(1) : data?.items ?? [];
+  const destaque =
+    page === 1 && data
+      ? (data.items.find((n) => n.destaque) ?? data.items[0])
+      : undefined;
+  const demais =
+    page === 1 && data && destaque
+      ? data.items.filter((n) => n.id !== destaque.id)
+      : (data?.items ?? []);
   const mostrandoCache = Boolean(data) && isFetching;
 
   return (

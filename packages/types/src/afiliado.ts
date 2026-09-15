@@ -11,6 +11,7 @@ export const afiliadoSchema = z.object({
   telefone: z.string().nullable(),
   categoria: tipoD8Schema.nullable().optional(),
   status: statusAfiliadoSchema,
+  diretor: z.boolean().default(false),
   documentosCount: z.number().int().nonnegative().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
@@ -223,6 +224,11 @@ export const atualizarStatusAfiliadoSchema = z.object({
 });
 export type AtualizarStatusAfiliadoInput = z.infer<typeof atualizarStatusAfiliadoSchema>;
 
+export const definirDiretorAfiliadoSchema = z.object({
+  diretor: z.boolean(),
+});
+export type DefinirDiretorAfiliadoInput = z.infer<typeof definirDiretorAfiliadoSchema>;
+
 export const adminAtualizarSenhaAfiliadoSchema = z.object({
   novaSenha: z.string().min(8, 'Senha deve ter no mínimo 8 caracteres'),
 });
@@ -238,6 +244,10 @@ export type DirecaoOrdenacao = z.infer<typeof direcaoOrdenacaoSchema>;
 export const filtroAfiliadosSchema = z.object({
   status: statusAfiliadoSchema.optional(),
   busca: z.string().trim().max(120).optional(),
+  diretor: z
+    .union([z.literal('true'), z.literal('false'), z.boolean()])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : v === true || v === 'true')),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(500).default(20),
   ordenar: ordenacaoAfiliadoSchema.default('nome'),
