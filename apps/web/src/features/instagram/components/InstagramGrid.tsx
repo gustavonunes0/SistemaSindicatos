@@ -1,5 +1,24 @@
+import { useState } from 'react';
+import type { InstagramPost } from '@sindprf/types';
 import { useInstagramFeed } from '../hooks';
 import { INSTAGRAM_PERFIL_URL, INSTAGRAM_USUARIO } from '../constants';
+
+function InstagramMiniatura({ post }: { post: InstagramPost }) {
+  const [imagemIndisponivel, setImagemIndisponivel] = useState(false);
+
+  if (imagemIndisponivel) {
+    return <span className="instagram-item-placeholder" aria-hidden="true" />;
+  }
+
+  return (
+    <img
+      src={post.mediaUrl}
+      alt=""
+      loading="lazy"
+      onError={() => setImagemIndisponivel(true)}
+    />
+  );
+}
 
 // Fallback silencioso: se a API falhar ou o feed estiver vazio,
 // a seção simplesmente não aparece — a Home nunca quebra.
@@ -31,9 +50,10 @@ export function InstagramGrid() {
               target="_blank"
               rel="noreferrer"
               className="instagram-item"
-              title={post.caption ?? 'Ver no Instagram'}
+              title="Ver no Instagram"
+              aria-label="Ver post no Instagram"
             >
-              <img src={post.mediaUrl} alt={post.caption ?? 'Post do Instagram'} loading="lazy" />
+              <InstagramMiniatura post={post} />
             </a>
           ))}
         </div>

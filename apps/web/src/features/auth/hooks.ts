@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 import type { Role } from '@sindprf/types';
+import { isAxiosError } from 'axios';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { opcoesListaAfiliadosAdmin } from '../afiliado/hooks';
 import * as adminApi from '../admin/api';
@@ -87,15 +89,29 @@ export function useLogout() {
 
 export function useMe() {
   const accessToken = useAuthStore((state) => state.accessToken);
-  return useQuery({
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const navigate = useNavigate();
+
+  const query = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: authApi.buscarMe,
     enabled: Boolean(accessToken),
     staleTime: 5 * 60 * 1000,
     refetchOnWindowFocus: false,
-    refetchInterval: (query) =>
-      query.state.data?.afiliado?.status === 'PENDENTE' ? 20_000 : false,
+    retry: (failureCount, error) =>
+      isAxiosError(error) && error.response?.status === 401 ? false : failureCount < 1,
+    refetchInterval: (q) =>
+      q.state.data?.afiliado?.status === 'PENDENTE' ? 20_000 : false,
   });
+
+  useEffect(() => {
+    if (!query.isError || !isAxiosError(query.error)) return;
+    if (query.error.response?.status !== 401) return;
+    clearSession();
+    navigate('/login', { replace: true });
+  }, [query.isError, query.error, clearSession, navigate]);
+
+  return query;
 }
 
 export function useEsqueciSenha() {

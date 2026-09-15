@@ -2634,12 +2634,28 @@ button.botao-primario {
   }
 }
 
-.instagram-item img {
+.instagram-item {
+  display: block;
+  overflow: hidden;
+  border-radius: var(--raio);
+}
+
+.instagram-item img,
+.instagram-item-placeholder {
+  display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
-  object-fit: cover;
   border-radius: var(--raio);
+}
+
+.instagram-item img {
+  object-fit: cover;
   transition: opacity var(--transicao);
+}
+
+.instagram-item-placeholder {
+  background:
+    linear-gradient(145deg, var(--cor-fundo) 0%, color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-fundo)) 100%);
 }
 
 .instagram-item:hover img {

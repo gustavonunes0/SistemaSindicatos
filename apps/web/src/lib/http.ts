@@ -25,6 +25,25 @@ api.interceptors.request.use((config) => {
 // Single-flight: várias requisições com 401 simultâneas disparam um único refresh.
 let refreshEmAndamento: Promise<string> | null = null;
 
+/** Rotas em que 401 é esperado e não deve disparar refresh (evita loop). */
+const ROTAS_SEM_RENOVACAO = [
+  '/auth/login',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/forgot',
+  '/auth/reset',
+] as const;
+
+function pularRenovacao(url: string | undefined): boolean {
+  if (!url) return false;
+  return ROTAS_SEM_RENOVACAO.some((rota) => url.startsWith(rota));
+}
+
+function encerrarSessaoELogin(): void {
+  useAuthStore.getState().clearSession();
+  window.location.assign('/login');
+}
+
 async function renovarSessao(): Promise<string> {
   const { refreshToken } = useAuthStore.getState();
   if (!refreshToken) {
@@ -51,10 +70,14 @@ api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const config = error.config as (InternalAxiosRequestConfig & { _retry?: boolean }) | undefined;
-    const ehRotaDeAuth = config?.url?.startsWith('/auth/');
 
-    if (error.response?.status !== 401 || !config || config._retry || ehRotaDeAuth) {
+    if (error.response?.status !== 401 || !config || pularRenovacao(config.url)) {
       throw error;
+    }
+
+    if (config._retry) {
+      encerrarSessaoELogin();
+      return new Promise(() => undefined);
     }
 
     config._retry = true;
@@ -66,9 +89,8 @@ api.interceptors.response.use(
       config.headers.Authorization = `Bearer ${novoAccessToken}`;
       return api(config);
     } catch {
-      useAuthStore.getState().clearSession();
-      window.location.assign('/login');
-      throw error;
+      encerrarSessaoELogin();
+      return new Promise(() => undefined);
     }
   },
 );
