@@ -9891,8 +9891,10 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   cursor: pointer;
 }
 
-.tut-item-cabecalho:hover {
+.tut-item-cabecalho:hover:not(:disabled),
+.tut-item-cabecalho:focus-visible {
   background: color-mix(in srgb, var(--cor-fundo) 65%, transparent);
+  color: inherit;
 }
 
 .tut-item-texto {
