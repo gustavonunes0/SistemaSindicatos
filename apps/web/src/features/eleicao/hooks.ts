@@ -9,6 +9,7 @@ import type {
   CriarChapaInput,
   CriarContestacaoInput,
   CriarEleicaoInput,
+  DefinirVotosPresenciaisInput,
   EleicaoAdminDetalhe,
   EleicaoResumo,
   ElegivelResumo,
@@ -183,6 +184,26 @@ export function useApurarEleicao(eleicaoId: string) {
         queryKey: ['eleicoes', 'detalhe', eleicaoId, 'resultado'],
       });
       invalidarVisaoPublica(queryClient, eleicaoId);
+    },
+  });
+}
+
+export function useContagemVotos(eleicaoId: string, habilitado: boolean) {
+  return useQuery({
+    queryKey: ['eleicoes', 'admin', eleicaoId, 'contagem-votos'],
+    queryFn: () => eleicaoApi.buscarContagemVotos(eleicaoId),
+    enabled: habilitado,
+    staleTime: 15_000,
+  });
+}
+
+export function useDefinirVotosPresenciais(eleicaoId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: DefinirVotosPresenciaisInput) =>
+      eleicaoApi.definirVotosPresenciais(eleicaoId, input),
+    onSuccess: (contagem) => {
+      queryClient.setQueryData(['eleicoes', 'admin', eleicaoId, 'contagem-votos'], contagem);
     },
   });
 }

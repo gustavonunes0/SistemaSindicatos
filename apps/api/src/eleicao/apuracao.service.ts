@@ -28,26 +28,51 @@ export class ApuracaoService {
         select: { id: true },
       }),
       this.prisma.voto.groupBy({
-        by: ['chapaId'],
+        by: ['chapaId', 'origem'],
         where: { eleicaoId },
         _count: { _all: true },
       }),
     ]);
-    const votosPorChapa = new Map(contagem.map((item) => [item.chapaId, item._count._all]));
-    const totalVotos = contagem.reduce((soma, item) => soma + item._count._all, 0);
+
+    const totaisPorChapa = new Map<
+      string,
+      { eletronicos: number; presenciais: number; total: number }
+    >();
+    for (const item of contagem) {
+      const atual = totaisPorChapa.get(item.chapaId) ?? {
+        eletronicos: 0,
+        presenciais: 0,
+        total: 0,
+      };
+      if (item.origem === 'PRESENCIAL') {
+        atual.presenciais = item._count._all;
+      } else {
+        atual.eletronicos = item._count._all;
+      }
+      atual.total = atual.eletronicos + atual.presenciais;
+      totaisPorChapa.set(item.chapaId, atual);
+    }
+
+    const totalVotos = [...totaisPorChapa.values()].reduce((soma, item) => soma + item.total, 0);
     const tenantId = requireTenantId();
 
     // createMany + update num único lote: antes era um INSERT por chapa.
     await this.prisma.$transaction([
       this.prisma.resultadoApuracao.createMany({
         data: chapasHomologadas.map((chapa) => {
-          const votos = votosPorChapa.get(chapa.id) ?? 0;
+          const totais = totaisPorChapa.get(chapa.id) ?? {
+            eletronicos: 0,
+            presenciais: 0,
+            total: 0,
+          };
           return {
             tenantId,
             eleicaoId,
             chapaId: chapa.id,
-            totalVotos: votos,
-            percentual: totalVotos > 0 ? (votos / totalVotos) * 100 : 0,
+            totalVotos: totais.total,
+            votosEletronicos: totais.eletronicos,
+            votosPresenciais: totais.presenciais,
+            percentual: totalVotos > 0 ? (totais.total / totalVotos) * 100 : 0,
           };
         }),
       }),
@@ -143,6 +168,8 @@ export class ApuracaoService {
         numero: item.chapa.numero,
         nome: item.chapa.nome,
         totalVotos: item.totalVotos,
+        votosEletronicos: item.votosEletronicos,
+        votosPresenciais: item.votosPresenciais,
         percentual: item.percentual,
       })),
     };

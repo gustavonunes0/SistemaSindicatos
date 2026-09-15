@@ -34,6 +34,13 @@ export function ResultadoChapas({ resultado }: { resultado: ResultadoEleicao }) 
               <span>
                 {item.totalVotos === 1 ? 'voto' : 'votos'} · {item.percentual.toFixed(1)}%
               </span>
+              {(item.votosEletronicos !== undefined || item.votosPresenciais !== undefined) && (
+                <span className="resultado-linha-detalhe">
+                  {item.votosEletronicos ?? 0} eletrônico
+                  {(item.votosEletronicos ?? 0) === 1 ? '' : 's'} · {item.votosPresenciais ?? 0}{' '}
+                  em papel
+                </span>
+              )}
             </span>
           </div>
           <div
@@ -47,7 +54,7 @@ export function ResultadoChapas({ resultado }: { resultado: ResultadoEleicao }) 
             <div className="resultado-barra-preenchimento" style={{ width: `${item.percentual}%` }} />
           </div>
           {destacarLider && indice === 0 && (
-            <p className="resultado-linha-marca">Mais votada na urna eletrônica</p>
+            <p className="resultado-linha-marca">Chapa mais votada</p>
           )}
         </li>
       ))}

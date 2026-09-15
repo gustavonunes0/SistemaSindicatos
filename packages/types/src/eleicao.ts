@@ -221,6 +221,37 @@ export const comprovanteVotoSchema = z.object({
 });
 export type ComprovanteVoto = z.infer<typeof comprovanteVotoSchema>;
 
+export const origemVotoSchema = z.enum(['ELETRONICO', 'PRESENCIAL']);
+export type OrigemVoto = z.infer<typeof origemVotoSchema>;
+
+export const contagemVotoChapaSchema = z.object({
+  chapaId: z.string(),
+  numero: z.number().int(),
+  nome: z.string(),
+  eletronicos: z.number().int().nonnegative(),
+  presenciais: z.number().int().nonnegative(),
+});
+export type ContagemVotoChapa = z.infer<typeof contagemVotoChapaSchema>;
+
+export const contagemVotosEleicaoSchema = z.object({
+  eleicaoId: z.string(),
+  chapas: z.array(contagemVotoChapaSchema),
+  totalEletronicos: z.number().int().nonnegative(),
+  totalPresenciais: z.number().int().nonnegative(),
+});
+export type ContagemVotosEleicao = z.infer<typeof contagemVotosEleicaoSchema>;
+
+export const lancamentoVotoPresencialSchema = z.object({
+  chapaId: z.string(),
+  quantidade: z.number().int().min(0).max(10_000),
+});
+export type LancamentoVotoPresencial = z.infer<typeof lancamentoVotoPresencialSchema>;
+
+export const definirVotosPresenciaisSchema = z.object({
+  lancamentos: z.array(lancamentoVotoPresencialSchema).min(1),
+});
+export type DefinirVotosPresenciaisInput = z.infer<typeof definirVotosPresenciaisSchema>;
+
 // =====================================================================
 // Apuração / Resultado / Aclamação
 // =====================================================================
@@ -235,6 +266,8 @@ export const resultadoChapaSchema = z.object({
   numero: z.number().int(),
   nome: z.string(),
   totalVotos: z.number().int(),
+  votosEletronicos: z.number().int().nonnegative().optional(),
+  votosPresenciais: z.number().int().nonnegative().optional(),
   percentual: z.number(),
 });
 export type ResultadoChapa = z.infer<typeof resultadoChapaSchema>;

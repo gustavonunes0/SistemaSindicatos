@@ -681,6 +681,11 @@ enum StatusContestacao {
   INDEFERIDA
 }
 
+enum OrigemVoto {
+  ELETRONICO
+  PRESENCIAL
+}
+
 model Eleicao {
   id                    String        @id @default(cuid())
   tenantId              String
@@ -834,11 +839,12 @@ model Comparecimento {
 
 // Registra O voto (em qual chapa), SEM referência ao afiliado. Sigilo.
 model Voto {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   tenantId  String
   eleicaoId String
   chapaId   String
-  criadoEm  DateTime @default(now()) @db.Timestamptz
+  origem    OrigemVoto @default(ELETRONICO)
+  criadoEm  DateTime   @default(now()) @db.Timestamptz
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   eleicao Eleicao @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)
@@ -846,6 +852,7 @@ model Voto {
 
   // NÃO adicionar afiliadoId aqui. O sigilo depende dessa ausência.
   @@index([eleicaoId])
+  @@index([eleicaoId, origem])
   @@index([chapaId])
   @@index([tenantId])
   @@map("votos")
@@ -853,14 +860,16 @@ model Voto {
 
 // Resultado consolidado após apuração (reproduzível)
 model ResultadoApuracao {
-  id           String   @id @default(cuid())
-  tenantId     String
-  eleicaoId    String
-  chapaId      String
-  totalVotos   Int
-  percentual   Float
-  porAclamacao Boolean  @default(false)
-  apuradoEm    DateTime @default(now()) @db.Timestamptz
+  id                 String   @id @default(cuid())
+  tenantId           String
+  eleicaoId          String
+  chapaId            String
+  totalVotos         Int
+  votosEletronicos   Int      @default(0)
+  votosPresenciais   Int      @default(0)
+  percentual         Float
+  porAclamacao       Boolean  @default(false)
+  apuradoEm          DateTime @default(now()) @db.Timestamptz
 
   tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   eleicao Eleicao @relation(fields: [eleicaoId], references: [id], onDelete: Cascade)

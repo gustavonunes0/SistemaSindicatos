@@ -22,8 +22,9 @@ import { ComissaoEleitoralPanel } from './ComissaoEleitoralPanel';
 import { ContestacoesAdminPanel } from './ContestacoesAdminPanel';
 import { ElegiveisAdminPanel } from './ElegiveisAdminPanel';
 import { EleicaoFormModal } from './EleicaoFormModal';
+import { VotosPresenciaisAdminPanel } from './VotosPresenciaisAdminPanel';
 
-type AbaId = 'chapas' | 'eleitores' | 'contestacoes' | 'comissao';
+type AbaId = 'chapas' | 'eleitores' | 'presencial' | 'contestacoes' | 'comissao';
 
 const fases: { id: StatusEleicao; rotulo: string; ajuda: string }[] = [
   { id: 'AGENDADA', rotulo: 'Preparação', ajuda: 'Chapas, homologação e eleitores' },
@@ -123,11 +124,16 @@ export function EleicaoDetalheAdminPage() {
       ? Math.min(100, Math.round((eleicao.totalComparecimentos / eleicao.totalElegiveis) * 100))
       : 0;
   const indiceFase = fases.findIndex((fase) => fase.id === eleicao.status);
-  const abaAtiva = aba ?? (eleicao.status === 'ABERTA' ? 'eleitores' : 'chapas');
+  const abaAtiva =
+    aba ??
+    (eleicao.status === 'ABERTA' || eleicao.status === 'ENCERRADA' ? 'presencial' : 'chapas');
 
   const abas: { id: AbaId; rotulo: string; contador?: number }[] = [
     { id: 'chapas', rotulo: 'Chapas', contador: eleicao.chapas.length },
     { id: 'eleitores', rotulo: 'Eleitores', contador: eleicao.totalElegiveis },
+    ...(eleicao.status !== 'AGENDADA'
+      ? [{ id: 'presencial' as const, rotulo: 'Votos em papel' }]
+      : []),
     { id: 'contestacoes', rotulo: 'Impugnações', contador: contestacoes?.length ?? 0 },
     { id: 'comissao', rotulo: 'Comissão' },
   ];
@@ -220,9 +226,9 @@ export function EleicaoDetalheAdminPage() {
             {eleicao.status === 'ABERTA' &&
               'Os eleitores da lista já podem votar. Não há resultado parcial nesta fase, nem para o administrador.'}
             {eleicao.status === 'ENCERRADA' &&
-              'A urna está fechada. Apure quando a Comissão Eleitoral estiver reunida — a contagem é registrada e não muda depois.'}
+              'A urna está fechada. Lance os votos em papel na aba correspondente e apure quando a Comissão estiver reunida.'}
             {eleicao.status === 'APURADA' &&
-              'Some os votos presenciais conferidos pela Comissão ao resultado eletrônico abaixo para a proclamação oficial.'}
+              'Resultado oficial com urna eletrônica e cédulas em papel já somadas na apuração.'}
           </p>
         </div>
 
@@ -329,7 +335,7 @@ export function EleicaoDetalheAdminPage() {
                   pedirConfirmacao({
                     titulo: 'Apurar votos?',
                     descricao:
-                      'Conta os votos eletrônicos por chapa e divulga o resultado aos filiados. A contagem não pode ser refeita.',
+                      'Conta os votos eletrônicos e presenciais por chapa e divulga o resultado aos filiados. A contagem não pode ser refeita.',
                     confirmarRotulo: 'Apurar votos',
                     tom: 'primario',
                     onConfirmar: () => executarAcao(() => apurar.mutateAsync()),
@@ -381,11 +387,11 @@ export function EleicaoDetalheAdminPage() {
         <section className="eleicao-admin-bloco" aria-labelledby="eleicao-resultado-titulo">
           <div className="eleicao-admin-bloco-cabecalho">
             <div>
-              <h2 id="eleicao-resultado-titulo">Resultado eletrônico</h2>
+              <h2 id="eleicao-resultado-titulo">Resultado apurado</h2>
               <p>
                 {resultado.porAclamacao
                   ? 'Eleição resolvida por aclamação — sem escrutínio secreto.'
-                  : `Apurado em ${formatarDataHora(resultado.apuradoEm)} · ${resultado.totalVotos} votos na urna eletrônica.`}
+                  : `Apurado em ${formatarDataHora(resultado.apuradoEm)} · ${resultado.totalVotos} votos no total.`}
               </p>
             </div>
           </div>
@@ -421,6 +427,7 @@ export function EleicaoDetalheAdminPage() {
       >
         {abaAtiva === 'chapas' && <ChapasAdminPanel eleicao={eleicao} />}
         {abaAtiva === 'eleitores' && <ElegiveisAdminPanel eleicaoId={eleicaoId} />}
+        {abaAtiva === 'presencial' && <VotosPresenciaisAdminPanel eleicao={eleicao} />}
         {abaAtiva === 'contestacoes' && (
           <ContestacoesAdminPanel eleicaoId={eleicaoId} chapas={eleicao.chapas} />
         )}

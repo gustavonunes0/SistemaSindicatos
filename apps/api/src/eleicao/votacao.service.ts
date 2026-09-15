@@ -6,8 +6,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomBytes } from 'node:crypto';
-import { Prisma } from '@prisma/client';
-import type { ComprovanteVoto, MeuStatusVotacao } from '@sindprf/types';
+import { OrigemVoto, Prisma } from '@prisma/client';
+import type {
+  ComprovanteVoto,
+  ContagemVotosEleicao,
+  DefinirVotosPresenciaisInput,
+  MeuStatusVotacao,
+} from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
 
@@ -98,7 +103,9 @@ export class VotacaoService {
         this.prisma.comparecimento.create({
           data: { tenantId, eleicaoId, afiliadoId: afiliado.id, protocolo },
         }),
-        this.prisma.voto.create({ data: { tenantId, eleicaoId, chapaId } }),
+        this.prisma.voto.create({
+          data: { tenantId, eleicaoId, chapaId, origem: OrigemVoto.ELETRONICO },
+        }),
       ]);
 
       this.logger.log(`Comparecimento registrado na eleição ${eleicaoId} (protocolo ${protocolo})`);
@@ -110,6 +117,116 @@ export class VotacaoService {
       }
       throw error;
     }
+  }
+
+  async contagemVotos(eleicaoId: string): Promise<ContagemVotosEleicao> {
+    const eleicao = await this.prisma.eleicao.findUnique({
+      where: { id: eleicaoId },
+      include: {
+        chapas: {
+          where: { status: 'HOMOLOGADA' },
+          orderBy: { numero: 'asc' },
+          select: { id: true, numero: true, nome: true },
+        },
+      },
+    });
+    if (!eleicao) {
+      throw new NotFoundException('Eleição não encontrada');
+    }
+
+    const contagem = await this.prisma.voto.groupBy({
+      by: ['chapaId', 'origem'],
+      where: { eleicaoId },
+      _count: { _all: true },
+    });
+
+    const mapa = new Map<string, { eletronicos: number; presenciais: number }>();
+    for (const chapa of eleicao.chapas) {
+      mapa.set(chapa.id, { eletronicos: 0, presenciais: 0 });
+    }
+    for (const item of contagem) {
+      const atual = mapa.get(item.chapaId) ?? { eletronicos: 0, presenciais: 0 };
+      if (item.origem === OrigemVoto.PRESENCIAL) {
+        atual.presenciais = item._count._all;
+      } else {
+        atual.eletronicos = item._count._all;
+      }
+      mapa.set(item.chapaId, atual);
+    }
+
+    const chapas = eleicao.chapas.map((chapa) => {
+      const totais = mapa.get(chapa.id) ?? { eletronicos: 0, presenciais: 0 };
+      return {
+        chapaId: chapa.id,
+        numero: chapa.numero,
+        nome: chapa.nome,
+        eletronicos: totais.eletronicos,
+        presenciais: totais.presenciais,
+      };
+    });
+
+    return {
+      eleicaoId,
+      chapas,
+      totalEletronicos: chapas.reduce((soma, item) => soma + item.eletronicos, 0),
+      totalPresenciais: chapas.reduce((soma, item) => soma + item.presenciais, 0),
+    };
+  }
+
+  // Cédulas em papel: totais por chapa, sem identificar o eleitor (mesma tabela
+  // Voto, origem PRESENCIAL). Só a Comissão lança; substitui o lote anterior.
+  async definirVotosPresenciais(
+    eleicaoId: string,
+    input: DefinirVotosPresenciaisInput,
+  ): Promise<ContagemVotosEleicao> {
+    const eleicao = await this.prisma.eleicao.findUnique({
+      where: { id: eleicaoId },
+      select: { status: true },
+    });
+    if (!eleicao) {
+      throw new NotFoundException('Eleição não encontrada');
+    }
+    if (eleicao.status !== 'ABERTA' && eleicao.status !== 'ENCERRADA') {
+      throw new ConflictException(
+        'Só é possível lançar votos presenciais enquanto a votação está aberta ou após o encerramento, antes da apuração',
+      );
+    }
+
+    const chapasHomologadas = await this.prisma.chapa.findMany({
+      where: { eleicaoId, status: 'HOMOLOGADA' },
+      select: { id: true },
+    });
+    const idsHomologadas = new Set(chapasHomologadas.map((chapa) => chapa.id));
+    for (const lancamento of input.lancamentos) {
+      if (!idsHomologadas.has(lancamento.chapaId)) {
+        throw new ConflictException('Informe apenas chapas homologadas desta eleição');
+      }
+    }
+
+    const tenantId = requireTenantId();
+    const novosVotos = input.lancamentos.flatMap((lancamento) =>
+      Array.from({ length: lancamento.quantidade }, () => ({
+        tenantId,
+        eleicaoId,
+        chapaId: lancamento.chapaId,
+        origem: OrigemVoto.PRESENCIAL,
+      })),
+    );
+
+    await this.prisma.$transaction([
+      this.prisma.voto.deleteMany({
+        where: { eleicaoId, origem: OrigemVoto.PRESENCIAL },
+      }),
+      ...(novosVotos.length > 0
+        ? [this.prisma.voto.createMany({ data: novosVotos })]
+        : []),
+    ]);
+
+    this.logger.log(
+      `Votos presenciais atualizados na eleição ${eleicaoId} (${novosVotos.length} cédulas)`,
+    );
+
+    return this.contagemVotos(eleicaoId);
   }
 
   private async buscarAfiliadoAprovado(userId: string) {

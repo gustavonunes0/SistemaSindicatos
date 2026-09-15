@@ -2,6 +2,7 @@ import {
   administradorResumoSchema,
   chapaSchema,
   comprovanteVotoSchema,
+  contagemVotosEleicaoSchema,
   contestacaoSchema,
   eleicaoAdminDetalheSchema,
   eleicaoDetalheSchema,
@@ -20,7 +21,9 @@ import {
   type CriarCandidatoInput,
   type CriarChapaInput,
   type CriarContestacaoInput,
+  type ContagemVotosEleicao,
   type CriarEleicaoInput,
+  type DefinirVotosPresenciaisInput,
   type EleicaoAdminDetalhe,
   type EleicaoDetalhe,
   type EleicaoResumo,
@@ -82,6 +85,19 @@ export async function apurarEleicao(id: string): Promise<ResultadoEleicao> {
 export async function resolverAclamacao(id: string, chapaId: string): Promise<ResultadoEleicao> {
   const { data } = await api.post(`/eleicoes/${id}/aclamacao`, { chapaId });
   return resultadoEleicaoSchema.parse(data);
+}
+
+export async function buscarContagemVotos(eleicaoId: string): Promise<ContagemVotosEleicao> {
+  const { data } = await api.get(`/eleicoes/${eleicaoId}/votos/contagem`);
+  return contagemVotosEleicaoSchema.parse(data);
+}
+
+export async function definirVotosPresenciais(
+  eleicaoId: string,
+  input: DefinirVotosPresenciaisInput,
+): Promise<ContagemVotosEleicao> {
+  const { data } = await api.post(`/eleicoes/${eleicaoId}/votos/presenciais`, input);
+  return contagemVotosEleicaoSchema.parse(data);
 }
 
 // ---- Admin: chapas/candidatos ----

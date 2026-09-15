@@ -8,6 +8,7 @@ import {
   criarChapaSchema,
   criarEleicaoSchema,
   homologarChapaSchema,
+  definirVotosPresenciaisSchema,
   incluirElegivelSchema,
   resolverAclamacaoSchema,
   resolverContestacaoSchema,
@@ -18,6 +19,7 @@ import {
   type CriarCandidatoInput,
   type CriarChapaInput,
   type CriarEleicaoInput,
+  type DefinirVotosPresenciaisInput,
   type HomologarChapaInput,
   type IncluirElegivelInput,
   type ResolverAclamacaoInput,
@@ -32,6 +34,7 @@ import { ComissaoService } from './comissao.service';
 import { ContestacaoService } from './contestacao.service';
 import { ElegibilidadeService } from './elegibilidade.service';
 import { EleicaoService } from './eleicao.service';
+import { VotacaoService } from './votacao.service';
 
 // Rotas de gestão (ADMIN/Comissão Eleitoral). Registrado ANTES de
 // VotacaoController no módulo para que /eleicoes/admin (literal) seja
@@ -47,6 +50,7 @@ export class EleicaoController {
     private readonly contestacaoService: ContestacaoService,
     private readonly comissaoService: ComissaoService,
     private readonly apuracaoService: ApuracaoService,
+    private readonly votacaoService: VotacaoService,
   ) {}
 
   @Post()
@@ -202,6 +206,20 @@ export class EleicaoController {
   @Delete(':id/comissao/:userId')
   removerMembroComissao(@Param('id') id: string, @Param('userId') userId: string) {
     return this.comissaoService.remover(id, userId);
+  }
+
+  @Get(':id/votos/contagem')
+  @Header('Cache-Control', 'private, no-store')
+  contagemVotos(@Param('id') id: string) {
+    return this.votacaoService.contagemVotos(id);
+  }
+
+  @Post(':id/votos/presenciais')
+  definirVotosPresenciais(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(definirVotosPresenciaisSchema)) body: DefinirVotosPresenciaisInput,
+  ) {
+    return this.votacaoService.definirVotosPresenciais(id, body);
   }
 
   @Post(':id/abrir')

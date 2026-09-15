@@ -8025,6 +8025,35 @@ input:focus-visible + .imovel-fotos-drop {
   margin-bottom: 0;
 }
 
+.eleicao-presencial-tabela th,
+.eleicao-presencial-tabela td {
+  vertical-align: middle;
+}
+
+.eleicao-presencial-input {
+  width: 5.5rem;
+  padding: 0.35rem 0.5rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.eleicao-presencial-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.resultado-linha-detalhe {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.75rem;
+  color: var(--cor-texto-suave);
+}
+
 .eleicao-comissao-grupos {
   display: grid;
   gap: 1rem;

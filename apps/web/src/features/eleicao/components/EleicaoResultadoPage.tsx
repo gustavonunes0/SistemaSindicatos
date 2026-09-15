@@ -14,7 +14,7 @@ export function EleicaoResultadoPage() {
     <AreaLayout
       tipo="afiliado"
       titulo={eleicao ? eleicao.titulo : 'Resultado'}
-      descricao="Apuração da urna eletrônica"
+      descricao="Apuração oficial da eleição"
       acoes={
         <Link to="/afiliado/eleicoes" className="botao-link-acao">
           ← Eleições
@@ -38,14 +38,14 @@ export function EleicaoResultadoPage() {
             <p className="resultado-painel-texto">
               {resultado.porAclamacao
                 ? 'Havia uma única chapa homologada, declarada eleita sem escrutínio secreto (Art. 38 do Estatuto).'
-                : `Apurado em ${formatarDataHora(resultado.apuradoEm)}. O resultado oficial soma os votos presenciais conferidos pela Comissão Eleitoral.`}
+                : `Apurado em ${formatarDataHora(resultado.apuradoEm)}. Inclui urna eletrônica e cédulas em papel conferidas pela Comissão Eleitoral.`}
             </p>
           </header>
 
           {!resultado.porAclamacao && (
             <dl className="resultado-painel-numeros">
               <div>
-                <dt>Votos na urna eletrônica</dt>
+                <dt>Total de votos</dt>
                 <dd>{resultado.totalVotos}</dd>
               </div>
               <div>
