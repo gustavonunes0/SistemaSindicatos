@@ -621,6 +621,8 @@ button.botao-primario {
 
 /* Hero full-bleed: só os destaques. */
 .hero-destaques {
+  /* Largura da coluna de texto — usada pelo grid e pelos controles. */
+  --hero-coluna-texto: 38%;
   position: relative;
   width: 100%;
   min-height: min(68vh, 40rem);
@@ -681,15 +683,17 @@ button.botao-primario {
 .hero-destaques-link {
   position: absolute;
   inset: 0;
-  display: block;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   color: inherit;
   text-decoration: none;
   overflow: hidden;
 }
 
 .hero-destaques-media {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
   background: var(--azul-noite);
   overflow: hidden;
 }
@@ -741,16 +745,14 @@ button.botao-primario {
 }
 
 .hero-destaques-corpo {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  position: relative;
   z-index: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 0.45rem;
-  padding: clamp(3rem, 12vh, 6rem) clamp(1.25rem, 4vw, 3rem) 4.25rem;
-  max-width: calc(var(--largura-conteudo) + 2rem);
+  min-width: 0;
+  padding: 1.5rem clamp(1.25rem, 4vw, 3rem);
 }
 
 .hero-destaques-tipo {
@@ -770,7 +772,7 @@ button.botao-primario {
   color: #fff;
   max-width: 42ch;
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 7;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1088,8 +1090,20 @@ button.botao-primario {
     height: min(72vh, 44rem);
   }
 
+  /* Texto à esquerda, imagem à direita — sem sobreposição. */
+  .hero-destaques-link {
+    grid-template-rows: none;
+    grid-template-columns: var(--hero-coluna-texto) minmax(0, 1fr);
+  }
+
   .hero-destaques-corpo {
     padding-bottom: 4.75rem;
+  }
+
+  /* Controles acompanham a coluna de texto para não cobrir a imagem. */
+  .hero-destaques-controles {
+    right: auto;
+    width: min(20rem, calc(var(--hero-coluna-texto) - 3rem));
   }
 }
 

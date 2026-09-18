@@ -137,13 +137,13 @@ export function HeroDestaques() {
     <div className="hero-destaques" aria-roledescription="carrossel" aria-label="Destaques">
       {slide.tipo === 'noticia' ? (
         <Link to={slide.href} className="hero-destaques-link">
-          <div className="hero-destaques-media">{media}</div>
           {corpo}
+          <div className="hero-destaques-media">{media}</div>
         </Link>
       ) : (
         <a href={slide.href} className="hero-destaques-link" target="_blank" rel="noreferrer">
-          <div className="hero-destaques-media">{media}</div>
           {corpo}
+          <div className="hero-destaques-media">{media}</div>
         </a>
       )}
 
