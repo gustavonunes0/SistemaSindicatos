@@ -48,6 +48,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   declare passwordResetToken: TenantPrismaClient['passwordResetToken'];
   declare importacaoD8: TenantPrismaClient['importacaoD8'];
   declare linhaD8: TenantPrismaClient['linhaD8'];
+  declare importacaoAcaoJuridica: TenantPrismaClient['importacaoAcaoJuridica'];
+  declare acaoJuridica: TenantPrismaClient['acaoJuridica'];
   declare noticia: TenantPrismaClient['noticia'];
   declare pushSubscription: TenantPrismaClient['pushSubscription'];
   declare instagramPost: TenantPrismaClient['instagramPost'];

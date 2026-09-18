@@ -1,18 +1,28 @@
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { GRUPOS_CONSULTA_JURIDICA } from '../consultas';
+import { JuridicoAcoesAdminPanel } from './admin/JuridicoAcoesAdminPanel';
+import { MinhasAcoesJuridicas } from './MinhasAcoesJuridicas';
 
 type Props = {
   tipo: 'admin' | 'afiliado';
 };
 
 export function JuridicoPage({ tipo }: Props) {
+  const descricaoAdmin =
+    'Importe a planilha de ações, acompanhe o cadastro e acesse os portais oficiais da Justiça Federal.';
+  const descricaoAfiliado =
+    'Consulte suas ações vinculadas ao CPF e acesse os portais oficiais da Justiça Federal.';
+
   return (
     <AreaLayout
       tipo={tipo}
       titulo="Jurídico"
-      descricao="Portais oficiais da Justiça Federal para consultar processos, RPV e precatórios."
+      descricao={tipo === 'admin' ? descricaoAdmin : descricaoAfiliado}
     >
       <div className="juridico-secoes">
+        {tipo === 'admin' && <JuridicoAcoesAdminPanel />}
+        {tipo === 'afiliado' && <MinhasAcoesJuridicas />}
+
         {GRUPOS_CONSULTA_JURIDICA.map((grupo) => (
           <section key={grupo.sigla} aria-labelledby={`juridico-${grupo.sigla}`}>
             <header className="juridico-secao-topo">

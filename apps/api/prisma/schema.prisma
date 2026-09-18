@@ -73,6 +73,8 @@ model Tenant {
   contasFinanceiras      ContaFinanceira[]
   importacoesFinanceiras ImportacaoFinanceira[]
   lancamentosFinanceiros LancamentoFinanceiro[]
+  importacoesAcaoJuridica ImportacaoAcaoJuridica[]
+  acoesJuridicas         AcaoJuridica[]
 
   @@map("tenants")
 }
@@ -260,6 +262,7 @@ model Afiliado {
   solicitacoes    SolicitacaoAluguel[]
   contestacoes    ContestacaoChapa[]
   linhasD8        LinhaD8[]
+  acoesJuridicas  AcaoJuridica[]
   declaracoes     DeclaracaoEmitida[]
   respostas       RespostaFormulario[]
   documentos      DocumentoAfiliado[]
@@ -353,6 +356,50 @@ model LinhaD8 {
   @@index([tenantId, matricula])
   @@index([afiliadoId])
   @@map("linhas_d8")
+}
+
+// =====================================================================
+// JURÍDICO — AÇÕES IMPORTADAS (PLANILHA)
+// =====================================================================
+
+model ImportacaoAcaoJuridica {
+  id          String   @id @default(cuid())
+  tenantId    String
+  arquivoNome String
+  totalLinhas Int
+  novas       Int      @default(0)
+  atualizadas Int      @default(0)
+  createdAt   DateTime @default(now()) @db.Timestamptz
+
+  tenant Tenant         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  acoes  AcaoJuridica[]
+
+  @@index([tenantId, createdAt])
+  @@map("importacoes_acao_juridica")
+}
+
+model AcaoJuridica {
+  id           String   @id @default(cuid())
+  tenantId     String
+  importacaoId String
+  sequencia    Int
+  nome         String
+  cpf          String
+  numeroAcao   String
+  status       String
+  afiliadoId   String?
+  createdAt    DateTime @default(now()) @db.Timestamptz
+  updatedAt    DateTime @updatedAt @db.Timestamptz
+
+  tenant     Tenant                 @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  importacao ImportacaoAcaoJuridica @relation(fields: [importacaoId], references: [id], onDelete: Restrict)
+  afiliado   Afiliado?              @relation(fields: [afiliadoId], references: [id], onDelete: SetNull)
+
+  @@unique([tenantId, numeroAcao])
+  @@index([importacaoId])
+  @@index([tenantId, cpf])
+  @@index([tenantId, afiliadoId])
+  @@map("acoes_juridicas")
 }
 
 // =====================================================================

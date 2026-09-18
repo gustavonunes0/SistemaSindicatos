@@ -16,6 +16,8 @@ const MODELS_COM_TENANT = new Set([
   'Estatuto',
   'ImportacaoD8',
   'LinhaD8',
+  'ImportacaoAcaoJuridica',
+  'AcaoJuridica',
   'Noticia',
   'PushSubscription',
   'InstagramPost',

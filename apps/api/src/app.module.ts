@@ -22,6 +22,7 @@ import { EstatutosModule } from './estatutos/estatutos.module';
 import { FinanceiroModule } from './financeiro/financeiro.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
 import { InstagramModule } from './instagram/instagram.module';
+import { JuridicoModule } from './juridico/juridico.module';
 import { NoticiasModule } from './noticias/noticias.module';
 import { PushModule } from './push/push.module';
 import { SolicitacoesModule } from './solicitacoes/solicitacoes.module';
@@ -62,6 +63,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
     D8Module,
     BalancetesModule,
     FinanceiroModule,
+    JuridicoModule,
   ],
   controllers: [AppController],
   providers: [

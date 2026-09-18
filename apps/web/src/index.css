@@ -12961,6 +12961,132 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   white-space: nowrap;
 }
 
+.juridico-admin-upload,
+.juridico-admin-historico,
+.juridico-admin-lista,
+.juridico-minhas-acoes {
+  padding: 1.15rem 1.2rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  background: var(--cor-superficie, #fff);
+}
+
+.juridico-admin-secao-titulo {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.juridico-admin-secao-texto {
+  margin: 0 0 1rem;
+  max-width: 62ch;
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+}
+
+.juridico-admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-end;
+}
+
+.juridico-admin-arquivo {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.juridico-admin-importacoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.juridico-admin-importacoes li {
+  display: grid;
+  gap: 0.15rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+}
+
+.juridico-admin-lista-topo {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.juridico-admin-busca {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  align-items: flex-end;
+}
+
+.juridico-admin-busca label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.juridico-admin-busca input {
+  min-width: min(100%, 18rem);
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  font: inherit;
+}
+
+.lista-juridico-acoes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.card-juridico-acao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1rem 1.1rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+}
+
+.card-juridico-acao h3 {
+  margin: 0.15rem 0 0.25rem;
+  font-size: 1rem;
+}
+
+.juridico-acao-numero {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-primaria);
+}
+
+.badge-juridico-status {
+  background: color-mix(in srgb, var(--cor-primaria) 12%, var(--cor-fundo));
+  color: var(--cor-primaria);
+  font-weight: 600;
+}
+
 /* ============ Declarações emitidas e assinatura ============ */
 .badge-declaracao-pendente {
   background: #fdf1d6;
