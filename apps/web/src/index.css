@@ -2577,9 +2577,18 @@ button.botao-primario {
   margin-bottom: 0.5rem;
 }
 
-.noticia-anexo-preview a {
+.noticia-anexo-preview a,
+.noticia-anexo-preview > span:first-child {
   font-weight: 600;
   word-break: break-word;
+}
+
+.noticia-arquivo-status {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--cor-texto-suave);
 }
 
 .noticia-detalhe-hero-inner > *,
