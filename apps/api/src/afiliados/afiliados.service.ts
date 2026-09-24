@@ -1,5 +1,8 @@
 import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { tenantBrandingSchema } from '@sindprf/types';
+import { existsSync, readFileSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import type {
   CadastroAfiliadoAdminInput,
   CadastroAfiliadoInput,
@@ -16,6 +19,32 @@ import { requireTenantId } from '../tenant/tenant-context';
 import { PropostaFiliacaoPdfService } from './proposta-filiacao-pdf.service';
 
 const BCRYPT_ROUNDS = 10;
+const RAIZ_UPLOADS = resolve(process.cwd(), 'uploads');
+
+function caminhoPublico(url: string): string | null {
+  const relativo = url.replace(/^\//, '');
+  const nome = relativo.split('/').pop() ?? relativo;
+  const candidatos = [
+    join(process.cwd(), 'apps', 'web', 'public', relativo),
+    join(process.cwd(), '..', 'web', 'public', relativo),
+    join(process.cwd(), 'public', relativo),
+    join(process.cwd(), 'assets', nome),
+    join(process.cwd(), 'apps', 'api', 'assets', nome),
+  ];
+  return candidatos.find((caminho) => existsSync(caminho)) ?? null;
+}
+
+function lerArquivoLogo(url: string | undefined): Buffer | null {
+  if (!url) return null;
+  if (url.startsWith('/uploads/')) {
+    const destino = resolve(RAIZ_UPLOADS, url.slice('/uploads/'.length));
+    if (!destino.startsWith(RAIZ_UPLOADS) || !existsSync(destino)) return null;
+    return readFileSync(destino);
+  }
+  const caminho = caminhoPublico(url);
+  if (!caminho) return null;
+  return readFileSync(caminho);
+}
 
 type ListaCache = { expires: number; payload: unknown };
 type TotalCache = { expires: number; total: number };
@@ -324,7 +353,21 @@ export class AfiliadosService {
       instituidorPensao: ficha.instituidorPensao,
       emitidaEm: ficha.aceiteEstatutoEm ?? ficha.createdAt,
       dependentes: ficha.dependentes,
+      logo: await this.carregarLogoTenant(),
     });
+  }
+
+  private async carregarLogoTenant(): Promise<Buffer | null> {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: requireTenantId() },
+      select: { branding: true },
+    });
+    const branding = tenantBrandingSchema.safeParse(tenant?.branding);
+    if (!branding.success) return null;
+    return (
+      lerArquivoLogo(branding.data.logoUrl) ??
+      lerArquivoLogo(branding.data.logoHeaderUrl)
+    );
   }
 
   async baixarDocumento(afiliadoId: string, documentoId: string) {

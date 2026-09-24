@@ -3,16 +3,13 @@ import { ESTADO_CIVIL_ROTULO, type EstadoCivil } from '@sindprf/types';
 import PDFDocument from 'pdfkit';
 
 const VAGAS_DEPENDENTES = 5;
+const LARGURA = 510;
+const BORDA = '#bfbfbf';
+const ALTURA = 18;
+const ESPACO = 7;
 
 const DECLARACAO =
   'Declaro aceitar as condições constantes do Estatuto do SINDPRF-CE, comprometendo-me a cumpri-las e fazer com que sejam cumpridas na esfera da minha responsabilidade, autorizando, inclusive, o desconto em folha de pagamento, da mensalidade social em favor do Sindicato dos Policiais Rodoviários Federais no Estado do Ceará, decidido em Assembléia.';
-
-const dataCurta = new Intl.DateTimeFormat('pt-BR', {
-  day: '2-digit',
-  month: '2-digit',
-  year: 'numeric',
-  timeZone: 'America/Fortaleza',
-});
 
 export type DependenteProposta = {
   nome: string;
@@ -49,7 +46,18 @@ export type DadosPropostaFiliacao = {
   instituidorPensao: string | null;
   emitidaEm: Date;
   dependentes: DependenteProposta[];
+  logo: Buffer | null;
 };
+
+const dataCurta = new Intl.DateTimeFormat('pt-BR', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: 'America/Fortaleza',
+});
+
+type Doc = PDFKit.PDFDocument;
+type Alinhamento = 'left' | 'center' | 'right' | 'justify';
 
 function somenteDigitos(valor: string): string {
   return valor.replace(/\D/g, '');
@@ -75,22 +83,14 @@ function formatarTelefone(numero: string | null): string | null {
   return numero;
 }
 
-function formatarData(data: Date | null): string | null {
+function formatarData(data: Date | null | undefined): string | null {
   if (!data) return null;
   return dataCurta.format(data);
 }
 
-function dataPorExtenso(data: Date): string {
-  const partes = new Intl.DateTimeFormat('pt-BR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
-    timeZone: 'America/Fortaleza',
-  }).formatToParts(data);
-  const dia = partes.find((parte) => parte.type === 'day')?.value ?? '';
-  const mes = partes.find((parte) => parte.type === 'month')?.value ?? '';
-  const ano = partes.find((parte) => parte.type === 'year')?.value ?? '';
-  return `Fortaleza (CE), ${dia} de ${mes} de ${ano}`;
+function campo(rotulo: string, valor: string | null | undefined): string {
+  const texto = valor?.trim();
+  return texto ? `${rotulo} ${texto}` : rotulo;
 }
 
 function lotacao(dados: DadosPropostaFiliacao): string | null {
@@ -111,43 +111,85 @@ function nomeArquivoSeguro(nome: string): string {
   return `proposta-filiacao-${base || 'afiliado'}.pdf`;
 }
 
-type Doc = PDFKit.PDFDocument;
-
-function desenharCampo(doc: Doc, x: number, y: number, largura: number, rotulo: string, valor: string | null): number {
-  const texto = valor?.trim() ?? '';
-  doc.font('Helvetica-Bold').fontSize(8.5);
-  const rotuloLargura = doc.widthOfString(rotulo) + 4;
-  const larguraValor = Math.max(24, largura - rotuloLargura);
-  doc.font('Helvetica').fontSize(8.5);
-  const alturaValor = texto ? doc.heightOfString(texto, { width: larguraValor }) : 10;
-
-  doc.font('Helvetica-Bold').fillColor('#111111').text(rotulo, x, y, { lineBreak: false });
-  if (texto) {
-    doc.font('Helvetica').text(texto, x + rotuloLargura, y, { width: larguraValor });
-  }
-
-  const base = y + Math.max(alturaValor, 10) + 1;
-  doc
-    .strokeColor('#222222')
-    .lineWidth(0.5)
-    .moveTo(x + rotuloLargura, base)
-    .lineTo(x + largura, base)
-    .stroke();
-  return base + 7;
-}
-
-function desenharPar(
+function desenharLinha(
   doc: Doc,
   x: number,
   y: number,
-  largura: number,
-  esquerda: { rotulo: string; valor: string | null },
-  direita: { rotulo: string; valor: string | null },
+  proporcoes: number[],
+  textos: string[],
+  opcoes: {
+    borda?: boolean;
+    negrito?: boolean;
+    alinhamento?: Alinhamento;
+    tamanho?: number;
+    sublinhado?: boolean;
+    altura?: number;
+  } = {},
 ): number {
-  const coluna = (largura - 16) / 2;
-  const yEsquerda = desenharCampo(doc, x, y, coluna, esquerda.rotulo, esquerda.valor);
-  const yDireita = desenharCampo(doc, x + coluna + 16, y, coluna, direita.rotulo, direita.valor);
-  return Math.max(yEsquerda, yDireita);
+  const tamanho = opcoes.tamanho ?? 11;
+  const altura = opcoes.altura ?? ALTURA;
+  const soma = proporcoes.reduce((total, parte) => total + parte, 0);
+  let cursor = x;
+
+  doc.font(opcoes.negrito ? 'Times-Bold' : 'Times-Roman').fontSize(tamanho).fillColor('#000000');
+
+  for (let indice = 0; indice < proporcoes.length; indice += 1) {
+    const larguraCelula = (LARGURA * proporcoes[indice]!) / soma;
+    if (opcoes.borda !== false) {
+      doc.save();
+      doc.lineWidth(0.75).strokeColor(BORDA).rect(cursor, y, larguraCelula, altura).stroke();
+      doc.restore();
+    }
+    const texto = textos[indice] ?? '';
+    doc.font(opcoes.negrito ? 'Times-Bold' : 'Times-Roman').fontSize(tamanho).fillColor('#000000');
+    doc.text(texto, cursor + 5, y + 3, {
+      width: Math.max(8, larguraCelula - 10),
+      height: altura - 4,
+      align: opcoes.alinhamento ?? 'left',
+      underline: opcoes.sublinhado,
+      lineBreak: true,
+      ellipsis: true,
+    });
+    cursor += larguraCelula;
+  }
+
+  return y + altura;
+}
+
+function desenharLotacao(
+  doc: Doc,
+  x: number,
+  y: number,
+  lotacaoTexto: string | null,
+  admissao: string | null,
+): number {
+  const larguraLotacao = (LARGURA * 340.2) / (340.2 + 170.4);
+  const larguraAdmissao = LARGURA - larguraLotacao;
+
+  doc.save();
+  doc.lineWidth(0.75).strokeColor(BORDA);
+  doc.rect(x, y, larguraLotacao, ALTURA).stroke();
+  doc.rect(x + larguraLotacao, y, larguraAdmissao, ALTURA).stroke();
+  doc.restore();
+
+  doc.font('Times-Roman').fontSize(11).fillColor('#000000');
+  doc.text(campo('Lotação:', lotacaoTexto), x + 5, y + 3, {
+    width: larguraLotacao * 0.62,
+    height: ALTURA - 4,
+    ellipsis: true,
+  });
+  doc.text('Escolaridade:', x + larguraLotacao * 0.64, y + 3, {
+    width: larguraLotacao * 0.34,
+    height: ALTURA - 4,
+    lineBreak: false,
+  });
+  doc.text(campo('Data de Admissão:', admissao), x + larguraLotacao + 5, y + 3, {
+    width: larguraAdmissao - 10,
+    height: ALTURA - 4,
+    ellipsis: true,
+  });
+
+  return y + ALTURA;
 }
 
 @Injectable()
@@ -155,7 +197,7 @@ export class PropostaFiliacaoPdfService {
   async gerar(dados: DadosPropostaFiliacao): Promise<{ buffer: Buffer; nomeArquivo: string }> {
     const doc = new PDFDocument({
       size: 'A4',
-      margins: { top: 36, bottom: 36, left: 42, right: 42 },
+      margins: { top: 28, bottom: 28, left: 42, right: 42 },
       info: {
         Title: 'Proposta de Filiação',
         Author: 'SINDPRF-CE',
@@ -169,134 +211,159 @@ export class PropostaFiliacaoPdfService {
       doc.on('error', reject);
     });
 
-    const x = doc.page.margins.left;
-    const largura = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-    let y = doc.page.margins.top;
+    const x = (doc.page.width - LARGURA) / 2;
+    let y = 28;
 
-    doc.font('Helvetica-Bold').fontSize(14).fillColor('#111111');
-    doc.text('PROPOSTA DE FILIAÇÃO', x, y, { width: largura, align: 'center' });
-    y = doc.y + 14;
-
-    doc.font('Helvetica-Bold').fontSize(10);
-    doc.text('DADOS PESSOAIS E FUNCIONAIS', x, y, { lineBreak: false });
-    y += 16;
-
-    y = desenharCampo(doc, x, y, largura, 'Nome:', dados.nome);
-    y = desenharCampo(doc, x, y, largura, 'Matrícula:', dados.matricula);
-    y = desenharCampo(doc, x, y, largura, 'Endereço:', dados.endereco);
-    y = desenharCampo(doc, x, y, largura, 'Complem.:', dados.complemento);
-    y = desenharPar(
-      doc,
-      x,
-      y,
-      largura,
-      { rotulo: 'Bairro:', valor: dados.bairro },
-      { rotulo: 'Cidade:', valor: dados.cidade },
-    );
-    y = desenharPar(
-      doc,
-      x,
-      y,
-      largura,
-      { rotulo: 'UF:', valor: dados.uf },
-      { rotulo: 'CEP.:', valor: formatarCep(dados.cep) },
-    );
-    y = desenharPar(
-      doc,
-      x,
-      y,
-      largura,
-      { rotulo: 'Naturalidade:', valor: dados.naturalidade },
-      {
-        rotulo: 'Estado Civil:',
-        valor: dados.estadoCivil ? ESTADO_CIVIL_ROTULO[dados.estadoCivil] : null,
-      },
-    );
-    y = desenharCampo(doc, x, y, largura, 'Data de nasc.:', formatarData(dados.dataNascimento));
-
-    const colunaTerco = (largura - 24) / 3;
-    const yCpf = desenharCampo(doc, x, y, colunaTerco, 'C.P.F.:', formatarCpf(dados.cpf));
-    const yRg = desenharCampo(doc, x + colunaTerco + 12, y, colunaTerco, 'RG.:', dados.rg);
-    const yOrgao = desenharCampo(
-      doc,
-      x + (colunaTerco + 12) * 2,
-      y,
-      colunaTerco,
-      'Órgão Expedidor:',
-      dados.orgaoExpedidor,
-    );
-    y = Math.max(yCpf, yRg, yOrgao);
-
-    y = desenharPar(
-      doc,
-      x,
-      y,
-      largura,
-      { rotulo: 'Lotação:', valor: lotacao(dados) },
-      { rotulo: 'Escolaridade:', valor: null },
-    );
-    y = desenharCampo(doc, x, y, largura, 'Data de Admissão:', formatarData(dados.dataAdmissao));
-    if (dados.instituidorPensao?.trim()) {
-      y = desenharCampo(doc, x, y, largura, 'Instituidor da pensão:', dados.instituidorPensao);
+    if (dados.logo) {
+      const caixa = 52;
+      try {
+        doc.image(dados.logo, x + (LARGURA - caixa) / 2, y, {
+          fit: [caixa, caixa],
+          align: 'center',
+          valign: 'center',
+        });
+        y += caixa + 8;
+      } catch {
+        // A ficha segue sem a marca se o arquivo não puder ser lido.
+      }
     }
-    y = desenharCampo(doc, x, y, largura, 'Mãe:', dados.nomeMae);
-    y = desenharCampo(doc, x, y, largura, 'Pai:', dados.nomePai);
-    y = desenharCampo(doc, x, y, largura, 'Telefone:', formatarTelefone(dados.telefone));
-    y = desenharCampo(doc, x, y, largura, 'Celular:', formatarTelefone(dados.celular));
-    y = desenharCampo(doc, x, y, largura, 'Celular 2:', formatarTelefone(dados.celular2));
-    y = desenharCampo(doc, x, y, largura, 'E-mail pessoal:', dados.email);
-    y = desenharCampo(doc, x, y, largura, 'E-mail funcional:', dados.emailFuncional);
-    y = desenharCampo(doc, x, y, largura, 'Cônjuge:', dados.conjuge);
 
-    y += 4;
-    doc.font('Helvetica-Bold').fontSize(10).fillColor('#111111');
-    doc.text('DEPENDENTES LEGAIS', x, y, { lineBreak: false });
-    y += 16;
+    y = desenharLinha(doc, x, y, [1], ['PROPOSTA DE FILIAÇÃO'], {
+      borda: false,
+      negrito: true,
+      alinhamento: 'center',
+      tamanho: 12,
+      sublinhado: true,
+      altura: 16,
+    });
+    y += ESPACO;
+    y += ESPACO;
+
+    y = desenharLinha(doc, x, y, [1], ['DADOS PESSOAIS E FUNCIONAIS'], {
+      borda: false,
+      negrito: true,
+      altura: 16,
+    });
+    y = desenharLinha(
+      doc,
+      x,
+      y,
+      [343.6, 166.9],
+      [campo('Nome:', dados.nome), campo('Matrícula:', dados.matricula)],
+    );
+    y += ESPACO;
+    y = desenharLinha(
+      doc,
+      x,
+      y,
+      [343.6, 166.9],
+      [campo('Endereço:', dados.endereco), campo('Complem.:', dados.complemento)],
+    );
+    y += ESPACO;
+    y = desenharLinha(
+      doc,
+      x,
+      y,
+      [173.4, 170.2, 49.6, 117.3],
+      [
+        campo('Bairro:', dados.bairro),
+        campo('Cidade:', dados.cidade),
+        campo('UF:', dados.uf),
+        campo('CEP.:', formatarCep(dados.cep)),
+      ],
+    );
+    y += ESPACO;
+    y = desenharLinha(
+      doc,
+      x,
+      y,
+      [170, 173.6, 166.9],
+      [
+        campo('Naturalidade:', dados.naturalidade),
+        campo(
+          'Estado Civil:',
+          dados.estadoCivil ? ESTADO_CIVIL_ROTULO[dados.estadoCivil] : null,
+        ),
+        campo('Data de nasc.:', formatarData(dados.dataNascimento)),
+      ],
+    );
+    y += ESPACO;
+    y = desenharLinha(
+      doc,
+      x,
+      y,
+      [173.4, 168.4, 168.7],
+      [
+        campo('C.P.F.:', formatarCpf(dados.cpf)),
+        campo('RG.:', dados.rg),
+        campo('Órgão Expedidor:', dados.orgaoExpedidor),
+      ],
+    );
+    y += ESPACO;
+    y = desenharLotacao(doc, x, y, lotacao(dados), formatarData(dados.dataAdmissao));
+    y += ESPACO;
+    y = desenharLinha(doc, x, y, [1], [campo('Mãe:', dados.nomeMae)]);
+    y = desenharLinha(doc, x, y, [1], [campo('Pai:', dados.nomePai)]);
+    y += ESPACO;
+    y = desenharLinha(
+      doc,
+      x,
+      y,
+      [170, 170.2, 170.4],
+      [
+        campo('Telefone:', formatarTelefone(dados.telefone)),
+        campo('Celular:', formatarTelefone(dados.celular)),
+        campo('Celular 2:', formatarTelefone(dados.celular2)),
+      ],
+    );
+    y += ESPACO;
+    y = desenharLinha(doc, x, y, [1], [campo('E-mail pessoal:', dados.email)]);
+    y += ESPACO;
+    y = desenharLinha(doc, x, y, [1], [campo('E-mail funcional:', dados.emailFuncional)]);
+    y += ESPACO;
+    y = desenharLinha(doc, x, y, [1], [campo('Cônjuge:', dados.conjuge)]);
+    y += ESPACO;
+
+    y = desenharLinha(doc, x, y, [1], ['DEPENDENTES LEGAIS'], {
+      borda: false,
+      negrito: true,
+      altura: 16,
+    });
 
     for (let indice = 0; indice < VAGAS_DEPENDENTES; indice += 1) {
       const dependente = dados.dependentes[indice];
-      y = desenharPar(
+      y = desenharLinha(doc, x, y, [1], [campo(`${indice + 1}. Nome:`, dependente?.nome)]);
+      y = desenharLinha(
         doc,
         x,
         y,
-        largura,
-        { rotulo: `${indice + 1}. Nome:`, valor: dependente?.nome ?? null },
-        { rotulo: 'Grau de parentesco:', valor: dependente?.parentesco ?? null },
+        [201.9, 134.5, 174.1],
+        [
+          campo('Grau de parentesco:', dependente?.parentesco),
+          'CPF:',
+          campo('Data de Nascimento:', formatarData(dependente?.dataNascimento)),
+        ],
       );
-      y = desenharPar(
-        doc,
-        x,
-        y,
-        largura,
-        { rotulo: 'CPF:', valor: null },
-        {
-          rotulo: 'Data de Nascimento:',
-          valor: formatarData(dependente?.dataNascimento ?? null),
-        },
-      );
+      y += ESPACO;
     }
 
-    y += 6;
-    doc.font('Helvetica').fontSize(8).fillColor('#111111');
-    doc.text(DECLARACAO, x, y, { width: largura, align: 'justify' });
-    y = doc.y + 16;
+    doc.font('Times-Roman').fontSize(11).fillColor('#000000');
+    doc.text(DECLARACAO, x, y, { width: LARGURA, align: 'justify' });
+    y = doc.y + 12;
 
-    doc.font('Helvetica').fontSize(9);
-    doc.text(dataPorExtenso(dados.emitidaEm), x, y, { width: largura, align: 'left' });
-    y = doc.y + 28;
-
-    const linhaAssinatura = 220;
-    const xAssinatura = x + (largura - linhaAssinatura) / 2;
-    doc
-      .strokeColor('#222222')
-      .lineWidth(0.6)
-      .moveTo(xAssinatura, y)
-      .lineTo(xAssinatura + linhaAssinatura, y)
-      .stroke();
-    doc.font('Helvetica').fontSize(8).text('Assinatura', xAssinatura, y + 4, {
-      width: linhaAssinatura,
-      align: 'center',
+    doc.font('Times-Roman').fontSize(12);
+    doc.text('Fortaleza (CE), ________ de ____________________ de _________', x, y, {
+      width: LARGURA,
+      align: 'right',
     });
+    y = doc.y + 22;
+
+    const linhaAssinatura = '___________________________________________________';
+    doc.font('Times-Roman').fontSize(12);
+    const larguraLinha = doc.widthOfString(linhaAssinatura);
+    const xLinha = x + LARGURA - larguraLinha;
+    doc.text(linhaAssinatura, xLinha, y, { lineBreak: false });
+    doc.text('Assinatura', xLinha, y + 14, { width: larguraLinha, align: 'center' });
 
     doc.end();
     const buffer = await pronto;
