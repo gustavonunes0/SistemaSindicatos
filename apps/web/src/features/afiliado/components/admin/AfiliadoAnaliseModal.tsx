@@ -8,7 +8,7 @@ import { Modal } from '../../../../components/ui/Modal';
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import type { AfiliadoAdmin } from '../../api';
-import { obterArquivoDocumentoAfiliado } from '../../api';
+import { baixarPropostaFiliacao, obterArquivoDocumentoAfiliado } from '../../api';
 import { useAbrirDocumentoAfiliado, useAtualizarStatusAfiliado, useFichaAfiliadoAdmin } from '../../hooks';
 
 type Props = {
@@ -77,6 +77,8 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewErro, setPreviewErro] = useState(false);
   const [previewCarregando, setPreviewCarregando] = useState(false);
+  const [baixandoProposta, setBaixandoProposta] = useState(false);
+  const [erroProposta, setErroProposta] = useState(false);
 
   const documentoSelecionado =
     dados?.documentos.find((item) => item.id === documentoId) ?? dados?.documentos[0] ?? null;
@@ -119,6 +121,19 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
   }, [afiliado, documentoSelecionado]);
+
+  async function baixarProposta() {
+    if (!afiliado) return;
+    setBaixandoProposta(true);
+    setErroProposta(false);
+    try {
+      await baixarPropostaFiliacao(afiliado.id);
+    } catch {
+      setErroProposta(true);
+    } finally {
+      setBaixandoProposta(false);
+    }
+  }
 
   function decidir(status: 'APROVADO' | 'INATIVO' | 'PENDENTE') {
     if (!afiliado) return;
@@ -344,36 +359,51 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
             )}
 
             <div className="analise-acoes">
-              {afiliado.status !== 'APROVADO' && (
-                <button
-                  type="button"
-                  className="botao-primario"
-                  disabled={atualizarStatus.isPending}
-                  onClick={() => decidir('APROVADO')}
-                >
-                  Aprovar
-                </button>
-              )}
-              {afiliado.status !== 'INATIVO' && (
-                <button
-                  type="button"
-                  className="botao-perigo"
-                  disabled={atualizarStatus.isPending}
-                  onClick={() => decidir('INATIVO')}
-                >
-                  Inativar
-                </button>
-              )}
-              {afiliado.status === 'INATIVO' && (
+              <div className="analise-acoes-proposta">
                 <button
                   type="button"
                   className="botao-secundario"
-                  disabled={atualizarStatus.isPending}
-                  onClick={() => decidir('PENDENTE')}
+                  disabled={baixandoProposta || !dados}
+                  onClick={() => void baixarProposta()}
                 >
-                  Reabrir
+                  {baixandoProposta ? 'Gerando proposta…' : 'Baixar proposta de filiação'}
                 </button>
-              )}
+                {erroProposta && (
+                  <p className="erro">Não foi possível gerar a proposta. Tente novamente.</p>
+                )}
+              </div>
+              <div className="analise-acoes-decisao">
+                {afiliado.status !== 'APROVADO' && (
+                  <button
+                    type="button"
+                    className="botao-primario"
+                    disabled={atualizarStatus.isPending}
+                    onClick={() => decidir('APROVADO')}
+                  >
+                    Aprovar
+                  </button>
+                )}
+                {afiliado.status !== 'INATIVO' && (
+                  <button
+                    type="button"
+                    className="botao-perigo"
+                    disabled={atualizarStatus.isPending}
+                    onClick={() => decidir('INATIVO')}
+                  >
+                    Inativar
+                  </button>
+                )}
+                {afiliado.status === 'INATIVO' && (
+                  <button
+                    type="button"
+                    className="botao-secundario"
+                    disabled={atualizarStatus.isPending}
+                    onClick={() => decidir('PENDENTE')}
+                  >
+                    Reabrir
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         )}

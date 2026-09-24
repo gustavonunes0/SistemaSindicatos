@@ -13,6 +13,7 @@ import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { StorageService } from '../storage/storage.service';
 import { requireTenantId } from '../tenant/tenant-context';
+import { PropostaFiliacaoPdfService } from './proposta-filiacao-pdf.service';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -79,6 +80,7 @@ export class AfiliadosService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
+    private readonly propostaPdf: PropostaFiliacaoPdfService,
   ) {}
 
   private invalidarCacheLista(tenantId = requireTenantId()) {
@@ -289,6 +291,40 @@ export class AfiliadosService {
 
     const { user, ...dados } = afiliado;
     return { ...dados, email: user.email };
+  }
+
+  async gerarProposta(id: string): Promise<{ buffer: Buffer; nomeArquivo: string }> {
+    const ficha = await this.buscarFicha(id);
+    return this.propostaPdf.gerar({
+      nome: ficha.nome,
+      matricula: ficha.matricula,
+      cpf: ficha.cpf,
+      endereco: ficha.endereco,
+      complemento: ficha.complemento,
+      bairro: ficha.bairro,
+      cidade: ficha.cidade,
+      uf: ficha.uf,
+      cep: ficha.cep,
+      naturalidade: ficha.naturalidade,
+      estadoCivil: ficha.estadoCivil,
+      dataNascimento: ficha.dataNascimento,
+      rg: ficha.rg,
+      orgaoExpedidor: ficha.orgaoExpedidor,
+      lotacaoSiape: ficha.lotacaoSiape,
+      lotacaoAtividade: ficha.lotacaoAtividade,
+      dataAdmissao: ficha.dataAdmissao,
+      nomeMae: ficha.nomeMae,
+      nomePai: ficha.nomePai,
+      telefone: ficha.telefone,
+      celular: ficha.celular,
+      celular2: ficha.celular2,
+      email: ficha.email,
+      emailFuncional: ficha.emailFuncional,
+      conjuge: ficha.conjuge,
+      instituidorPensao: ficha.instituidorPensao,
+      emitidaEm: ficha.aceiteEstatutoEm ?? ficha.createdAt,
+      dependentes: ficha.dependentes,
+    });
   }
 
   async baixarDocumento(afiliadoId: string, documentoId: string) {

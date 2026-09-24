@@ -172,3 +172,24 @@ export async function abrirDocumentoAfiliado(
   link.remove();
   URL.revokeObjectURL(url);
 }
+
+export async function baixarPropostaFiliacao(afiliadoId: string): Promise<void> {
+  const resposta = await api.get<Blob>(`/afiliados/${afiliadoId}/proposta`, {
+    responseType: 'blob',
+  });
+  const disposition = String(resposta.headers['content-disposition'] ?? '');
+  const nomeArquivo =
+    /filename="([^"]+)"/i.exec(disposition)?.[1] ?? 'proposta-filiacao.pdf';
+  const blob =
+    resposta.data instanceof Blob
+      ? resposta.data
+      : new Blob([resposta.data], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}

@@ -13706,9 +13706,26 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 .analise-acoes {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.6rem;
   padding-top: 0.2rem;
+}
+
+.analise-acoes-proposta {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.analise-acoes-proposta .erro {
+  margin: 0;
+}
+
+.analise-acoes-decisao {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-left: auto;
 }
 
 @media (max-width: 860px) {

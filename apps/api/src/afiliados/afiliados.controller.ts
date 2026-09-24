@@ -112,6 +112,18 @@ export class AfiliadosController {
     return this.afiliadosService.listar(query);
   }
 
+  /** Proposta de filiação preenchida, no formato do formulário em papel. */
+  @Roles('ADMIN')
+  @Get(':id/proposta')
+  async baixarProposta(@Param('id') id: string): Promise<StreamableFile> {
+    const proposta = await this.afiliadosService.gerarProposta(id);
+    return new StreamableFile(proposta.buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${proposta.nomeArquivo}"`,
+      length: proposta.buffer.byteLength,
+    });
+  }
+
   /** Ficha completa da solicitação: dados, dependentes e documentos enviados. */
   @Roles('ADMIN')
   @Get(':id')
