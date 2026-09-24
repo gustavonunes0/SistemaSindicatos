@@ -121,6 +121,23 @@ export async function buscarFichaAfiliado(id: string): Promise<AfiliadoFicha> {
   return afiliadoFichaSchema.parse(data);
 }
 
+export async function obterArquivoDocumentoAfiliado(
+  afiliadoId: string,
+  documento: DocumentoAfiliado,
+  modo: 'visualizar' | 'baixar',
+): Promise<Blob> {
+  const { data } = await api.get<Blob>(
+    `/afiliados/${afiliadoId}/documentos/${documento.id}/arquivo`,
+    {
+      params: { modo: modo === 'visualizar' ? 'inline' : 'attachment' },
+      responseType: 'blob',
+    },
+  );
+  return data.type === documento.mimeType
+    ? data
+    : new Blob([data], { type: documento.mimeType });
+}
+
 export async function abrirDocumentoAfiliado(
   afiliadoId: string,
   documento: DocumentoAfiliado,
@@ -129,22 +146,13 @@ export async function abrirDocumentoAfiliado(
   // Abre a aba durante o clique; se esperar a rede, alguns navegadores tratam
   // a abertura posterior como popup e bloqueiam a visualização.
   const aba = modo === 'visualizar' ? window.open('about:blank', '_blank') : null;
-  let data: Blob;
+  let blob: Blob;
   try {
-    const resposta = await api.get<Blob>(
-      `/afiliados/${afiliadoId}/documentos/${documento.id}/arquivo`,
-      {
-        params: { modo: modo === 'visualizar' ? 'inline' : 'attachment' },
-        responseType: 'blob',
-      },
-    );
-    data = resposta.data;
+    blob = await obterArquivoDocumentoAfiliado(afiliadoId, documento, modo);
   } catch (erro) {
     aba?.close();
     throw erro;
   }
-  const blob =
-    data.type === documento.mimeType ? data : new Blob([data], { type: documento.mimeType });
   const url = URL.createObjectURL(blob);
   if (modo === 'visualizar') {
     if (aba) {

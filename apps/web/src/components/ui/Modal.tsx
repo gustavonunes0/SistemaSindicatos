@@ -7,7 +7,7 @@ type ModalProps = {
   descricao?: string;
   onFechar: () => void;
   children: React.ReactNode;
-  tamanho?: 'md' | 'lg' | 'xl';
+  tamanho?: 'md' | 'lg' | 'xl' | 'analise';
 };
 
 export function Modal({
