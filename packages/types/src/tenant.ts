@@ -66,6 +66,11 @@ export const tenantBrandingSchema = z.object({
    * Ausente = VITRINE (comportamento histórico).
    */
   imoveisModo: z.enum(['LINK', 'VITRINE']).optional(),
+  /**
+   * Portal de transparência financeira na área do filiado.
+   * Ausente = liberado (comportamento histórico).
+   */
+  transparenciaFinanceira: z.boolean().optional(),
   /** PDF do estatuto sindical (site institucional). */
   estatutoUrl: z.string().nullable().optional(),
   /** Rubrica desenhada acima do carimbo nas declarações em PDF. */

@@ -1,12 +1,33 @@
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
+import { useMarca } from '../../../lib/marca';
 import { formatarMoeda, nomeCompetencia, percentual } from '../formatacao';
 import { useBalancetesTransparencia } from '../hooks';
+import { transparenciaFinanceiraAtiva } from '../visibilidade';
 
 export function TransparenciaPage() {
-  const { data, isLoading, isError } = useBalancetesTransparencia();
+  const marca = useMarca();
+  const liberado = transparenciaFinanceiraAtiva(marca);
+  const { data, isLoading, isError } = useBalancetesTransparencia(liberado);
   const itens = data ?? [];
+
+  if (!liberado) {
+    return (
+      <AreaLayout
+        tipo="afiliado"
+        titulo="Transparência financeira"
+        descricao="Consulta de receitas e despesas do sindicato."
+      >
+        <div className="estado-vazio">
+          <p>A transparência financeira não está disponível no momento.</p>
+          <Link to="/afiliado" className="botao-secundario">
+            Voltar à área do filiado
+          </Link>
+        </div>
+      </AreaLayout>
+    );
+  }
 
   const totais = itens.reduce(
     (acc, item) => {

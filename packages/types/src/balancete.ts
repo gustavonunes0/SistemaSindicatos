@@ -92,3 +92,15 @@ export const balanceteTransparenciaDetalheSchema = balanceteTransparenciaSchema.
   categorias: z.array(categoriaTransparenciaSchema),
 });
 export type BalanceteTransparenciaDetalhe = z.infer<typeof balanceteTransparenciaDetalheSchema>;
+
+export const transparenciaFinanceiraConfigSchema = z.object({
+  ativo: z.boolean(),
+});
+export type TransparenciaFinanceiraConfig = z.infer<typeof transparenciaFinanceiraConfigSchema>;
+
+export const definirTransparenciaFinanceiraSchema = z.object({
+  ativo: z.boolean(),
+});
+export type DefinirTransparenciaFinanceiraInput = z.infer<
+  typeof definirTransparenciaFinanceiraSchema
+>;

@@ -4,6 +4,7 @@ import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { useImportacoesBalancete } from '../../../balancetes/hooks';
 import { useImportacoesD8 } from '../../../d8/hooks';
 import { useImportacoesFinanceiras } from '../../../extratos-faturas/hooks';
+import { TransparenciaVisibilidadeCard } from '../../../transparencia/components/admin/TransparenciaVisibilidadeCard';
 import { FinanceiroSubnav } from './FinanceiroSubnav';
 
 function formatarMoeda(valor: number): string {
@@ -43,6 +44,8 @@ export function FinanceiroHubPage() {
       descricao="Balancetes, D8 (SIAPE), extratos bancários e faturas em um só lugar."
     >
       <FinanceiroSubnav />
+
+      <TransparenciaVisibilidadeCard />
 
       {carregando && <EstadoCarregando mensagem="Carregando resumo financeiro…" />}
       {erro && <p className="erro">Não foi possível carregar o resumo financeiro.</p>}

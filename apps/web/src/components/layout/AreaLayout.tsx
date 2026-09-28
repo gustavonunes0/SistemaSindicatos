@@ -8,6 +8,8 @@ import { useLogout, useMe } from '../../features/auth/hooks';
 import { usePrefetchAfiliadosAdmin } from '../../features/afiliado/hooks';
 import { usePrefetchConveniosAdmin } from '../../features/convenios/hooks';
 import { usePrefetchNoticiasAdmin } from '../../features/noticias/hooks';
+import { transparenciaFinanceiraAtiva } from '../../features/transparencia/visibilidade';
+import { useMarca } from '../../lib/marca';
 
 type AreaTipo = 'admin' | 'afiliado';
 
@@ -72,6 +74,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   const [menuAberto, setMenuAberto] = useState(false);
   const { data } = useMe();
   const logout = useLogout();
+  const marca = useMarca();
 
   const gruposAfiliado: GrupoNav[] = [
     {
@@ -83,7 +86,11 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
         { to: '/afiliado/formularios', rotulo: 'Formulários' },
         { to: '/afiliado/estatutos', rotulo: 'Estatutos' },
-        { to: '/afiliado/transparencia', rotulo: 'Transparência' },
+        {
+          to: '/afiliado/transparencia',
+          rotulo: 'Transparência',
+          visivel: transparenciaFinanceiraAtiva(marca),
+        },
         { to: '/afiliado/juridico', rotulo: 'Jurídico' },
         { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
         {

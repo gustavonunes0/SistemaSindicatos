@@ -2,8 +2,9 @@ import { isAxiosError } from 'axios';
 import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
+import { marca, useMarca } from '../../../lib/marca';
 import { useMe } from '../../auth/hooks';
-import { marca } from '../../../lib/marca';
+import { transparenciaFinanceiraAtiva } from '../../transparencia/visibilidade';
 
 const descricaoStatus = {
   PENDENTE: 'Sua filiação está em análise. Você receberá acesso aos benefícios após a aprovação.',
@@ -35,7 +36,7 @@ const beneficios = [
   },
 ] as const;
 
-const servicos = [
+const servicosBase = [
   {
     to: '/afiliado/juridico',
     titulo: 'Jurídico',
@@ -58,6 +59,11 @@ export function AfiliadoDashboardPage() {
   const afiliado = data?.afiliado;
   const aprovado = afiliado?.status === 'APROVADO';
   const ehDiretor = Boolean(afiliado?.diretor);
+  const marcaAtual = useMarca();
+  const servicos = servicosBase.filter(
+    (item) =>
+      item.to !== '/afiliado/transparencia' || transparenciaFinanceiraAtiva(marcaAtual),
+  );
 
   return (
     <AreaLayout

@@ -1,6 +1,8 @@
-import { Body, Controller, Get, Header, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post, Put } from '@nestjs/common';
 import {
+  definirTransparenciaFinanceiraSchema,
   importarBalanceteCamposSchema,
+  type DefinirTransparenciaFinanceiraInput,
   type ImportarBalanceteCampos,
 } from '@sindprf/types';
 import { Roles } from '../common/decorators';
@@ -22,6 +24,22 @@ export class BalancetesController {
         resultado: Number(item.resultado),
       })),
     );
+  }
+
+  @Roles('ADMIN')
+  @Get('transparencia/config')
+  @Header('Cache-Control', 'private, no-store')
+  lerConfigTransparencia() {
+    return this.balancetesService.lerConfigTransparencia();
+  }
+
+  @Roles('ADMIN')
+  @Put('transparencia/config')
+  definirConfigTransparencia(
+    @Body(new ZodValidationPipe(definirTransparenciaFinanceiraSchema))
+    body: DefinirTransparenciaFinanceiraInput,
+  ) {
+    return this.balancetesService.definirConfigTransparencia(body);
   }
 
   /** Portal de transparência: totais mensais sem metadados internos. */

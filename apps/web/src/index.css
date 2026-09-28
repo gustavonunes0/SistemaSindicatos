@@ -13781,6 +13781,50 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   white-space: nowrap;
 }
 
+.tp-admin-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.15rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-fundo);
+}
+
+.tp-admin-card-texto {
+  display: grid;
+  gap: 0.4rem;
+  min-width: min(100%, 18rem);
+  flex: 1;
+}
+
+.tp-admin-card-texto h2 {
+  margin: 0;
+  font-size: var(--texto-base);
+}
+
+.tp-admin-card-texto p {
+  margin: 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+  line-height: 1.45;
+}
+
+.tp-admin-card-acoes {
+  display: grid;
+  gap: 0.45rem;
+  justify-items: start;
+}
+
+.tp-admin-card-acoes .erro,
+.tp-admin-card-acoes .sucesso {
+  margin: 0;
+  font-size: var(--texto-sm);
+}
+
 /* ---- Portal de transparência (afiliado) ---- */
 .tp-portal {
   display: grid;

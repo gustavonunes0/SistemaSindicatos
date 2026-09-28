@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -7,15 +8,18 @@ import type {
   BalanceteTransparencia,
   BalanceteTransparenciaDetalhe,
   CategoriaTransparencia,
+  DefinirTransparenciaFinanceiraInput,
   GrupoBalancete,
   ImportacaoBalancete,
   ImportacaoBalanceteDetalhe,
   ImportarBalanceteResultado,
   LinhaBalancete,
+  TransparenciaFinanceiraConfig,
 } from '@sindprf/types';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
+import { TenantService } from '../tenant/tenant.service';
 import { parseTextoBalancete } from './balancete-parser';
 
 /** `createMany` cabe num único INSERT; lotes maiores = menos viagens ao banco. */
@@ -33,9 +37,20 @@ function emLotes<T>(itens: T[], tamanho: number): T[][] {
   return lotes;
 }
 
+function transparenciaAtivaNoBranding(branding: unknown): boolean {
+  if (!branding || typeof branding !== 'object' || Array.isArray(branding)) {
+    return true;
+  }
+  const valor = (branding as Record<string, unknown>).transparenciaFinanceira;
+  return valor !== false;
+}
+
 @Injectable()
 export class BalancetesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly tenantService: TenantService,
+  ) {}
 
   listar() {
     return this.prisma.importacaoBalancete.findMany({
@@ -43,7 +58,48 @@ export class BalancetesService {
     });
   }
 
+  async lerConfigTransparencia(): Promise<TransparenciaFinanceiraConfig> {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: requireTenantId() },
+      select: { branding: true },
+    });
+    return { ativo: transparenciaAtivaNoBranding(tenant?.branding) };
+  }
+
+  async definirConfigTransparencia(
+    input: DefinirTransparenciaFinanceiraInput,
+  ): Promise<TransparenciaFinanceiraConfig> {
+    const tenantId = requireTenantId();
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id: tenantId },
+      select: { branding: true },
+    });
+
+    if (!tenant?.branding || typeof tenant.branding !== 'object' || Array.isArray(tenant.branding)) {
+      throw new BadRequestException('Este sindicato ainda não tem identidade visual configurada');
+    }
+
+    const branding = {
+      ...(tenant.branding as Prisma.JsonObject),
+      transparenciaFinanceira: input.ativo,
+    };
+    await this.prisma.tenant.update({
+      where: { id: tenantId },
+      data: { branding },
+    });
+    this.tenantService.invalidarCache();
+    return { ativo: input.ativo };
+  }
+
+  private async exigirTransparenciaAtiva(): Promise<void> {
+    const config = await this.lerConfigTransparencia();
+    if (!config.ativo) {
+      throw new ForbiddenException('A transparência financeira está desativada neste sindicato');
+    }
+  }
+
   async listarTransparencia(): Promise<BalanceteTransparencia[]> {
+    await this.exigirTransparenciaAtiva();
     const itens = await this.listar();
     return itens.map((item) => this.serializarTransparencia(item));
   }
@@ -57,6 +113,7 @@ export class BalancetesService {
   }
 
   async detalheTransparencia(id: string): Promise<BalanceteTransparenciaDetalhe> {
+    await this.exigirTransparenciaAtiva();
     const importacao = await this.carregarComGrupos(id);
     const categorias: CategoriaTransparencia[] = this.montarGrupos(importacao.linhas).map(
       ({ tipo, categoriaSlug, categoriaNome, total }) => ({

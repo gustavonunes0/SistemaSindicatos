@@ -4,14 +4,18 @@ import type { CategoriaTransparencia } from '@sindprf/types';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { formatarData } from '../../../lib/datas';
+import { useMarca } from '../../../lib/marca';
 import { formatarMoeda, nomeCompetencia, percentual } from '../formatacao';
 import { useBalanceteTransparencia } from '../hooks';
+import { transparenciaFinanceiraAtiva } from '../visibilidade';
 
 type FiltroTipo = 'todos' | 'RECEITA' | 'DESPESA';
 
 export function TransparenciaDetalhePage() {
   const { id } = useParams<{ id: string }>();
-  const { data, isLoading, isError } = useBalanceteTransparencia(id);
+  const marca = useMarca();
+  const liberado = transparenciaFinanceiraAtiva(marca);
+  const { data, isLoading, isError } = useBalanceteTransparencia(liberado ? id : undefined);
   const [filtro, setFiltro] = useState<FiltroTipo>('todos');
 
   const categorias = useMemo(() => {
@@ -28,6 +32,23 @@ export function TransparenciaDetalhePage() {
     () => categorias.filter((item) => item.tipo === 'DESPESA'),
     [categorias],
   );
+
+  if (!liberado) {
+    return (
+      <AreaLayout
+        tipo="afiliado"
+        titulo="Transparência financeira"
+        descricao="Consulta de receitas e despesas do sindicato."
+      >
+        <div className="estado-vazio">
+          <p>A transparência financeira não está disponível no momento.</p>
+          <Link to="/afiliado" className="botao-secundario">
+            Voltar à área do filiado
+          </Link>
+        </div>
+      </AreaLayout>
+    );
+  }
 
   if (isLoading) {
     return (
