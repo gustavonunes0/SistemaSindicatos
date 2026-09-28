@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Header, Param, Post } from '@nestjs/common';
 import {
   importarBalanceteCamposSchema,
   type ImportarBalanceteCampos,
@@ -22,6 +22,22 @@ export class BalancetesController {
         resultado: Number(item.resultado),
       })),
     );
+  }
+
+  /** Portal de transparência: totais mensais sem metadados internos. */
+  @Roles('AFILIADO')
+  @Get('transparencia')
+  @Header('Cache-Control', 'private, no-store')
+  listarTransparencia() {
+    return this.balancetesService.listarTransparencia();
+  }
+
+  /** Detalhe por competência: só categorias agregadas, sem plano de contas. */
+  @Roles('AFILIADO')
+  @Get('transparencia/:id')
+  @Header('Cache-Control', 'private, no-store')
+  detalheTransparencia(@Param('id') id: string) {
+    return this.balancetesService.detalheTransparencia(id);
   }
 
   @Roles('ADMIN')

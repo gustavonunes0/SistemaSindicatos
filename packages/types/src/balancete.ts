@@ -66,3 +66,29 @@ export const importarBalanceteCamposSchema = z.object({
   arquivoNome: z.string().min(1).max(255).optional().default('balancete.pdf'),
 });
 export type ImportarBalanceteCampos = z.infer<typeof importarBalanceteCamposSchema>;
+
+/** Resumo mensal para o portal de transparência do filiado — sem nome de arquivo. */
+export const balanceteTransparenciaSchema = z.object({
+  id: z.string(),
+  competenciaAno: z.number().int(),
+  competenciaMes: z.number().int().min(1).max(12),
+  totalReceitas: z.coerce.number(),
+  totalDespesas: z.coerce.number(),
+  resultado: z.coerce.number(),
+  publicadoEm: z.coerce.date(),
+});
+export type BalanceteTransparencia = z.infer<typeof balanceteTransparenciaSchema>;
+
+/** Categoria agregada — sem plano de contas nem saldos individuais. */
+export const categoriaTransparenciaSchema = z.object({
+  tipo: z.enum(['RECEITA', 'DESPESA']),
+  categoriaSlug: z.string(),
+  categoriaNome: z.string(),
+  total: z.coerce.number(),
+});
+export type CategoriaTransparencia = z.infer<typeof categoriaTransparenciaSchema>;
+
+export const balanceteTransparenciaDetalheSchema = balanceteTransparenciaSchema.extend({
+  categorias: z.array(categoriaTransparenciaSchema),
+});
+export type BalanceteTransparenciaDetalhe = z.infer<typeof balanceteTransparenciaDetalheSchema>;

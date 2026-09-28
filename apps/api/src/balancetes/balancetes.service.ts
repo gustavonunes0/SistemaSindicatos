@@ -4,6 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import type {
+  BalanceteTransparencia,
+  BalanceteTransparenciaDetalhe,
+  CategoriaTransparencia,
   GrupoBalancete,
   ImportacaoBalancete,
   ImportacaoBalanceteDetalhe,
@@ -40,7 +43,36 @@ export class BalancetesService {
     });
   }
 
+  async listarTransparencia(): Promise<BalanceteTransparencia[]> {
+    const itens = await this.listar();
+    return itens.map((item) => this.serializarTransparencia(item));
+  }
+
   async detalhe(id: string): Promise<ImportacaoBalanceteDetalhe> {
+    const importacao = await this.carregarComGrupos(id);
+    return {
+      ...this.serializarImportacao(importacao),
+      grupos: this.montarGrupos(importacao.linhas),
+    };
+  }
+
+  async detalheTransparencia(id: string): Promise<BalanceteTransparenciaDetalhe> {
+    const importacao = await this.carregarComGrupos(id);
+    const categorias: CategoriaTransparencia[] = this.montarGrupos(importacao.linhas).map(
+      ({ tipo, categoriaSlug, categoriaNome, total }) => ({
+        tipo,
+        categoriaSlug,
+        categoriaNome,
+        total,
+      }),
+    );
+    return {
+      ...this.serializarTransparencia(importacao),
+      categorias,
+    };
+  }
+
+  private async carregarComGrupos(id: string) {
     const importacao = await this.prisma.importacaoBalancete.findUnique({
       where: { id },
       include: {
@@ -58,9 +90,32 @@ export class BalancetesService {
       throw new NotFoundException('Importação de balancete não encontrada');
     }
 
+    return importacao;
+  }
+
+  private montarGrupos(
+    linhas: Array<{
+      id: string;
+      importacaoId: string;
+      sequencia: number;
+      codigoConta: string;
+      descricao: string;
+      nivel: number;
+      tipo: LinhaBalancete['tipo'];
+      natureza: LinhaBalancete['natureza'];
+      saldoAnterior: unknown;
+      debitos: unknown;
+      creditos: unknown;
+      saldoAtual: unknown;
+      movimento: unknown;
+      categoriaSlug: string | null;
+      categoriaNome: string | null;
+      ehFolha: boolean;
+    }>,
+  ): GrupoBalancete[] {
     const gruposMap = new Map<string, GrupoBalancete>();
 
-    for (const linha of importacao.linhas) {
+    for (const linha of linhas) {
       const movimento = paraNumero(linha.movimento);
       if (movimento === 0) continue;
       if (linha.tipo !== 'RECEITA' && linha.tipo !== 'DESPESA') continue;
@@ -86,15 +141,10 @@ export class BalancetesService {
       existente.linhas.push(serializada);
     }
 
-    const grupos = [...gruposMap.values()].sort((a, b) => {
+    return [...gruposMap.values()].sort((a, b) => {
       if (a.tipo !== b.tipo) return a.tipo === 'RECEITA' ? -1 : 1;
       return Math.abs(b.total) - Math.abs(a.total);
     });
-
-    return {
-      ...this.serializarImportacao(importacao),
-      grupos,
-    };
   }
 
   async importarTexto(input: {
@@ -155,6 +205,26 @@ export class BalancetesService {
     }
 
     return { importacao: this.serializarImportacao(importacao) };
+  }
+
+  private serializarTransparencia(item: {
+    id: string;
+    competenciaAno: number;
+    competenciaMes: number;
+    totalReceitas: unknown;
+    totalDespesas: unknown;
+    resultado: unknown;
+    createdAt: Date;
+  }): BalanceteTransparencia {
+    return {
+      id: item.id,
+      competenciaAno: item.competenciaAno,
+      competenciaMes: item.competenciaMes,
+      totalReceitas: paraNumero(item.totalReceitas),
+      totalDespesas: paraNumero(item.totalDespesas),
+      resultado: paraNumero(item.resultado),
+      publicadoEm: item.createdAt,
+    };
   }
 
   private serializarImportacao(item: {

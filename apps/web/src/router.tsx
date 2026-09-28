@@ -88,6 +88,16 @@ const EstatutosAfiliadoPage = lazy(() =>
     default: m.EstatutosAfiliadoPage,
   })),
 );
+const TransparenciaPage = lazy(() =>
+  import('./features/transparencia/components/TransparenciaPage').then((m) => ({
+    default: m.TransparenciaPage,
+  })),
+);
+const TransparenciaDetalhePage = lazy(() =>
+  import('./features/transparencia/components/TransparenciaDetalhePage').then((m) => ({
+    default: m.TransparenciaDetalhePage,
+  })),
+);
 const FinanceiroHubPage = lazy(() =>
   import('./features/financeiro/components/admin/FinanceiroHubPage').then((m) => ({
     default: m.FinanceiroHubPage,
@@ -336,6 +346,11 @@ export const router = createBrowserRouter([
   { path: '/afiliado/declaracoes', element: protegidaAfiliado(<MinhasDeclaracoesPage />) },
   { path: '/afiliado/formularios', element: protegidaAfiliado(<MeusFormulariosPage />) },
   { path: '/afiliado/estatutos', element: protegidaAfiliado(<EstatutosAfiliadoPage />) },
+  { path: '/afiliado/transparencia', element: protegidaAfiliado(<TransparenciaPage />) },
+  {
+    path: '/afiliado/transparencia/:id',
+    element: protegidaAfiliado(<TransparenciaDetalhePage />),
+  },
   { path: '/afiliado/diretoria', element: protegidaAfiliado(<DiretoriaAfiliadoPage />) },
   { path: '/afiliado/juridico', element: protegidaAfiliado(<JuridicoPage tipo="afiliado" />) },
   { path: '/afiliado/imoveis', element: protegidaAfiliado(<ImoveisPage />) },

@@ -83,6 +83,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
         { to: '/afiliado/formularios', rotulo: 'Formulários' },
         { to: '/afiliado/estatutos', rotulo: 'Estatutos' },
+        { to: '/afiliado/transparencia', rotulo: 'Transparência' },
         { to: '/afiliado/juridico', rotulo: 'Jurídico' },
         { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
         {

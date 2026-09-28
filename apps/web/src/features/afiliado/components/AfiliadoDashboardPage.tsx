@@ -46,6 +46,11 @@ const servicos = [
     titulo: 'Estatutos',
     descricao: 'Consulte e baixe os documentos oficiais do estatuto sindical.',
   },
+  {
+    to: '/afiliado/transparencia',
+    titulo: 'Transparência',
+    descricao: 'Acompanhe receitas e despesas do sindicato por competência.',
+  },
 ] as const;
 
 export function AfiliadoDashboardPage() {
