@@ -57,6 +57,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
       vigenciaFim: null,
       ativo: true,
       emiteDeclaracao: false,
+      declaracaoJaAssinada: false,
       modeloDeclaracao: null,
       destinoDeclaracao: null,
       textoComplementar: null,
@@ -77,6 +78,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         vigenciaFim: paraInputData(convenioExistente.vigenciaFim),
         ativo: convenioExistente.ativo,
         emiteDeclaracao: convenioExistente.emiteDeclaracao,
+        declaracaoJaAssinada: convenioExistente.declaracaoJaAssinada,
         modeloDeclaracao: convenioExistente.modeloDeclaracao,
         destinoDeclaracao: convenioExistente.destinoDeclaracao ?? '',
         textoComplementar: convenioExistente.textoComplementar ?? '',
@@ -95,6 +97,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         vigenciaFim: null,
         ativo: true,
         emiteDeclaracao: false,
+        declaracaoJaAssinada: false,
         modeloDeclaracao: null,
         destinoDeclaracao: null,
         textoComplementar: null,
@@ -259,6 +262,17 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
                   {errors.destinoDeclaracao && (
                     <span className="erro">{errors.destinoDeclaracao.message}</span>
                   )}
+                </label>
+
+                <label className="campo-checkbox">
+                  <input type="checkbox" {...register('declaracaoJaAssinada')} />
+                  <span>
+                    Emitir já assinada
+                    <small>
+                      O filiado recebe o PDF com a assinatura da presidente na hora. Sem esta
+                      opção, a declaração só é liberada depois que alguém assinar.
+                    </small>
+                  </span>
                 </label>
 
                 <label>

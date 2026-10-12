@@ -636,6 +636,9 @@ model Convenio {
   ativo             Boolean           @default(true)
   /// Permite ao afiliado emitir declaração/autorização em PDF.
   emiteDeclaracao   Boolean           @default(false)
+  /// Quando verdadeiro, a emissão já sai assinada com a rubrica cadastrada.
+  /// Quando falso, a declaração fica pendente até alguém assinar.
+  declaracaoJaAssinada Boolean        @default(false)
   modeloDeclaracao  ModeloDeclaracao?
   /// Ex.: "Unimed Ceará", "Sistema FECOMÉRCIO (SESC/SENAC)".
   destinoDeclaracao String?

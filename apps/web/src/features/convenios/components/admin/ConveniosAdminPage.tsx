@@ -85,7 +85,9 @@ export function ConveniosAdminPage() {
                   </td>
                   <td>
                     {convenio.emiteDeclaracao ? (
-                      <span className="badge badge-publicado">Sim</span>
+                      <span className="badge badge-publicado">
+                        {convenio.declaracaoJaAssinada ? 'Já assinada' : 'Após assinar'}
+                      </span>
                     ) : (
                       <span className="badge badge-rascunho">Não</span>
                     )}

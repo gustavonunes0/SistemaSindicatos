@@ -88,6 +88,7 @@ export const convenioSchema = z.object({
   vigenciaFim: z.coerce.date().nullable(),
   ativo: z.boolean(),
   emiteDeclaracao: z.boolean(),
+  declaracaoJaAssinada: z.boolean(),
   modeloDeclaracao: modeloDeclaracaoSchema.nullable(),
   destinoDeclaracao: z.string().nullable(),
   textoComplementar: z.string().nullable(),
@@ -115,6 +116,7 @@ const convenioCamposSchema = z.object({
   vigenciaFim: dataOpcional,
   ativo: z.boolean().default(true),
   emiteDeclaracao: z.boolean().default(false),
+  declaracaoJaAssinada: z.boolean().default(false),
   modeloDeclaracao: z.preprocess(
     (valor) => (valor === '' || valor === null ? null : valor),
     modeloDeclaracaoSchema.nullable().optional(),

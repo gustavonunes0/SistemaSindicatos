@@ -40,6 +40,7 @@ const CAMPOS_LISTAGEM = {
   vigenciaFim: true,
   ativo: true,
   emiteDeclaracao: true,
+  declaracaoJaAssinada: true,
   modeloDeclaracao: true,
   destinoDeclaracao: true,
   createdAt: true,
@@ -53,6 +54,7 @@ const CAMPOS_LISTAGEM_ADMIN = {
   categoria: true,
   ativo: true,
   emiteDeclaracao: true,
+  declaracaoJaAssinada: true,
   modeloDeclaracao: true,
   createdAt: true,
 } as const;
@@ -321,6 +323,13 @@ export class ConveniosService {
       }
     }
 
+    const assinaturaUrl = lerAssinaturaDoBranding(tenant?.branding);
+    if (convenio.declaracaoJaAssinada && !assinaturaUrl) {
+      throw new BadRequestException(
+        'Cadastre a assinatura da presidente antes de emitir este convênio já assinado',
+      );
+    }
+
     const baseValidacao = resolverBaseValidacao(dominios);
 
     const registro = await this.criarDeclaracaoComCodigoUnico({
@@ -353,23 +362,45 @@ export class ConveniosService {
       periodoFim: registro.periodoFim ?? undefined,
       urlValidacao,
       codigoValidacao: codigo,
-      assinaturaUrl: lerAssinaturaDoBranding(tenant?.branding),
+      assinaturaUrl,
       emitidaEm: registro.emitidaEm,
     });
 
     const nomeArquivo = nomeArquivoDeclaracao(convenio.nome, codigo);
 
-    // Guardar o PDF é o que permite à presidente rever depois exatamente o
-    // documento que o filiado baixou. Falha de disco não pode impedir a
-    // emissão, então o erro só tira o arquivo da fila de assinatura.
-    try {
-      const arquivoUrl = await this.storage.salvar(buffer, nomeArquivo);
-      await this.prisma.declaracaoEmitida.update({
-        where: { id: registro.id, tenantId },
-        data: { arquivoUrl },
-      });
-    } catch {
-      // segue devolvendo o PDF ao solicitante
+    if (convenio.declaracaoJaAssinada) {
+      try {
+        const arquivoUrl = await this.storage.salvar(buffer, nomeArquivo);
+        const arquivoAssinadoUrl = await this.storage.salvar(
+          buffer,
+          nomeArquivo.replace(/\.pdf$/, '-assinada.pdf'),
+        );
+        await this.prisma.declaracaoEmitida.update({
+          where: { id: registro.id, tenantId },
+          data: {
+            arquivoUrl,
+            arquivoAssinadoUrl,
+            status: 'ASSINADA',
+            assinadaEm: new Date(),
+          },
+        });
+      } catch {
+        await this.prisma.declaracaoEmitida.delete({ where: { id: registro.id } }).catch(() => undefined);
+        throw new BadRequestException('Não foi possível gravar a declaração assinada');
+      }
+    } else {
+      // Guardar o PDF é o que permite à presidente rever depois exatamente o
+      // documento que o filiado baixou. Falha de disco não pode impedir a
+      // emissão, então o erro só tira o arquivo da fila de assinatura.
+      try {
+        const arquivoUrl = await this.storage.salvar(buffer, nomeArquivo);
+        await this.prisma.declaracaoEmitida.update({
+          where: { id: registro.id, tenantId },
+          data: { arquivoUrl },
+        });
+      } catch {
+        // segue devolvendo o PDF ao solicitante
+      }
     }
 
     return { buffer, nomeArquivo };
@@ -455,6 +486,11 @@ export class ConveniosService {
     if (input.vigenciaFim !== undefined) dados.vigenciaFim = input.vigenciaFim;
     if (input.ativo !== undefined) dados.ativo = input.ativo;
     if (input.emiteDeclaracao !== undefined) dados.emiteDeclaracao = input.emiteDeclaracao;
+    if (input.emiteDeclaracao === false) {
+      dados.declaracaoJaAssinada = false;
+    } else if (input.declaracaoJaAssinada !== undefined) {
+      dados.declaracaoJaAssinada = input.declaracaoJaAssinada;
+    }
     if (input.modeloDeclaracao !== undefined) dados.modeloDeclaracao = input.modeloDeclaracao;
     if (input.destinoDeclaracao !== undefined) dados.destinoDeclaracao = input.destinoDeclaracao;
     if (input.textoComplementar !== undefined) dados.textoComplementar = input.textoComplementar;

@@ -30,6 +30,7 @@ function listagemAdminDeConvenio(c: Convenio): ConvenioListagem {
     vigenciaFim: null,
     ativo: c.ativo,
     emiteDeclaracao: c.emiteDeclaracao,
+    declaracaoJaAssinada: c.declaracaoJaAssinada,
     modeloDeclaracao: c.modeloDeclaracao,
     destinoDeclaracao: null,
     createdAt: c.createdAt,
