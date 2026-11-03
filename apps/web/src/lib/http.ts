@@ -1,9 +1,10 @@
 import { authResponseSchema } from '@sindprf/types';
 import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../features/auth/store';
+import { resolverApiUrl } from './api-url';
 
 export const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? 'http://localhost:3000',
+  baseURL: resolverApiUrl(),
 });
 
 function tenantHostHeader(): string {

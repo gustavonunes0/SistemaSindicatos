@@ -13,11 +13,16 @@ RUN npm ci
 
 COPY . .
 
-# URL pública da API — embutida no bundle no build time
+# URL pública da API — embutida no bundle no build time (use https:// em produção)
 ARG VITE_API_URL=http://localhost:3000
 ENV VITE_API_URL=$VITE_API_URL
 
-RUN npm run build -w packages/types \
+# Página HTTPS + API HTTP = Mixed Content no browser. Exige https:// fora de localhost.
+RUN case "$VITE_API_URL" in \
+      http://localhost*|http://127.0.0.1*) ;; \
+      http://*) echo "ERRO: VITE_API_URL deve ser https:// em produção (recebido: $VITE_API_URL)" >&2; exit 1 ;; \
+    esac \
+  && npm run build -w packages/types \
   && npm run build -w apps/web
 
 # --- runtime ---

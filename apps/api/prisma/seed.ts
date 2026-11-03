@@ -130,7 +130,18 @@ const BRANDING_PLATAFORMA = {
 function parseHostList(envName: string): string[] {
   return (process.env[envName] ?? '')
     .split(',')
-    .map((h) => h.trim().toLowerCase())
+    .map((h) => {
+      const bruto = h.trim().toLowerCase().replace(/\/+$/, '');
+      if (!bruto) return '';
+      if (bruto.startsWith('http://') || bruto.startsWith('https://')) {
+        try {
+          return new URL(bruto).hostname;
+        } catch {
+          return bruto.replace(/^https?:\/\//, '').split('/')[0] ?? '';
+        }
+      }
+      return bruto;
+    })
     .filter(Boolean);
 }
 
@@ -157,9 +168,15 @@ function hostsSindicato(): { host: string; primario: boolean }[] {
     if (!hosts.has(host)) hosts.set(host, host.includes('sindprf'));
   }
 
-  // Produção Stellar — cliente PRF
+  // Produção — domínio próprio do cliente (e legado Stellar, se ainda apontar).
+  if (!hosts.has('sindprfce.com.br')) {
+    hosts.set('sindprfce.com.br', true);
+  }
+  if (!hosts.has('www.sindprfce.com.br')) {
+    hosts.set('www.sindprfce.com.br', false);
+  }
   if (!hosts.has('sindprf.stellarsolucoes.com.br')) {
-    hosts.set('sindprf.stellarsolucoes.com.br', true);
+    hosts.set('sindprf.stellarsolucoes.com.br', false);
   }
 
   return [...hosts.entries()].map(([host, primario]) => ({ host, primario }));

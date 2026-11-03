@@ -68,14 +68,14 @@ DIRECT_URL=...   # mesma string, usada nas migrations
 WEB_PORT=8081
 API_PORT=3002
 
-WEB_URL=https://sindprf.stellarsolucoes.com.br
+WEB_URL=https://sindprfce.com.br
 VITE_API_URL=https://apisindigest.stellarsolucoes.com.br
 
 # Hosts do front (sem https://) — separados!
-TENANT_SEED_HOSTS=sindprf.stellarsolucoes.com.br
+TENANT_SEED_HOSTS=sindprfce.com.br,www.sindprfce.com.br
 PLATFORM_SEED_HOSTS=sindigest.stellarsolucoes.com.br
 
-CORS_ORIGINS=https://sindigest.stellarsolucoes.com.br,https://sindprf.stellarsolucoes.com.br
+CORS_ORIGINS=https://sindigest.stellarsolucoes.com.br,https://sindprfce.com.br,https://www.sindprfce.com.br
 
 JWT_SECRET=<openssl rand -hex 32>
 SEED_ON_START=false

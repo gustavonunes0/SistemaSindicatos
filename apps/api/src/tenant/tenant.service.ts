@@ -20,9 +20,17 @@ export class TenantService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Normaliza host: lowercase, sem porta, sem colchetes IPv6. */
+  /** Normaliza host: lowercase, sem porta, sem colchetes IPv6. Aceita URL com scheme. */
   normalizarHost(bruto: string): string {
-    let host = bruto.trim().toLowerCase();
+    let host = bruto.trim().toLowerCase().replace(/\/+$/, '');
+    // TENANT_SEED_HOSTS às vezes vem com https:// — extrai só o hostname.
+    if (host.startsWith('http://') || host.startsWith('https://')) {
+      try {
+        host = new URL(host).hostname;
+      } catch {
+        host = host.replace(/^https?:\/\//, '').split('/')[0] ?? host;
+      }
+    }
     if (host.startsWith('[') && host.includes(']')) {
       host = host.slice(1, host.indexOf(']'));
     } else {
