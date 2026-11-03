@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import type { InstagramPost as InstagramPostRow } from '@prisma/client';
 import type { InstagramPost } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { runWithTenantAsync, requireTenantId } from '../tenant/tenant-context';
@@ -31,17 +32,6 @@ interface GraphMediaItem {
   permalink: string;
   timestamp: string;
 }
-
-type PostSalvo = {
-  id: string;
-  externalId: string;
-  mediaUrl: string;
-  permalink: string;
-  caption: string | null;
-  mediaType: string;
-  destaque: boolean;
-  publicadoEm: Date;
-};
 
 @Injectable()
 export class InstagramService implements OnModuleInit {
@@ -221,7 +211,9 @@ export class InstagramService implements OnModuleInit {
   }
 
   /** Se a URL assinada já expirou (ou está perto), busca uma nova na Graph API. */
-  private async garantirUrlsValidas(posts: PostSalvo[]): Promise<PostSalvo[]> {
+  private async garantirUrlsValidas(
+    posts: InstagramPostRow[],
+  ): Promise<InstagramPostRow[]> {
     if (!this.configurado || posts.length === 0) return posts;
 
     const precisando = posts.filter((post) => urlCdnPrecisaRenovar(post.mediaUrl));
