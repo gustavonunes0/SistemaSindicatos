@@ -37,7 +37,12 @@ export function InstagramDestaquesAdmin() {
             return (
               <li key={post.id} className={post.destaque ? 'ig-admin-item ig-admin-item--destaque' : 'ig-admin-item'}>
                 <a href={post.permalink} target="_blank" rel="noreferrer" className="ig-admin-thumb">
-                  <img src={post.mediaUrl} alt="" loading="lazy" />
+                  <img
+                    src={post.mediaUrl}
+                    alt=""
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
                 </a>
                 <div className="ig-admin-meta">
                   <p className="ig-admin-caption">

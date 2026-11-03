@@ -13,6 +13,8 @@ import { FEED_MOCK } from './instagram.mock';
 
 const FEED_LIMITE = 12;
 const CAMPOS = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp';
+/** Renova a URL assinada do CDN antes de ela expirar (oe). */
+const MARGEM_RENOVACAO_MS = 6 * 60 * 60 * 1000;
 
 /** Instagram Login usa graph.instagram.com; token de Página/Facebook usa graph.facebook.com. */
 const GRAPH_BASES = [
@@ -30,6 +32,17 @@ interface GraphMediaItem {
   timestamp: string;
 }
 
+type PostSalvo = {
+  id: string;
+  externalId: string;
+  mediaUrl: string;
+  permalink: string;
+  caption: string | null;
+  mediaType: string;
+  destaque: boolean;
+  publicadoEm: Date;
+};
+
 @Injectable()
 export class InstagramService implements OnModuleInit {
   private readonly logger = new Logger(InstagramService.name);
@@ -37,6 +50,8 @@ export class InstagramService implements OnModuleInit {
   private readonly mockAtivo: boolean;
   private accessToken: string | undefined;
   private graphBase: string | undefined;
+  /** Evita renovar o mesmo post em paralelo quando vários requests batem juntos. */
+  private readonly renovacoesEmAndamento = new Map<string, Promise<string | null>>();
 
   constructor(
     private readonly prisma: PrismaService,
@@ -56,7 +71,7 @@ export class InstagramService implements OnModuleInit {
   }
 
   async feed(apenasDestaques = false): Promise<InstagramPost[]> {
-    const posts = await this.prisma.instagramPost.findMany({
+    let posts = await this.prisma.instagramPost.findMany({
       where: apenasDestaques ? { destaque: true } : undefined,
       orderBy: { publicadoEm: 'desc' },
       take: FEED_LIMITE,
@@ -66,14 +81,16 @@ export class InstagramService implements OnModuleInit {
       return FEED_MOCK;
     }
 
+    posts = await this.garantirUrlsValidas(posts);
     return posts.map((post) => this.serializar(post));
   }
 
   async listarAdmin(): Promise<InstagramPost[]> {
-    const posts = await this.prisma.instagramPost.findMany({
+    let posts = await this.prisma.instagramPost.findMany({
       orderBy: { publicadoEm: 'desc' },
       take: 24,
     });
+    posts = await this.garantirUrlsValidas(posts);
     return posts.map((post) => this.serializar(post));
   }
 
@@ -87,6 +104,12 @@ export class InstagramService implements OnModuleInit {
     });
     if (!existente) {
       throw new NotFoundException('Post do Instagram não encontrado');
+    }
+
+    // Ao marcar como destaque, já puxa uma URL fresca — o carrossel da home
+    // usa posts que podem estar fora dos 12 mais recentes do sync horário.
+    if (destaque && this.configurado) {
+      await this.renovarMediaDoPost(existente.externalId);
     }
 
     const atualizado = await this.prisma.instagramPost.update({
@@ -144,9 +167,12 @@ export class InstagramService implements OnModuleInit {
     try {
       const data = await this.buscarMedia();
       const tenantId = requireTenantId();
+      const idsNoFeed = new Set<string>();
+
       for (const item of data) {
-        const mediaUrl = (item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url) ?? '';
+        const mediaUrl = escolherMediaUrl(item);
         if (!mediaUrl) continue;
+        idsNoFeed.add(item.id);
 
         // Não sobrescreve `destaque` no update — escolha do admin.
         await this.prisma.instagramPost.upsert({
@@ -170,9 +196,81 @@ export class InstagramService implements OnModuleInit {
           },
         });
       }
-      this.logger.log(`Feed do Instagram sincronizado (${data.length} posts)`);
+
+      // Destaques fora do feed recente: as URLs do CDN expiram e o carrossel
+      // fica sem imagem se não renovarmos por id.
+      const destaques = await this.prisma.instagramPost.findMany({
+        where: { destaque: true },
+        select: { externalId: true },
+      });
+      let renovados = 0;
+      for (const post of destaques) {
+        if (idsNoFeed.has(post.externalId)) continue;
+        const url = await this.renovarMediaDoPost(post.externalId);
+        if (url) renovados += 1;
+      }
+
+      this.logger.log(
+        `Feed do Instagram sincronizado (${data.length} posts` +
+          (renovados > 0 ? `, ${renovados} destaques renovados` : '') +
+          ')',
+      );
     } catch (error) {
       this.logger.error(`Erro ao sincronizar Instagram: ${(error as Error).message}`);
+    }
+  }
+
+  /** Se a URL assinada já expirou (ou está perto), busca uma nova na Graph API. */
+  private async garantirUrlsValidas(posts: PostSalvo[]): Promise<PostSalvo[]> {
+    if (!this.configurado || posts.length === 0) return posts;
+
+    const precisando = posts.filter((post) => urlCdnPrecisaRenovar(post.mediaUrl));
+    if (precisando.length === 0) return posts;
+
+    await Promise.all(precisando.map((post) => this.renovarMediaDoPost(post.externalId)));
+
+    const ids = posts.map((post) => post.id);
+    const atualizados = await this.prisma.instagramPost.findMany({
+      where: { id: { in: ids } },
+    });
+    const porId = new Map(atualizados.map((post) => [post.id, post]));
+    return posts.map((post) => porId.get(post.id) ?? post);
+  }
+
+  private async renovarMediaDoPost(externalId: string): Promise<string | null> {
+    const emAndamento = this.renovacoesEmAndamento.get(externalId);
+    if (emAndamento) return emAndamento;
+
+    const tarefa = this.executarRenovacao(externalId).finally(() => {
+      this.renovacoesEmAndamento.delete(externalId);
+    });
+    this.renovacoesEmAndamento.set(externalId, tarefa);
+    return tarefa;
+  }
+
+  private async executarRenovacao(externalId: string): Promise<string | null> {
+    try {
+      const item = await this.buscarMediaPorId(externalId);
+      if (!item) return null;
+      const mediaUrl = escolherMediaUrl(item);
+      if (!mediaUrl) return null;
+
+      await this.prisma.instagramPost.updateMany({
+        where: { externalId },
+        data: {
+          mediaUrl,
+          permalink: item.permalink,
+          caption: item.caption ?? null,
+          mediaType: item.media_type,
+          sincronizado: new Date(),
+        },
+      });
+      return mediaUrl;
+    } catch (error) {
+      this.logger.warn(
+        `Não foi possível renovar mídia ${externalId}: ${(error as Error).message}`,
+      );
+      return null;
     }
   }
 
@@ -197,6 +295,27 @@ export class InstagramService implements OnModuleInit {
     }
 
     throw new Error(erros.join(' | '));
+  }
+
+  private async buscarMediaPorId(externalId: string): Promise<GraphMediaItem | null> {
+    const bases = this.graphBase
+      ? [this.graphBase, ...GRAPH_BASES.filter((base) => base !== this.graphBase)]
+      : this.basesPreferidas();
+
+    for (const base of bases) {
+      const url = `${base}/${externalId}?fields=${CAMPOS}&access_token=${this.accessToken}`;
+      const resposta = await fetch(url);
+      const corpo = await resposta.text();
+      if (!resposta.ok) {
+        this.logger.debug(
+          `Graph ${base}/${externalId} → ${resposta.status} ${resumirErroGraph(corpo)}`,
+        );
+        continue;
+      }
+      this.graphBase = base;
+      return JSON.parse(corpo) as GraphMediaItem;
+    }
+    return null;
   }
 
   private basesPreferidas(): string[] {
@@ -228,6 +347,29 @@ export class InstagramService implements OnModuleInit {
       this.logger.error(`Erro ao renovar token do Instagram: ${(error as Error).message}`);
     }
   }
+}
+
+function escolherMediaUrl(item: GraphMediaItem): string {
+  return (item.media_type === 'VIDEO' ? item.thumbnail_url : item.media_url) ?? '';
+}
+
+/** Lê o parâmetro `oe` (hex unix) das URLs assinadas do CDN do Instagram. */
+function expiracaoCdn(mediaUrl: string): Date | null {
+  try {
+    const oe = new URL(mediaUrl).searchParams.get('oe');
+    if (!oe) return null;
+    const segundos = Number.parseInt(oe, 16);
+    if (!Number.isFinite(segundos)) return null;
+    return new Date(segundos * 1000);
+  } catch {
+    return null;
+  }
+}
+
+function urlCdnPrecisaRenovar(mediaUrl: string): boolean {
+  const expiraEm = expiracaoCdn(mediaUrl);
+  if (!expiraEm) return false;
+  return expiraEm.getTime() - Date.now() < MARGEM_RENOVACAO_MS;
 }
 
 function resumirErroGraph(corpo: string): string {

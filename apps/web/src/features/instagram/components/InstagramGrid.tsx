@@ -15,6 +15,7 @@ function InstagramMiniatura({ post }: { post: InstagramPost }) {
       src={post.mediaUrl}
       alt=""
       loading="lazy"
+      referrerPolicy="no-referrer"
       onError={() => setImagemIndisponivel(true)}
     />
   );

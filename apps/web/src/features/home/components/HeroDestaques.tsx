@@ -113,8 +113,15 @@ export function HeroDestaques() {
         src={imagemSrc}
         alt=""
         aria-hidden="true"
+        referrerPolicy={slide.tipo === 'instagram' ? 'no-referrer' : undefined}
       />
-      <img key={`${slide.id}-fg`} className="hero-destaques-media-fg" src={imagemSrc} alt="" />
+      <img
+        key={`${slide.id}-fg`}
+        className="hero-destaques-media-fg"
+        src={imagemSrc}
+        alt=""
+        referrerPolicy={slide.tipo === 'instagram' ? 'no-referrer' : undefined}
+      />
     </>
   ) : (
     <span key={slide.id} className="hero-destaques-placeholder" aria-hidden="true" />
