@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { criarNoticiaSchema, type CriarNoticiaInput } from '@sindprf/types';
+import { isAxiosError } from 'axios';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { z } from 'zod';
@@ -15,25 +16,57 @@ import {
   useUploadCapa,
 } from '../../hooks';
 
+const CAPA_MAX_BYTES = 5 * 1024 * 1024;
+const ANEXO_MAX_BYTES = 50 * 1024 * 1024;
+
 type EnvioPendente<T> = {
   geracao: number;
   arquivo: File;
   promessa: Promise<T>;
 };
 
-function useEnvioArquivo<T>(enviar: (arquivo: File) => Promise<T>) {
+function mensagemErroUpload(erro: unknown, limiteRotulo: string): string {
+  if (isAxiosError(erro)) {
+    const status = erro.response?.status;
+    // 413 = Payload Too Large (padrão). Alguns proxies devolvem 419.
+    if (status === 413 || status === 419) {
+      return `Arquivo muito grande. O limite é ${limiteRotulo}.`;
+    }
+    const msg = erro.response?.data?.message;
+    if (typeof msg === 'string' && /grande|large|limit|tamanho|size/i.test(msg)) {
+      return `Arquivo muito grande. O limite é ${limiteRotulo}.`;
+    }
+  }
+  if (erro instanceof Error && /muito grande|maximo|máximo/i.test(erro.message)) {
+    return erro.message;
+  }
+  return 'Falha no envio. Tente novamente.';
+}
+
+function useEnvioArquivo<T>(
+  enviar: (arquivo: File) => Promise<T>,
+  opcoes: { maxBytes: number; limiteRotulo: string },
+) {
   const geracao = useRef(0);
   const pendente = useRef<EnvioPendente<T> | null>(null);
   const [nome, setNome] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
-  const [erro, setErro] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
 
   const selecionar = useCallback(
     (arquivo: File | undefined) => {
       if (!arquivo) return;
       const atual = ++geracao.current;
       setNome(arquivo.name);
-      setErro(false);
+
+      if (arquivo.size > opcoes.maxBytes) {
+        pendente.current = null;
+        setEnviando(false);
+        setErro(`Arquivo muito grande. O limite é ${opcoes.limiteRotulo}.`);
+        return;
+      }
+
+      setErro(null);
       setEnviando(true);
       const promessa = enviar(arquivo);
       pendente.current = { geracao: atual, arquivo, promessa };
@@ -41,15 +74,15 @@ function useEnvioArquivo<T>(enviar: (arquivo: File) => Promise<T>) {
         () => {
           if (geracao.current === atual) setEnviando(false);
         },
-        () => {
+        (falha: unknown) => {
           if (geracao.current === atual) {
             setEnviando(false);
-            setErro(true);
+            setErro(mensagemErroUpload(falha, opcoes.limiteRotulo));
           }
         },
       );
     },
-    [enviar],
+    [enviar, opcoes.limiteRotulo, opcoes.maxBytes],
   );
 
   const limpar = useCallback(() => {
@@ -57,7 +90,7 @@ function useEnvioArquivo<T>(enviar: (arquivo: File) => Promise<T>) {
     pendente.current = null;
     setNome(null);
     setEnviando(false);
-    setErro(false);
+    setErro(null);
   }, []);
 
   const aguardar = useCallback(async (): Promise<T | null> => {
@@ -65,10 +98,19 @@ function useEnvioArquivo<T>(enviar: (arquivo: File) => Promise<T>) {
     if (!atual || atual.geracao !== geracao.current) return null;
     try {
       return await atual.promessa;
-    } catch {
+    } catch (primeiroErro) {
       if (geracao.current !== atual.geracao) return null;
+      // Não insiste se o arquivo já passou do limite (413/419).
+      if (
+        isAxiosError(primeiroErro) &&
+        (primeiroErro.response?.status === 413 || primeiroErro.response?.status === 419)
+      ) {
+        setEnviando(false);
+        setErro(mensagemErroUpload(primeiroErro, opcoes.limiteRotulo));
+        throw primeiroErro;
+      }
       setEnviando(true);
-      setErro(false);
+      setErro(null);
       const nova = enviar(atual.arquivo);
       pendente.current = { ...atual, promessa: nova };
       try {
@@ -78,12 +120,12 @@ function useEnvioArquivo<T>(enviar: (arquivo: File) => Promise<T>) {
       } catch (falha) {
         if (geracao.current === atual.geracao) {
           setEnviando(false);
-          setErro(true);
+          setErro(mensagemErroUpload(falha, opcoes.limiteRotulo));
         }
         throw falha;
       }
     }
-  }, [enviar]);
+  }, [enviar, opcoes.limiteRotulo]);
 
   return { nome, enviando, erro, temArquivo: nome !== null, selecionar, limpar, aguardar };
 }
@@ -120,8 +162,14 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
     (arquivo: File) => uploadAnexo.mutateAsync(arquivo),
     [uploadAnexo],
   );
-  const capa = useEnvioArquivo(enviarCapa);
-  const anexo = useEnvioArquivo(enviarAnexo);
+  const capa = useEnvioArquivo(enviarCapa, {
+    maxBytes: CAPA_MAX_BYTES,
+    limiteRotulo: '5 MB',
+  });
+  const anexo = useEnvioArquivo(enviarAnexo, {
+    maxBytes: ANEXO_MAX_BYTES,
+    limiteRotulo: '50 MB',
+  });
   const inputCapaRef = useRef<HTMLInputElement>(null);
   const inputAnexoRef = useRef<HTMLInputElement>(null);
   const sessao = useRef<string | null>(null);
@@ -196,14 +244,28 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
       let anexoEnviado: { url: string; nome: string } | null = null;
       try {
         capaEnviada = await capa.aguardar();
-      } catch {
-        setErroSalvar('Não foi possível enviar a imagem de capa. A notícia não foi salva.');
+      } catch (falha) {
+        setErroSalvar(
+          capa.erro ??
+            mensagemErroUpload(falha, '5 MB') + ' A notícia não foi salva.',
+        );
+        return;
+      }
+      if (capa.erro && capa.temArquivo && !capaEnviada) {
+        setErroSalvar(`${capa.erro} A notícia não foi salva.`);
         return;
       }
       try {
         anexoEnviado = await anexo.aguardar();
-      } catch {
-        setErroSalvar('Não foi possível enviar o PDF. A notícia não foi salva.');
+      } catch (falha) {
+        setErroSalvar(
+          anexo.erro ??
+            mensagemErroUpload(falha, '50 MB') + ' A notícia não foi salva.',
+        );
+        return;
+      }
+      if (anexo.erro && anexo.temArquivo && !anexoEnviado) {
+        setErroSalvar(`${anexo.erro} A notícia não foi salva.`);
         return;
       }
       const payload: CriarNoticiaInput = {
@@ -295,9 +357,14 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
             {capa.nome && (
               <span className="noticia-arquivo-status">
                 {capa.nome}
-                {capa.enviando ? ' · enviando…' : capa.erro ? ' · falhou, tentaremos de novo ao salvar' : ' · pronta'}
+                {capa.enviando
+                  ? ' · enviando…'
+                  : capa.erro
+                    ? ` · ${capa.erro}`
+                    : ' · pronta'}
               </span>
             )}
+            {capa.erro && <p className="erro">{capa.erro}</p>}
             {(capaUrl || capa.temArquivo) && (
               <button type="button" className="botao-link" onClick={removerCapa}>
                 Remover capa
@@ -321,7 +388,7 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
                     {anexo.enviando
                       ? 'Enviando o PDF. Pode salvar agora: ele entra junto com a notícia.'
                       : anexo.erro
-                        ? 'O envio falhou. Ao salvar, tentamos de novo.'
+                        ? anexo.erro
                         : 'PDF pronto. Ele será gravado ao salvar a notícia.'}
                   </span>
                 )}
@@ -333,6 +400,7 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
               accept="application/pdf,.pdf"
               onChange={(evento) => anexo.selecionar(evento.target.files?.[0])}
             />
+            {anexo.erro && <p className="erro">{anexo.erro}</p>}
             {(anexoUrl || anexo.temArquivo) && (
               <button type="button" className="botao-link" onClick={removerAnexo}>
                 Remover anexo

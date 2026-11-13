@@ -1,6 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { MulterExceptionFilter } from './common/filters/multer-exception.filter';
 import { ScheduleModule } from '@nestjs/schedule';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AdminModule } from './admin/admin.module';
@@ -68,6 +69,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
   controllers: [AppController],
   providers: [
     TenantMiddleware,
+    { provide: APP_FILTER, useClass: MulterExceptionFilter },
     // Antes do tenant: mede a requisição inteira, inclusive a resolução de tenant.
     { provide: APP_INTERCEPTOR, useClass: PerfilInterceptor },
     { provide: APP_INTERCEPTOR, useClass: TenantAlsInterceptor },
