@@ -4,6 +4,8 @@ import type {
   ConteudoDocumentoFinanceiro,
   InstituicaoFinanceira,
   LancamentoFinanceiroPreview,
+  LancamentoPlanilhaFinanceira,
+  PlanilhaFinanceira,
   PreviewImportacaoFinanceira,
   StatusValidacaoSaldo,
   TipoDocumentoFinanceiro,
@@ -635,6 +637,102 @@ function detectarLayout(
   );
   if (!config) throw new Error('Layout financeiro não reconhecido');
   return config;
+}
+
+function lancamentoDaPlanilha(
+  item: LancamentoPlanilhaFinanceira,
+  sequencia: number,
+): LancamentoFinanceiroPreview {
+  const lancamento = montarLancamento({
+    sequencia,
+    data: item.data,
+    descricao: item.descricao,
+    tipo: item.tipo,
+    valor: item.valor,
+    saldoApos: item.saldoApos ?? null,
+    documento: item.documento || null,
+    portadorNome: item.portadorNome || null,
+    cartaoFinal: item.cartaoFinal || null,
+    parcelaNumero: item.parcelaNumero ?? null,
+    parcelaTotal: item.parcelaTotal ?? null,
+  });
+  const documentoContraparte = sanitizarDocumento(item.contraparteDocumento ?? undefined);
+  return {
+    ...lancamento,
+    contraparteNome: item.contraparteNome || null,
+    contraparteDocumento: documentoContraparte
+      ? mascararDocumento(documentoContraparte)
+      : lancamento.contraparteDocumento,
+  };
+}
+
+function contaDaPlanilha(planilha: PlanilhaFinanceira): CadastrarContaFinanceira {
+  return {
+    instituicao: planilha.instituicao,
+    agencia: normalizarIdentificador(planilha.agencia),
+    numero: normalizarIdentificador(planilha.numero),
+    nome: planilha.nomeConta,
+    ...(planilha.titularNome ? { titularNome: planilha.titularNome } : {}),
+    ...(planilha.titularDocumento ? { titularDocumento: planilha.titularDocumento } : {}),
+  };
+}
+
+function hashDaPlanilha(planilha: PlanilhaFinanceira): string {
+  return hash(
+    JSON.stringify(planilha, (_chave, valor: unknown) =>
+      valor instanceof Date ? valor.toISOString().slice(0, 10) : valor,
+    ),
+  );
+}
+
+export function parsePlanilhaFinanceira(
+  planilha: PlanilhaFinanceira,
+  arquivoNome: string,
+): PreviewImportacaoFinanceira {
+  const config = CONFIGURACOES.find(
+    (item) =>
+      item.instituicao === planilha.instituicao && item.tipoDocumento === planilha.tipoDocumento,
+  );
+  if (!config) throw new Error('Instituição ou tipo de documento não suportado na planilha');
+
+  const lancamentos = planilha.lancamentos.map((item, indice) =>
+    lancamentoDaPlanilha(item, indice + 1),
+  );
+  const validacaoSaldo = validarSaldo(
+    planilha.saldoInicial ?? null,
+    planilha.saldoFinal ?? null,
+    lancamentos,
+    planilha.tipoDocumento === 'EXTRATO',
+  );
+  const foraDoPeriodo = lancamentos.filter(
+    (item) => item.data < planilha.periodoInicio || item.data > planilha.periodoFim,
+  ).length;
+  const avisos = [
+    ...(validacaoSaldo.status === 'DIVERGENTE'
+      ? ['Os saldos informados na planilha não conciliam com os lançamentos']
+      : []),
+    ...(foraDoPeriodo > 0
+      ? [`${foraDoPeriodo} lançamento(s) com data fora do período informado`]
+      : []),
+  ];
+
+  return {
+    instituicao: config.instituicao,
+    tipoDocumento: config.tipoDocumento,
+    layout: `${config.layout}_PLANILHA`,
+    arquivoNome,
+    sha256: hashDaPlanilha(planilha),
+    contaDetectada: contaDaPlanilha(planilha),
+    competenciaAno: planilha.competenciaAno,
+    competenciaMes: planilha.competenciaMes,
+    periodoInicio: planilha.periodoInicio,
+    periodoFim: planilha.periodoFim,
+    vencimento: planilha.vencimento ?? null,
+    totalDocumento: planilha.totalDocumento ?? null,
+    validacaoSaldo,
+    lancamentos,
+    avisos,
+  };
 }
 
 export function parseDocumentoFinanceiro(input: {

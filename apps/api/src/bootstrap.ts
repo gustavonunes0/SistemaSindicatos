@@ -31,6 +31,7 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
   const originsFixos = originsEstaticosPermitidos();
   const tenants = app.get(TenantService);
 
+  app.useBodyParser('json', { limit: '10mb' });
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },

@@ -35,16 +35,93 @@ export const paginaFinanceiraSchema = z.object({
 });
 export type PaginaFinanceira = z.infer<typeof paginaFinanceiraSchema>;
 
+const textoOpcionalSchema = z.string().trim().max(500).nullable().optional();
+const valorMonetarioSchema = z.number().finite();
+
+export const lancamentoPlanilhaFinanceiraSchema = z
+  .object({
+    data: z.coerce.date({ invalid_type_error: 'data inválida' }),
+    descricao: z.string().trim().min(1, 'descricao é obrigatória').max(500),
+    documento: textoOpcionalSchema,
+    tipo: tipoLancamentoFinanceiroSchema,
+    valor: valorMonetarioSchema.positive('valor deve ser maior que zero'),
+    saldoApos: valorMonetarioSchema.nullable().optional(),
+    contraparteNome: textoOpcionalSchema,
+    contraparteDocumento: textoOpcionalSchema,
+    portadorNome: textoOpcionalSchema,
+    cartaoFinal: z.string().trim().max(8).nullable().optional(),
+    parcelaNumero: z.number().int().positive().nullable().optional(),
+    parcelaTotal: z.number().int().positive().nullable().optional(),
+  })
+  .refine(
+    (item) =>
+      !item.parcelaNumero || !item.parcelaTotal || item.parcelaNumero <= item.parcelaTotal,
+    { message: 'parcelaNumero não pode ser maior que parcelaTotal', path: ['parcelaNumero'] },
+  );
+export type LancamentoPlanilhaFinanceira = z.infer<typeof lancamentoPlanilhaFinanceiraSchema>;
+
+export const planilhaFinanceiraSchema = z
+  .object({
+    instituicao: instituicaoFinanceiraSchema,
+    tipoDocumento: tipoDocumentoFinanceiroSchema,
+    competenciaAno: z.number().int().min(2000).max(2100),
+    competenciaMes: z.number().int().min(1).max(12),
+    periodoInicio: z.coerce.date({ invalid_type_error: 'periodoInicio inválido' }),
+    periodoFim: z.coerce.date({ invalid_type_error: 'periodoFim inválido' }),
+    vencimento: z.coerce.date().nullable().optional(),
+    totalDocumento: valorMonetarioSchema.nullable().optional(),
+    saldoInicial: valorMonetarioSchema.nullable().optional(),
+    saldoFinal: valorMonetarioSchema.nullable().optional(),
+    agencia: identificadorContaSchema,
+    numero: identificadorContaSchema,
+    nomeConta: z.string().trim().min(2).max(120),
+    titularNome: z.string().trim().min(2).max(160).nullable().optional(),
+    titularDocumento: documentoSanitizadoSchema.nullable().optional(),
+    lancamentos: z
+      .array(lancamentoPlanilhaFinanceiraSchema)
+      .min(1, 'A planilha não possui lançamentos')
+      .max(5000, 'A planilha aceita no máximo 5000 lançamentos'),
+  })
+  .superRefine((planilha, ctx) => {
+    if (planilha.periodoFim < planilha.periodoInicio) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['periodoFim'],
+        message: 'periodoFim deve ser igual ou posterior a periodoInicio',
+      });
+    }
+    const semSaldo = planilha.saldoInicial == null || planilha.saldoFinal == null;
+    if (planilha.tipoDocumento === 'EXTRATO' && semSaldo) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['saldoFinal'],
+        message: 'Extratos exigem saldoInicial e saldoFinal',
+      });
+    }
+  });
+export type PlanilhaFinanceira = z.infer<typeof planilhaFinanceiraSchema>;
+
 const conteudoDocumentoFinanceiroShape = {
   texto: z.string().min(20).optional(),
   paginas: z.array(paginaFinanceiraSchema).min(1).optional(),
+  planilha: planilhaFinanceiraSchema.optional(),
 };
 
-export const conteudoDocumentoFinanceiroSchema = z.object(
-  conteudoDocumentoFinanceiroShape,
-).refine((conteudo) => Boolean(conteudo.texto?.trim()) || Boolean(conteudo.paginas?.length), {
-  message: 'Informe o texto ou as páginas extraídas do documento',
-});
+type ConteudoInformado = {
+  texto?: string;
+  paginas?: unknown[];
+  planilha?: unknown;
+};
+
+function possuiConteudo(conteudo: ConteudoInformado): boolean {
+  return Boolean(conteudo.texto?.trim()) || Boolean(conteudo.paginas?.length) || Boolean(conteudo.planilha);
+}
+
+const MENSAGEM_SEM_CONTEUDO = 'Informe o texto, as páginas extraídas ou a planilha do documento';
+
+export const conteudoDocumentoFinanceiroSchema = z
+  .object(conteudoDocumentoFinanceiroShape)
+  .refine(possuiConteudo, { message: MENSAGEM_SEM_CONTEUDO });
 export type ConteudoDocumentoFinanceiro = z.infer<typeof conteudoDocumentoFinanceiroSchema>;
 
 export const contaFinanceiraSchema = z.object({
@@ -124,9 +201,7 @@ export const previewImportacaoFinanceiraInputSchema = z.object({
   arquivoNome: z.string().trim().min(1).max(255),
   instituicao: instituicaoFinanceiraSchema.optional(),
   tipoDocumento: tipoDocumentoFinanceiroSchema.optional(),
-}).refine((conteudo) => Boolean(conteudo.texto?.trim()) || Boolean(conteudo.paginas?.length), {
-  message: 'Informe o texto ou as páginas extraídas do documento',
-});
+}).refine(possuiConteudo, { message: MENSAGEM_SEM_CONTEUDO });
 export type PreviewImportacaoFinanceiraInput = z.infer<
   typeof previewImportacaoFinanceiraInputSchema
 >;
@@ -141,8 +216,8 @@ export const importarFinanceiroInputSchema = z.object({
   conta: cadastrarContaFinanceiraSchema.optional(),
   substituirExistente: z.boolean().optional().default(false),
 }).superRefine((input, ctx) => {
-  if (!input.texto?.trim() && !input.paginas?.length) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Informe o texto ou as páginas extraídas' });
+  if (!possuiConteudo(input)) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: MENSAGEM_SEM_CONTEUDO });
   }
   if (input.contaId && input.conta) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Informe contaId ou conta, não ambos' });

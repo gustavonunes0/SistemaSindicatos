@@ -10,7 +10,7 @@ import type {
 import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
-import { parseDocumentoFinanceiro } from './financeiro-parser';
+import { parseDocumentoFinanceiro, parsePlanilhaFinanceira } from './financeiro-parser';
 
 function numero(valor: unknown): number {
   return Number(valor);
@@ -35,6 +35,7 @@ export class FinanceiroService {
 
   preview(input: PreviewImportacaoFinanceiraInput): PreviewImportacaoFinanceira {
     try {
+      if (input.planilha) return parsePlanilhaFinanceira(input.planilha, input.arquivoNome);
       return parseDocumentoFinanceiro({
         conteudo: { texto: input.texto, paginas: input.paginas },
         arquivoNome: input.arquivoNome,

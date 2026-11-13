@@ -12,6 +12,7 @@ import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
 import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { extrairConteudoPdf } from '../../extrairPdf';
+import { ehPlanilha, extrairConteudoPlanilha } from '../../extrairPlanilha';
 import {
   useContasFinanceiras,
   useImportacaoFinanceiraDetalhe,
@@ -35,18 +36,24 @@ const MESES = [
   'Dezembro',
 ] as const;
 
-const lotePdfSchema = z
+const ACCEPT_ARQUIVOS = 'application/pdf,.pdf,.xlsx,.xls';
+
+function ehPdf(arquivo: File): boolean {
+  return arquivo.type === 'application/pdf' || arquivo.name.toLowerCase().endsWith('.pdf');
+}
+
+const loteArquivosSchema = z
   .array(z.instanceof(File))
   .min(1, 'Selecione ao menos um arquivo.')
-  .max(100, 'Envie no máximo 100 PDFs por lote.')
+  .max(100, 'Envie no máximo 100 arquivos por lote.')
   .refine(
-    (arquivos) =>
-      arquivos.every(
-        (arquivo) =>
-          arquivo.type === 'application/pdf' || arquivo.name.toLowerCase().endsWith('.pdf'),
-      ),
-    'O lote aceita somente arquivos PDF.',
+    (arquivos) => arquivos.every((arquivo) => ehPdf(arquivo) || ehPlanilha(arquivo)),
+    'O lote aceita somente PDF ou Excel (.xlsx/.xls) no modelo padrão.',
   );
+
+function extrairConteudo(arquivo: File): Promise<ConteudoDocumentoFinanceiro> {
+  return ehPlanilha(arquivo) ? extrairConteudoPlanilha(arquivo) : extrairConteudoPdf(arquivo);
+}
 
 type ImportacaoComConta = ListaImportacoesFinanceiras['itens'][number];
 type StatusFila = 'PROCESSANDO' | 'PRONTO' | 'DUPLICADO' | 'ERRO' | 'CONFIRMANDO';
@@ -195,7 +202,7 @@ export function ExtratosFaturasAdminPage() {
   }
 
   async function adicionarArquivos(arquivos: File[]) {
-    const validacao = lotePdfSchema.safeParse(arquivos);
+    const validacao = loteArquivosSchema.safeParse(arquivos);
     if (!validacao.success) {
       setErroUpload(validacao.error.issues[0]?.message ?? 'Lote inválido.');
       return;
@@ -220,7 +227,7 @@ export function ExtratosFaturasAdminPage() {
 
     await executarComConcorrencia(entradas, 4, async ({ id, arquivo }) => {
       try {
-        const conteudo = await extrairConteudoPdf(arquivo);
+        const conteudo = await extrairConteudo(arquivo);
         const preview = await previewMutation.mutateAsync({
           arquivoNome: arquivo.name,
           ...conteudo,
@@ -369,15 +376,15 @@ export function ExtratosFaturasAdminPage() {
       >
         <div>
           <p className="eyebrow">Entrada de documentos</p>
-          <h2>Adicione extratos e faturas em PDF</h2>
+          <h2>Adicione extratos e faturas em PDF ou Excel</h2>
           <p>
-            Até 100 arquivos por lote. PDFs de Sicoob e Sicredi são analisados e validados antes da
-            importação.
+            Até 100 arquivos por lote. PDFs de Sicoob e Sicredi e planilhas no modelo padrão são
+            analisados e validados antes da importação.
           </p>
           <p className="ef-upload-modelo">
-            Precisa do padrão de campos?{' '}
-            <a href="/modelos/modelo-extratos-faturas.xls" download>
-              Baixar modelo Excel
+            Vai importar por Excel?{' '}
+            <a href="/modelos/modelo-extratos-faturas.xlsx" download>
+              Baixar modelo padrão
             </a>
           </p>
         </div>
@@ -386,7 +393,7 @@ export function ExtratosFaturasAdminPage() {
             id="ef-arquivos"
             className="bal-upload-input"
             type="file"
-            accept="application/pdf,.pdf"
+            accept={ACCEPT_ARQUIVOS}
             multiple
             disabled={contasQuery.isLoading || historicoQuery.isLoading}
             onChange={(event) => {
@@ -394,7 +401,7 @@ export function ExtratosFaturasAdminPage() {
               event.currentTarget.value = '';
             }}
           />
-          <label className="botao-primario" htmlFor="ef-arquivos">Selecionar PDFs</label>
+          <label className="botao-primario" htmlFor="ef-arquivos">Selecionar arquivos</label>
           <span>{processando ? 'Processando lote…' : 'Também é possível arrastar aqui'}</span>
         </div>
       </section>
@@ -630,7 +637,7 @@ export function ExtratosFaturasAdminPage() {
         {!historicoQuery.isLoading && historicoFiltrado.length === 0 && (
           <div className="estado-vazio ef-vazio">
             <strong>Nenhum documento encontrado</strong>
-            <p>Adicione PDFs ou ajuste os filtros para consultar o histórico.</p>
+            <p>Adicione PDFs ou planilhas ou ajuste os filtros para consultar o histórico.</p>
           </div>
         )}
         {lacunasExtratos.length > 0 && !historicoQuery.isLoading && (
