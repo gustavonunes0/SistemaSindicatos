@@ -306,7 +306,7 @@ export function NoticiaFormModal({ aberto, id, onFechar }: NoticiaFormModalProps
           </div>
 
           <div className="campo">
-            <span className="campo-rotulo">Anexo (PDF)</span>
+            <span className="campo-rotulo">Anexo (PDF, até 50 MB)</span>
             {(anexo.nome || anexoUrl) && (
               <div className="noticia-anexo-preview">
                 {anexoUrl && !anexo.temArquivo ? (

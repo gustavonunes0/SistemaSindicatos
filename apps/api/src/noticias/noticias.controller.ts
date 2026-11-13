@@ -31,7 +31,7 @@ import { NoticiasService } from './noticias.service';
 
 const CAPA_MAX_BYTES = 5 * 1024 * 1024;
 const CAPA_MIMETYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const ANEXO_MAX_BYTES = 15 * 1024 * 1024;
+const ANEXO_MAX_BYTES = 50 * 1024 * 1024;
 const ANEXO_MIMETYPES = ['application/pdf'];
 
 function nomeArquivoSeguro(nomeOriginal: string): string {
