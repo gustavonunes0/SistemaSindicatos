@@ -666,7 +666,8 @@ model DeclaracaoEmitida {
   tenantId          String
   /// Código público curto (QR / URL). Único por tenant.
   codigo            String
-  convenioId        String
+  /// Null = declaração avulsa de filiação (sem convênio).
+  convenioId        String?
   afiliadoId        String?
   modelo            ModeloDeclaracao
   destino           String
@@ -689,7 +690,7 @@ model DeclaracaoEmitida {
   assinadaPorId      String?
 
   tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  convenio    Convenio  @relation(fields: [convenioId], references: [id], onDelete: Restrict)
+  convenio    Convenio? @relation(fields: [convenioId], references: [id], onDelete: Restrict)
   afiliado    Afiliado? @relation(fields: [afiliadoId], references: [id], onDelete: Restrict)
   assinadaPor User?     @relation("DeclaracoesAssinadas", fields: [assinadaPorId], references: [id], onDelete: SetNull)
 

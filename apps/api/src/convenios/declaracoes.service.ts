@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type { ListarDeclaracoesQuery } from '@sindprf/types';
+import { randomBytes } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import type { RequestUser } from '../common/request-user';
@@ -16,6 +17,7 @@ import { TenantService } from '../tenant/tenant.service';
 import { DeclaracaoPdfService } from './declaracao-pdf.service';
 import {
   lerAssinaturaDoBranding,
+  NOME_DECLARACAO_FILIACAO,
   nomeArquivoDeclaracao,
   resolverBaseValidacao,
   serializarDeclaracao,
@@ -83,6 +85,108 @@ export class DeclaracoesService {
   }
 
   /**
+   * Declaração avulsa de filiação (modelo Word SINDPRF-CE), sem convênio.
+   * Sai já assinada com a rubrica cadastrada — é o documento pronto para uso.
+   */
+  async emitirFiliacao(
+    user: RequestUser,
+  ): Promise<{ buffer: Buffer; nomeArquivo: string; declaracao: ReturnType<typeof serializarDeclaracao> }> {
+    const tenantId = requireTenantId();
+
+    const [afiliado, dominios, tenant] = await Promise.all([
+      this.prisma.afiliado.findUnique({
+        where: { userId: user.id },
+        select: { id: true, nome: true, cpf: true, status: true },
+      }),
+      this.prisma.tenantDomain.findMany({
+        where: { tenantId },
+        orderBy: [{ primario: 'desc' }, { createdAt: 'asc' }],
+        select: { host: true },
+      }),
+      this.prisma.tenant.findUnique({
+        where: { id: tenantId },
+        select: { branding: true },
+      }),
+    ]);
+
+    if (!afiliado || afiliado.status !== 'APROVADO') {
+      throw new ForbiddenException('Afiliação ainda não aprovada');
+    }
+
+    const assinaturaUrl = lerAssinaturaDoBranding(tenant?.branding);
+    if (!assinaturaUrl) {
+      throw new BadRequestException(
+        'Cadastre a assinatura da presidente antes de emitir a declaração de filiação',
+      );
+    }
+
+    const baseValidacao = resolverBaseValidacao(dominios);
+    const registro = await this.criarComCodigoUnico({
+      tenantId,
+      convenioId: null,
+      afiliadoId: afiliado.id,
+      modelo: 'FILIADO',
+      destino: '',
+      textoComplementar: null,
+      afiliadoNome: afiliado.nome,
+      afiliadoCpf: afiliado.cpf,
+    });
+
+    const urlValidacao = `${baseValidacao}/validar-declaracao/${registro.codigo}`;
+    const buffer = await this.declaracaoPdf.gerar({
+      modelo: 'FILIADO',
+      destino: '',
+      textoComplementar: null,
+      afiliadoNome: registro.afiliadoNome,
+      afiliadoCpf: registro.afiliadoCpf,
+      urlValidacao,
+      codigoValidacao: registro.codigo,
+      assinaturaUrl,
+      emitidaEm: registro.emitidaEm,
+    });
+
+    const nomeArquivo = nomeArquivoDeclaracao(NOME_DECLARACAO_FILIACAO, registro.codigo);
+
+    try {
+      const arquivoUrl = await this.storage.salvar(buffer, nomeArquivo);
+      const arquivoAssinadoUrl = await this.storage.salvar(
+        buffer,
+        nomeArquivo.replace(/\.pdf$/, '-assinada.pdf'),
+      );
+      const atualizado = await this.prisma.declaracaoEmitida.update({
+        where: { id: registro.id, tenantId },
+        data: {
+          arquivoUrl,
+          arquivoAssinadoUrl,
+          status: 'ASSINADA',
+          assinadaEm: new Date(),
+        },
+        include: INCLUDE_LISTAGEM,
+      });
+      return { buffer, nomeArquivo, declaracao: serializarDeclaracao(atualizado) };
+    } catch {
+      await this.prisma.declaracaoEmitida.delete({ where: { id: registro.id } }).catch(() => undefined);
+      throw new BadRequestException('Não foi possível gravar a declaração de filiação');
+    }
+  }
+
+  private async criarComCodigoUnico(
+    dados: Omit<Prisma.DeclaracaoEmitidaUncheckedCreateInput, 'codigo'>,
+  ) {
+    for (let tentativa = 0; tentativa < 8; tentativa += 1) {
+      const codigo = randomBytes(5).toString('hex').toUpperCase().slice(0, 10);
+      try {
+        return await this.prisma.declaracaoEmitida.create({ data: { ...dados, codigo } });
+      } catch (error) {
+        const colisao =
+          error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002';
+        if (!colisao) throw error;
+      }
+    }
+    throw new BadRequestException('Não foi possível gerar código de validação');
+  }
+
+  /**
    * Entrega o PDF de uma declaração.
    *
    * `versao` escolhe entre o original emitido e o devolvido assinado. O filiado
@@ -119,7 +223,7 @@ export class DeclaracoesService {
     }
 
     const buffer = await this.lerArquivo(caminhoRelativo);
-    const base = nomeArquivoDeclaracao(registro.convenio.nome, registro.codigo);
+    const base = nomeArquivoDeclaracao(registro.convenio?.nome, registro.codigo);
     return {
       buffer,
       nomeArquivo: versao === 'assinada' ? base.replace(/\.pdf$/, '-assinada.pdf') : base,
@@ -250,7 +354,7 @@ export class DeclaracoesService {
       emitidaEm: registro.emitidaEm,
     });
 
-    const nomeArquivo = nomeArquivoDeclaracao(registro.convenio.nome, registro.codigo).replace(
+    const nomeArquivo = nomeArquivoDeclaracao(registro.convenio?.nome, registro.codigo).replace(
       /\.pdf$/,
       '-assinada.pdf',
     );

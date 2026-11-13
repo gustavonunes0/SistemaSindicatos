@@ -20,6 +20,27 @@ export async function listarMinhasDeclaracoes(): Promise<DeclaracaoEmitida[]> {
   return z.array(declaracaoEmitidaSchema).parse(data);
 }
 
+/** Emite a declaração avulsa de filiação e dispara o download do PDF. */
+export async function emitirDeclaracaoFiliacao(): Promise<void> {
+  const resposta = await api.post('/declaracoes/filiacao', null, { responseType: 'blob' });
+  const disposition = String(resposta.headers['content-disposition'] ?? '');
+  const nomeArquivo =
+    /filename="([^"]+)"/i.exec(disposition)?.[1] ?? 'declaracao-filiacao.pdf';
+
+  const blob =
+    resposta.data instanceof Blob
+      ? resposta.data
+      : new Blob([resposta.data], { type: 'application/pdf' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = nomeArquivo;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 /** Dispara o download do PDF; o nome vem do Content-Disposition da API. */
 export async function baixarDeclaracao(
   id: string,

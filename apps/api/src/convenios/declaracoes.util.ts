@@ -15,8 +15,10 @@ export function lerAssinaturaDoBranding(branding: unknown): string | null {
   return typeof valor === 'string' && valor.trim() ? valor : null;
 }
 
+export const NOME_DECLARACAO_FILIACAO = 'Declaração de filiação';
+
 type RegistroComRelacoes = DeclaracaoEmitida & {
-  convenio: { nome: string };
+  convenio: { nome: string } | null;
   afiliado: { matricula: string } | null;
   assinadaPor: { email: string } | null;
 };
@@ -33,7 +35,7 @@ export function serializarDeclaracao(registro: RegistroComRelacoes) {
     codigo: registro.codigo,
     modelo: registro.modelo as ModeloDeclaracao,
     destino: registro.destino,
-    convenioNome: registro.convenio.nome,
+    convenioNome: registro.convenio?.nome ?? NOME_DECLARACAO_FILIACAO,
     afiliadoNome: registro.afiliadoNome,
     afiliadoMatricula: registro.afiliado?.matricula ?? null,
     dependenteNome: registro.dependenteNome,
@@ -78,14 +80,14 @@ export function resolverBaseValidacao(dominios: { host: string }[]): string {
   return base;
 }
 
-/** Nome amigável do PDF baixado, derivado do convênio e do código. */
-export function nomeArquivoDeclaracao(convenioNome: string, codigo: string): string {
-  const slug = convenioNome
+/** Nome amigável do PDF baixado, derivado do convênio (ou filiação) e do código. */
+export function nomeArquivoDeclaracao(convenioNome: string | null | undefined, codigo: string): string {
+  const slug = (convenioNome ?? NOME_DECLARACAO_FILIACAO)
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .toLowerCase()
     .slice(0, 40);
-  return `declaracao-${slug || 'convenio'}-${codigo}.pdf`;
+  return `declaracao-${slug || 'filiacao'}-${codigo}.pdf`;
 }

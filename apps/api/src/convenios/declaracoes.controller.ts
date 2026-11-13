@@ -51,6 +51,17 @@ export class DeclaracoesController {
     return this.declaracoesService.listarDoAfiliado(user);
   }
 
+  /** Declaração avulsa de filiação (modelo Word), sem convênio. */
+  @Roles('AFILIADO')
+  @Post('filiacao')
+  async emitirFiliacao(@CurrentUser() user: RequestUser): Promise<StreamableFile> {
+    const { buffer, nomeArquivo } = await this.declaracoesService.emitirFiliacao(user);
+    return new StreamableFile(buffer, {
+      type: 'application/pdf',
+      disposition: `attachment; filename="${nomeArquivo}"`,
+    });
+  }
+
   /**
    * Rubrica que o PDF desenha acima do carimbo. Fica no branding do sindicato,
    * então cada tenant tem a sua.

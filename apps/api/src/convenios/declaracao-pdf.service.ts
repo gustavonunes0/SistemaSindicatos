@@ -181,6 +181,14 @@ export class DeclaracaoPdfService {
       );
     }
 
+    // Declaração avulsa de filiação (modelo Word SINDPRF-CE — FILIADO).
+    if (!destino) {
+      return (
+        `SINDICATO DOS POLICIAIS RODOVIÁRIOS FEDERAIS NO ESTADO DO CEARÁ - SINDPRF-CE - ` +
+        `DECLARA, para os devidos fins, que ${nome}, CPF Nº ${cpf}, é filiado a esta entidade de classe.`
+      );
+    }
+
     return (
       `DECLARO, para fins de comprovação junto ${destino}, nos Termos do Convênio ` +
       `firmado entre as partes, que ${nome}, CPF Nº ${cpf}, é associado(a) do SINDPRF-CE.`
@@ -189,8 +197,9 @@ export class DeclaracaoPdfService {
 
   private desenharDataLocal(doc: PDFKit.PDFDocument, dados: DadosDeclaracaoPdf): void {
     const data = dataFmt.format(dados.emitidaEm ?? new Date());
+    const alinharDireita = dados.modelo === 'FILIADO' && !dados.destino.trim();
     doc.moveDown(2).font('Times-Roman').fontSize(12).fillColor('#000000');
-    doc.text(`Fortaleza, ${data}.`, { align: 'left' });
+    doc.text(`Fortaleza, ${data}.`, { align: alinharDireita ? 'right' : 'left' });
   }
 
   /** A rubrica cadastrada pelo sindicato tem prioridade sobre o PNG do disco. */

@@ -433,7 +433,7 @@ export class ConveniosService {
       codigo: registro.codigo,
       modelo: registro.modelo,
       modeloRotulo: MODELO_DECLARACAO_ROTULO[registro.modelo as keyof typeof MODELO_DECLARACAO_ROTULO],
-      convenioNome: registro.convenio.nome,
+      convenioNome: registro.convenio?.nome ?? 'Declaração de filiação',
       destino: registro.destino,
       afiliadoNome: registro.afiliadoNome,
       afiliadoCpfMascarado: mascararCpf(registro.afiliadoCpf),

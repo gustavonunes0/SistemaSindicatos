@@ -13738,6 +13738,29 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   }
 }
 
+.declaracao-filiacao-acao {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1.15rem 1.25rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: var(--cor-superficie, #fff);
+}
+
+.declaracao-filiacao-acao .titulo-secao-inline {
+  margin: 0 0 0.35rem;
+  font-size: var(--texto-base);
+}
+
+.declaracao-filiacao-acao .texto-secundario {
+  margin: 0;
+  max-width: 36rem;
+}
+
 .lista-declaracoes {
   list-style: none;
   margin: 0;
