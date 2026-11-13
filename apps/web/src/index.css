@@ -10201,7 +10201,12 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   box-shadow: 0 0 0 3px rgb(244 179 1 / 0.3);
 }
 
-.ef-upload h2,
+.ef-upload h2 {
+  margin: 0;
+  font-family: var(--fonte-display);
+  color: #fff;
+}
+
 .ef-secao-topo h2 {
   margin: 0;
   font-family: var(--fonte-display);
@@ -10210,11 +10215,11 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 .ef-upload p {
   max-width: 55ch;
   margin: 0.45rem 0 0;
-  color: rgb(255 255 255 / 0.76);
+  color: rgb(255 255 255 / 0.88);
 }
 
 .ef-upload .eyebrow {
-  color: rgb(255 255 255 / 0.58);
+  color: var(--amarelo-faixa);
 }
 
 .ef-upload-acoes {
@@ -10227,6 +10232,23 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 .ef-upload-acoes span {
   font-size: var(--texto-sm);
   color: rgb(255 255 255 / 0.65);
+}
+
+.ef-upload-modelo {
+  margin-top: 0.75rem !important;
+  font-size: var(--texto-sm);
+  color: rgb(255 255 255 / 0.9) !important;
+}
+
+.ef-upload-modelo a {
+  color: var(--amarelo-faixa);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+.ef-upload-modelo a:hover {
+  color: #fff;
 }
 
 .ef-feedback {

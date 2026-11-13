@@ -370,7 +370,16 @@ export function ExtratosFaturasAdminPage() {
         <div>
           <p className="eyebrow">Entrada de documentos</p>
           <h2>Adicione extratos e faturas em PDF</h2>
-          <p>Até 100 arquivos por lote. Cada PDF é analisado e validado antes da importação.</p>
+          <p>
+            Até 100 arquivos por lote. PDFs de Sicoob e Sicredi são analisados e validados antes da
+            importação.
+          </p>
+          <p className="ef-upload-modelo">
+            Precisa do padrão de campos?{' '}
+            <a href="/modelos/modelo-extratos-faturas.xls" download>
+              Baixar modelo Excel
+            </a>
+          </p>
         </div>
         <div className="ef-upload-acoes">
           <input
