@@ -112,6 +112,13 @@ export class BalancetesService {
     };
   }
 
+  async excluir(id: string): Promise<void> {
+    const { count } = await this.prisma.importacaoBalancete.deleteMany({
+      where: { id, tenantId: requireTenantId() },
+    });
+    if (count === 0) throw new NotFoundException('Importação de balancete não encontrada');
+  }
+
   async detalheTransparencia(id: string): Promise<BalanceteTransparenciaDetalhe> {
     await this.exigirTransparenciaAtiva();
     const importacao = await this.carregarComGrupos(id);

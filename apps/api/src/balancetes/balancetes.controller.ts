@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Header, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Header,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import {
   definirTransparenciaFinanceiraSchema,
   importarBalanceteCamposSchema,
@@ -73,5 +84,12 @@ export class BalancetesController {
   @Get(':id')
   detalhe(@Param('id') id: string) {
     return this.balancetesService.detalhe(id);
+  }
+
+  @Roles('ADMIN')
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  excluir(@Param('id') id: string) {
+    return this.balancetesService.excluir(id);
   }
 }

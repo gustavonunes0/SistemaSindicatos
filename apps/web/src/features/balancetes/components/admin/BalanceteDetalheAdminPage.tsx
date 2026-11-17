@@ -1,11 +1,14 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { GrupoBalancete } from '@sindprf/types';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarDataHora } from '../../../../lib/datas';
 import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
-import { useImportacaoBalancete } from '../../hooks';
+import { useExcluirBalancete, useImportacaoBalancete } from '../../hooks';
+
+const ROTA_BALANCETES = '/admin/financeiro/balancetes';
 
 const MESES = [
   'Janeiro',
@@ -42,6 +45,10 @@ export function BalanceteDetalheAdminPage() {
   const { data: detalhe, isLoading, isError } = useImportacaoBalancete(id);
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>('todos');
   const [abertos, setAbertos] = useState<Record<string, boolean>>({});
+  const [erroExclusao, setErroExclusao] = useState<string>();
+  const navigate = useNavigate();
+  const excluirMutation = useExcluirBalancete();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   const gruposFiltrados = useMemo(() => {
     if (!detalhe) return [] as GrupoBalancete[];
@@ -92,7 +99,7 @@ export function BalanceteDetalheAdminPage() {
     return (
       <AreaLayout tipo="admin" titulo="Balancete" descricao="Importação não encontrada.">
         <p className="erro">Não foi possível carregar este balancete.</p>
-        <Link to="/admin/financeiro/balancetes" className="botao-secundario">
+        <Link to={ROTA_BALANCETES} className="botao-secundario">
           Voltar aos balancetes
         </Link>
       </AreaLayout>
@@ -103,6 +110,25 @@ export function BalanceteDetalheAdminPage() {
   const volume = detalhe.totalReceitas + detalhe.totalDespesas;
   const superavit = detalhe.resultado >= 0;
   const algumAberto = gruposFiltrados.some((g) => abertos[chaveGrupo(g)]);
+
+  function confirmarExclusao(importacaoId: string) {
+    setErroExclusao(undefined);
+    pedirConfirmacao({
+      titulo: `Excluir o balancete de ${tituloMes}?`,
+      descricao:
+        'Todas as contas importadas deste mês serão removidas, inclusive do portal de transparência. Esta ação não pode ser desfeita.',
+      confirmarRotulo: 'Excluir balancete',
+      tom: 'perigo',
+      onConfirmar: async () => {
+        try {
+          await excluirMutation.mutateAsync(importacaoId);
+          navigate(ROTA_BALANCETES, { replace: true });
+        } catch {
+          setErroExclusao('Não foi possível excluir o balancete. Tente novamente.');
+        }
+      },
+    });
+  }
 
   function renderGrupo(grupo: GrupoBalancete) {
     const chave = chaveGrupo(grupo);
@@ -204,12 +230,23 @@ export function BalanceteDetalheAdminPage() {
       titulo={tituloMes}
       descricao={`${detalhe.arquivoNome} · importado em ${formatarDataHora(detalhe.createdAt)}`}
       acoes={
-        <Link to="/admin/financeiro/balancetes" className="botao-secundario">
-          Voltar
-        </Link>
+        <>
+          <button
+            type="button"
+            className="botao-perigo"
+            onClick={() => confirmarExclusao(detalhe.id)}
+          >
+            Excluir balancete
+          </button>
+          <Link to={ROTA_BALANCETES} className="botao-secundario">
+            Voltar
+          </Link>
+        </>
       }
     >
       <FinanceiroSubnav />
+      {modalConfirmacao}
+      {erroExclusao && <p className="erro">{erroExclusao}</p>}
 
       <section className="bal-detalhe-resumo" aria-label="Resumo do mês">
         <div className="bal-detalhe-cards">

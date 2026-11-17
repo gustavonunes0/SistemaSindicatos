@@ -16,6 +16,17 @@ export function useImportacaoBalancete(id: string | undefined) {
   });
 }
 
+export function useExcluirBalancete() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => balancetesApi.excluirImportacaoBalancete(id),
+    onSuccess: (_resultado, id) => {
+      queryClient.removeQueries({ queryKey: ['balancetes', 'detalhe', id] });
+      void queryClient.invalidateQueries({ queryKey: ['balancetes', 'lista'] });
+    },
+  });
+}
+
 export function useImportarBalancete() {
   const queryClient = useQueryClient();
   return useMutation({

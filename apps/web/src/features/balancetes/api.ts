@@ -17,6 +17,10 @@ export async function detalheImportacaoBalancete(id: string) {
   return importacaoBalanceteDetalheSchema.parse(data);
 }
 
+export async function excluirImportacaoBalancete(id: string) {
+  await api.delete(`/balancetes/${id}`);
+}
+
 export async function importarBalancete(input: { arquivo: File }) {
   const texto = await extrairTextoBalancetePdf(input.arquivo);
   const { data } = await api.post(
