@@ -1,8 +1,12 @@
 import type { NaturezaConta, TipoLinhaBalancete } from '@sindprf/types';
 
 const MONEY_RE = /\d{1,3}(?:\.\d{3})*,\d{2}/g;
-const PERIODO_RE =
-  /Per[ií]odo:\s*(\d{2})\/(\d{2})\/(\d{4})\s+a\s+(\d{2})\/(\d{2})\/(\d{4})/i;
+/** O pdfjs às vezes quebra dígitos ("31/05/202 6"), por isso os espaços opcionais. */
+const DATA_FONTE = String.raw`(\d\s?\d)\s?\/\s?(\d\s?\d)\s?\/\s?(\d\s?\d\s?\d\s?\d)`;
+const PERIODO_RE = new RegExp(
+  String.raw`Per[ií]odo\s*(?:de\s*)?:?\s*${DATA_FONTE}\s*(?:a|at[eé]|à|-)\s*${DATA_FONTE}`,
+  'i',
+);
 const CODE_LINE_RE = /^(\d+(?:\.\d+)*)\s+(.+)$/;
 const CODE_ONLY_RE = /^\d+(?:\.\d+)*$/;
 const MONEY_ONLY_RE = /^\d{1,3}(?:\.\d{3})*,\d{2}$/;
@@ -53,6 +57,7 @@ function categorizar(
   codigo: string,
   descricao: string,
   tipo: TipoLinhaBalancete,
+  ancestrais: string[] = [],
 ): { slug: string; nome: string } | null {
   if (tipo === 'RECEITA') {
     if (/mensalidade/i.test(descricao)) {
@@ -66,10 +71,10 @@ function categorizar(
 
   if (tipo !== 'DESPESA') return null;
 
-  if (codigo.startsWith('4.01.07.01.02')) {
+  if (codigo.startsWith('4.01.07.01.02') || ancestrais.some((d) => /pessoal/i.test(d))) {
     return { slug: 'pessoal', nome: 'Pessoal' };
   }
-  if (codigo.startsWith('4.01.09')) {
+  if (codigo.startsWith('4.01.09') || ancestrais.some((d) => /financeir/i.test(d))) {
     return { slug: 'despesas-financeiras', nome: 'Despesas financeiras' };
   }
 
@@ -111,7 +116,7 @@ function categorizar(
       nome: 'Alimentação',
     },
     {
-      keys: ['propaganda', 'publicidade', 'gráfico', 'grafico'],
+      keys: ['propaganda', 'publicidade', 'gráfico', 'grafico', 'marketing'],
       slug: 'comunicacao',
       nome: 'Comunicação',
     },
@@ -132,6 +137,7 @@ function categorizar(
         'auxilio',
         'auxílio',
         'associado',
+        'sindicalizado',
         'natalidade',
         'funeral',
         'totalpass',
@@ -180,6 +186,83 @@ function movimentoDoMes(
   return round2(creditos - debitos);
 }
 
+function saldoComSinal(valor: number, natureza: NaturezaConta | null): number {
+  return natureza === 'C' ? -valor : valor;
+}
+
+/**
+ * Layout Fortes com códigos reduzidos (sem pontos): a hierarquia só existe na ordem das
+ * linhas. Uma conta é pai quando as contas seguintes somam exatamente seu saldo anterior,
+ * débitos e créditos.
+ */
+function inferirHierarquia(contas: ContaLida[]): NoConta[] {
+  const nos: NoConta[] = contas.map((conta) => ({ conta, pai: null, nivel: 1, ehFolha: true }));
+  const fimDaSubarvore = new Map<number, number>();
+
+  function fechar(indice: number): number {
+    const memorizado = fimDaSubarvore.get(indice);
+    if (memorizado !== undefined) return memorizado;
+
+    const alvo = contas[indice] as ContaLida;
+    const alvoAnterior = saldoComSinal(alvo.saldoAnterior, alvo.naturezaAnterior);
+    let debitos = 0;
+    let creditos = 0;
+    let anterior = 0;
+    const filhos: number[] = [];
+    let proximo = indice + 1;
+    const fechou = () =>
+      round2(debitos) === round2(alvo.debitos) &&
+      round2(creditos) === round2(alvo.creditos) &&
+      round2(anterior) === round2(alvoAnterior);
+
+    while (proximo < contas.length && !(filhos.length > 0 && fechou())) {
+      const filho = contas[proximo] as ContaLida;
+      debitos += filho.debitos;
+      creditos += filho.creditos;
+      anterior += saldoComSinal(filho.saldoAnterior, filho.naturezaAnterior);
+      if (round2(debitos) > round2(alvo.debitos) || round2(creditos) > round2(alvo.creditos)) break;
+      filhos.push(proximo);
+      proximo = fechar(proximo);
+    }
+
+    const ehPai = filhos.length > 0 && fechou();
+    const fim = ehPai ? proximo : indice + 1;
+    if (ehPai) {
+      const no = nos[indice] as NoConta;
+      no.ehFolha = false;
+      for (const filho of filhos) (nos[filho] as NoConta).pai = no;
+    }
+    fimDaSubarvore.set(indice, fim);
+    return fim;
+  }
+
+  for (let indice = 0; indice < contas.length; indice = fechar(indice));
+  for (const no of nos) {
+    let nivel = 1;
+    for (let pai = no.pai; pai; pai = pai.pai) nivel += 1;
+    no.nivel = nivel;
+  }
+  return nos;
+}
+
+function tipoPorHierarquia(no: NoConta): TipoLinhaBalancete {
+  let raiz = no;
+  while (raiz.pai) raiz = raiz.pai;
+  const descricaoRaiz = raiz.conta.descricao.toUpperCase();
+  if (/^ATIVO/.test(descricaoRaiz)) return 'ATIVO';
+  if (/^(PASSIVO|PATRIM)/.test(descricaoRaiz)) return 'PASSIVO';
+
+  const { natureza, debitos, creditos } = no.conta;
+  if (natureza) return natureza === 'C' ? 'RECEITA' : 'DESPESA';
+  return creditos > debitos ? 'RECEITA' : 'DESPESA';
+}
+
+function descricoesAncestrais(no: NoConta): string[] {
+  const descricoes: string[] = [];
+  for (let pai = no.pai; pai; pai = pai.pai) descricoes.push(pai.conta.descricao);
+  return descricoes;
+}
+
 function marcarFolhas(linhas: LinhaBalanceteParseada[]): void {
   const codigos = linhas.map((l) => l.codigoConta);
   for (const linha of linhas) {
@@ -188,11 +271,20 @@ function marcarFolhas(linhas: LinhaBalanceteParseada[]): void {
   }
 }
 
-/** Extrai descrição + 4 valores monetários, tolerando D/C em qualquer posição. */
-function parseLinhaConta(linhaTexto: string): Omit<
+type ContaLida = Omit<
   LinhaBalanceteParseada,
   'ehFolha' | 'movimento' | 'categoriaSlug' | 'categoriaNome' | 'tipo' | 'nivel'
-> | null {
+> & { naturezaAnterior: NaturezaConta | null };
+
+type NoConta = {
+  conta: ContaLida;
+  pai: NoConta | null;
+  nivel: number;
+  ehFolha: boolean;
+};
+
+/** Extrai descrição + 4 valores monetários, tolerando D/C em qualquer posição. */
+function parseLinhaConta(linhaTexto: string): ContaLida | null {
   const m = CODE_LINE_RE.exec(linhaTexto.trim());
   if (!m?.[1] || !m[2]) return null;
 
@@ -217,12 +309,19 @@ function parseLinhaConta(linhaTexto: string): Omit<
   if (!descricao) return null;
 
   const blocoValores = resto.slice(inicioValores);
-  const naturezas = [...blocoValores.matchAll(/\b([DC])\b/g)].map((n) => n[1] as NaturezaConta);
+  const naturezas = [...blocoValores.matchAll(/(?:,\d{2}\s?|\b)([DC])\b/g)].map(
+    (n) => n[1] as NaturezaConta,
+  );
+  const fimPrimeiro = inicioValores + primeiro[0].length;
+  const naturezaAnterior = /^\s?([DC])\b/.exec(resto.slice(fimPrimeiro))?.[1] as
+    | NaturezaConta
+    | undefined;
 
   return {
     codigoConta,
     descricao: descricao.replace(/\s+/g, ' '),
     natureza: naturezas.at(-1) ?? null,
+    naturezaAnterior: naturezaAnterior ?? null,
     saldoAnterior: parseBr(primeiro[0]),
     debitos: parseBr(segundo[0]),
     creditos: parseBr(terceiro[0]),
@@ -276,6 +375,52 @@ function montarLinhasTexto(normalizado: string): string[] {
   return linhasTexto;
 }
 
+function montarLinha(
+  conta: ContaLida,
+  dados: Pick<LinhaBalanceteParseada, 'tipo' | 'nivel' | 'ehFolha'> & {
+    categoria: { slug: string; nome: string } | null;
+  },
+): LinhaBalanceteParseada {
+  const { naturezaAnterior: _naturezaAnterior, ...base } = conta;
+  return {
+    ...base,
+    tipo: dados.tipo,
+    nivel: dados.nivel,
+    ehFolha: dados.ehFolha,
+    movimento: movimentoDoMes(dados.tipo, conta.debitos, conta.creditos),
+    categoriaSlug: dados.categoria?.slug ?? null,
+    categoriaNome: dados.categoria?.nome ?? null,
+  };
+}
+
+/** Layout com plano de contas pontuado (ex.: 4.01.07.01.02). */
+function linhasPorCodigo(contas: ContaLida[]): LinhaBalanceteParseada[] {
+  const linhas = contas.map((conta) => {
+    const tipo = tipoPorCodigo(conta.codigoConta);
+    return montarLinha(conta, {
+      tipo,
+      nivel: conta.codigoConta.split('.').length,
+      ehFolha: false,
+      categoria: categorizar(conta.codigoConta, conta.descricao, tipo),
+    });
+  });
+  marcarFolhas(linhas);
+  return linhas;
+}
+
+/** Layout com códigos reduzidos (ex.: 1047): hierarquia inferida pelos valores. */
+function linhasPorHierarquia(contas: ContaLida[]): LinhaBalanceteParseada[] {
+  return inferirHierarquia(contas).map((no) => {
+    const tipo = tipoPorHierarquia(no);
+    return montarLinha(no.conta, {
+      tipo,
+      nivel: no.nivel,
+      ehFolha: no.ehFolha,
+      categoria: categorizar(no.conta.codigoConta, no.conta.descricao, tipo, descricoesAncestrais(no)),
+    });
+  });
+}
+
 /**
  * Aceita texto com uma conta por linha (pdfjs agrupado por Y) ou campos em linhas
  * separadas. Normaliza e parseia o plano Fortes.
@@ -293,49 +438,37 @@ export function parseTextoBalancete(texto: string): BalanceteParseado {
 
   const periodo = PERIODO_RE.exec(normalizado);
   if (!periodo) {
-    throw new Error('Não foi possível identificar o período do balancete');
+    throw new Error(
+      'Não foi possível identificar o período do balancete (esperado "Período: DD/MM/AAAA a DD/MM/AAAA")',
+    );
   }
 
-  const mesInicio = Number(periodo[2]);
-  const anoInicio = Number(periodo[3]);
-  const mesFim = Number(periodo[5]);
-  const anoFim = Number(periodo[6]);
+  const numeroDoGrupo = (indice: number) => Number((periodo[indice] ?? '').replace(/\s/g, ''));
+  const mesInicio = numeroDoGrupo(2);
+  const anoInicio = numeroDoGrupo(3);
+  const mesFim = numeroDoGrupo(5);
+  const anoFim = numeroDoGrupo(6);
   if (mesInicio !== mesFim || anoInicio !== anoFim) {
     throw new Error('Balancete deve cobrir um único mês de competência');
   }
 
-  const linhasTexto = montarLinhasTexto(normalizado);
-  const linhas: LinhaBalanceteParseada[] = [];
+  const contas: ContaLida[] = [];
   const vistos = new Set<string>();
-
-  for (const linhaTexto of linhasTexto) {
-    const base = parseLinhaConta(linhaTexto);
-    if (!base) continue;
-
+  for (const linhaTexto of montarLinhasTexto(normalizado)) {
+    const conta = parseLinhaConta(linhaTexto);
+    if (!conta) continue;
     // PDF pode repetir cabeçalhos/contas entre páginas; mantém a primeira ocorrência.
-    if (vistos.has(base.codigoConta)) continue;
-    vistos.add(base.codigoConta);
-
-    const tipo = tipoPorCodigo(base.codigoConta);
-    const cat = categorizar(base.codigoConta, base.descricao, tipo);
-    const movimento = movimentoDoMes(tipo, base.debitos, base.creditos);
-
-    linhas.push({
-      ...base,
-      nivel: base.codigoConta.split('.').length,
-      tipo,
-      movimento,
-      categoriaSlug: cat?.slug ?? null,
-      categoriaNome: cat?.nome ?? null,
-      ehFolha: false,
-    });
+    if (vistos.has(conta.codigoConta)) continue;
+    vistos.add(conta.codigoConta);
+    contas.push(conta);
   }
 
-  if (linhas.length < 10) {
+  if (contas.length < 10) {
     throw new Error('Poucas contas reconhecidas no balancete — verifique o PDF');
   }
 
-  marcarFolhas(linhas);
+  const codigosReduzidos = contas.every((conta) => !conta.codigoConta.includes('.'));
+  const linhas = codigosReduzidos ? linhasPorHierarquia(contas) : linhasPorCodigo(contas);
 
   let totalReceitas = 0;
   let totalDespesas = 0;

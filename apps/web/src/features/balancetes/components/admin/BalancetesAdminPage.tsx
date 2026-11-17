@@ -19,8 +19,9 @@ function mensagemErro(error: unknown): string {
     const data = error.response?.data as { message?: string | string[] } | undefined;
     if (typeof data?.message === 'string') return data.message;
     if (Array.isArray(data?.message)) return data.message.join(', ');
+    if (!error.response) return 'Sem conexão com o servidor. Verifique a internet e tente novamente.';
   }
-  return 'Não foi possível importar o PDF. Confira se é um balancete Fortes válido.';
+  return 'Não foi possível ler o PDF no navegador. Recarregue a página (Ctrl+Shift+R) e tente novamente.';
 }
 
 export function BalancetesAdminPage() {
