@@ -6,10 +6,12 @@ import {
   listaImportacoesFinanceirasSchema,
   previewImportacaoFinanceiraInputSchema,
   previewImportacaoFinanceiraSchema,
+  renomearImportacaoFinanceiraSchema,
   type ImportacaoFinanceiraDetalheQuery,
   type ImportarFinanceiroInput,
   type PaginacaoFinanceiraQuery,
   type PreviewImportacaoFinanceiraInput,
+  type RenomearImportacaoFinanceira,
 } from '@sindprf/types';
 import { z } from 'zod';
 import { api } from '../../lib/http';
@@ -38,6 +40,15 @@ export async function importarDocumentoFinanceiro(input: ImportarFinanceiroInput
 export async function listarImportacoesFinanceiras(query: PaginacaoFinanceiraQuery) {
   const { data } = await api.get('/financeiro/importacoes', { params: query });
   return listaImportacoesFinanceirasSchema.parse(data);
+}
+
+export async function renomearImportacaoFinanceira(
+  id: string,
+  input: RenomearImportacaoFinanceira,
+) {
+  const payload = renomearImportacaoFinanceiraSchema.parse(input);
+  const { data } = await api.patch(`/financeiro/importacoes/${id}`, payload);
+  return importacaoFinanceiraSchema.extend({ conta: contaFinanceiraSchema }).parse(data);
 }
 
 export async function excluirImportacaoFinanceira(id: string) {

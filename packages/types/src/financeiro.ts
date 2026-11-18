@@ -276,6 +276,15 @@ export type ImportacaoFinanceiraDetalheQuery = z.infer<
   typeof importacaoFinanceiraDetalheQuerySchema
 >;
 
+export const renomearImportacaoFinanceiraSchema = z.object({
+  arquivoNome: z
+    .string()
+    .trim()
+    .min(1, 'Informe o nome do arquivo')
+    .max(255, 'O nome deve ter no máximo 255 caracteres'),
+});
+export type RenomearImportacaoFinanceira = z.infer<typeof renomearImportacaoFinanceiraSchema>;
+
 export const listaImportacoesFinanceirasSchema = z.object({
   itens: z.array(importacaoFinanceiraSchema.extend({ conta: contaFinanceiraSchema })),
   pagina: z.number().int().positive(),

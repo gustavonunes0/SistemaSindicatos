@@ -41,6 +41,18 @@ export function usePreviewFinanceiro() {
   });
 }
 
+export function useRenomearImportacaoFinanceira() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, arquivoNome }: { id: string; arquivoNome: string }) =>
+      financeiroApi.renomearImportacaoFinanceira(id, { arquivoNome }),
+    onSuccess: (atualizada) => {
+      void queryClient.invalidateQueries({ queryKey: ['financeiro', 'importacoes'] });
+      void queryClient.invalidateQueries({ queryKey: ['financeiro', 'importacao', atualizada.id] });
+    },
+  });
+}
+
 export function useExcluirImportacaoFinanceira() {
   const queryClient = useQueryClient();
   return useMutation({

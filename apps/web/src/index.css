@@ -10624,8 +10624,10 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   font-size: 0.75rem;
 }
 
-.ef-arvore-doc-excluir {
+.ef-arvore-doc-acoes {
+  display: flex;
   flex: 0 0 auto;
+  gap: 0.35rem;
 }
 
 .ef-total-fatura th,

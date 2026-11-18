@@ -148,6 +148,48 @@ describe('FinanceiroService', () => {
     expect(tx.importacaoFinanceira.create).toHaveBeenCalledTimes(1);
   });
 
+  it('renomeia o arquivo apenas dentro do tenant atual', async () => {
+    const atualizada = {
+      id: 'importacao-1',
+      contaId: 'conta-1',
+      instituicao: 'SICOOB',
+      tipoDocumento: 'EXTRATO',
+      layout: 'SICOOB_EXTRATO',
+      arquivoNome: 'Extrato janeiro.pdf',
+      sha256: 'a'.repeat(64),
+      competenciaAno: 2026,
+      competenciaMes: 1,
+      periodoInicio: new Date('2026-01-01T00:00:00.000Z'),
+      periodoFim: new Date('2026-01-31T00:00:00.000Z'),
+      vencimento: null,
+      totalDocumento: null,
+      saldoInicial: 1000,
+      saldoFinal: 1150,
+      totalCreditos: 200,
+      totalDebitos: 50,
+      statusValidacaoSaldo: 'VALIDO',
+      totalLancamentos: 2,
+      createdAt: new Date(),
+      conta: { id: 'conta-1' },
+    };
+    const updateMany = jest.fn().mockResolvedValue({ count: 1 });
+    const findUnique = jest.fn().mockResolvedValue(atualizada);
+    const prisma = {
+      importacaoFinanceira: { updateMany, findUnique },
+    } as unknown as PrismaService;
+    const service = new FinanceiroService(prisma);
+
+    const resultado = await runWithTenantAsync(TENANT, () =>
+      service.renomear('importacao-1', 'Extrato janeiro.pdf'),
+    );
+
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { id: 'importacao-1', tenantId: TENANT.tenantId },
+      data: { arquivoNome: 'Extrato janeiro.pdf' },
+    });
+    expect(resultado.arquivoNome).toBe('Extrato janeiro.pdf');
+  });
+
   it('exclui a importação apenas dentro do tenant atual', async () => {
     const deleteMany = jest.fn().mockResolvedValue({ count: 1 });
     const prisma = {

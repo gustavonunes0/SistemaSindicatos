@@ -14,6 +14,7 @@ import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { extrairConteudoPdf } from '../../extrairPdf';
 import { ehPlanilha, extrairConteudoPlanilha } from '../../extrairPlanilha';
+import { RenomearDocumentoModal, type DocumentoRenomeavel } from './RenomearDocumentoModal';
 import {
   useContasFinanceiras,
   useExcluirImportacaoFinanceira,
@@ -144,6 +145,7 @@ export function ExtratosFaturasAdminPage() {
   const importarMutation = useImportarDocumentoFinanceiro();
   const excluirMutation = useExcluirImportacaoFinanceira();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
+  const [renomeando, setRenomeando] = useState<DocumentoRenomeavel | null>(null);
   const [fila, setFila] = useState<DocumentoFila[]>([]);
   const [selecionadoId, setSelecionadoId] = useState<string>();
   const [arrastando, setArrastando] = useState(false);
@@ -179,6 +181,10 @@ export function ExtratosFaturasAdminPage() {
 
   function rotuloDocumento(tipo: TipoDocumentoFinanceiro): string {
     return tipo === 'EXTRATO' ? 'extrato' : 'fatura';
+  }
+
+  function abrirRenomear(documento: ImportacaoComConta) {
+    setRenomeando({ id: documento.id, arquivoNome: documento.arquivoNome });
   }
 
   function pedirExclusao(documento: ImportacaoComConta) {
@@ -742,14 +748,23 @@ export function ExtratosFaturasAdminPage() {
                                         : `${documento.totalLancamentos} lançamentos`}
                                     </span>
                                   </button>
-                                  <button
-                                    type="button"
-                                    className="botao-tabela botao-tabela--perigo ef-arvore-doc-excluir"
-                                    disabled={excluirMutation.isPending}
-                                    onClick={() => pedirExclusao(documento)}
-                                  >
-                                    Excluir
-                                  </button>
+                                  <div className="ef-arvore-doc-acoes">
+                                    <button
+                                      type="button"
+                                      className="botao-tabela"
+                                      onClick={() => abrirRenomear(documento)}
+                                    >
+                                      Renomear
+                                    </button>
+                                    <button
+                                      type="button"
+                                      className="botao-tabela botao-tabela--perigo"
+                                      disabled={excluirMutation.isPending}
+                                      onClick={() => pedirExclusao(documento)}
+                                    >
+                                      Excluir
+                                    </button>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -792,14 +807,23 @@ export function ExtratosFaturasAdminPage() {
               </div>
               <div className="ef-detalhe-acoes">
                 {detalheQuery.data && (
-                  <button
-                    type="button"
-                    className="botao-perigo"
-                    disabled={excluirMutation.isPending}
-                    onClick={() => pedirExclusao(detalheQuery.data)}
-                  >
-                    Excluir
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="botao-secundario"
+                      onClick={() => abrirRenomear(detalheQuery.data)}
+                    >
+                      Renomear
+                    </button>
+                    <button
+                      type="button"
+                      className="botao-perigo"
+                      disabled={excluirMutation.isPending}
+                      onClick={() => pedirExclusao(detalheQuery.data)}
+                    >
+                      Excluir
+                    </button>
+                  </>
                 )}
                 <button type="button" className="botao-secundario" onClick={() => setDetalheId(undefined)}>
                   Fechar
@@ -933,6 +957,7 @@ export function ExtratosFaturasAdminPage() {
         </div>
       )}
       {modalConfirmacao}
+      <RenomearDocumentoModal documento={renomeando} onFechar={() => setRenomeando(null)} />
     </AreaLayout>
   );
 }

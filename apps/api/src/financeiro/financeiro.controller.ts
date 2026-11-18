@@ -1,15 +1,28 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
 import {
   cadastrarContaFinanceiraSchema,
   importacaoFinanceiraDetalheQuerySchema,
   importarFinanceiroInputSchema,
   paginacaoFinanceiraQuerySchema,
   previewImportacaoFinanceiraInputSchema,
+  renomearImportacaoFinanceiraSchema,
   type CadastrarContaFinanceira,
   type ImportacaoFinanceiraDetalheQuery,
   type ImportarFinanceiroInput,
   type PaginacaoFinanceiraQuery,
   type PreviewImportacaoFinanceiraInput,
+  type RenomearImportacaoFinanceira,
 } from '@sindprf/types';
 import { Roles } from '../common/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -53,6 +66,15 @@ export class FinanceiroController {
     query: PaginacaoFinanceiraQuery,
   ) {
     return this.financeiroService.listar(query);
+  }
+
+  @Patch('importacoes/:id')
+  renomear(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(renomearImportacaoFinanceiraSchema))
+    body: RenomearImportacaoFinanceira,
+  ) {
+    return this.financeiroService.renomear(id, body.arquivoNome);
   }
 
   @Delete('importacoes/:id')
