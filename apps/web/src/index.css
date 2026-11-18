@@ -10581,14 +10581,21 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   font-size: var(--texto-sm);
 }
 
-.ef-arvore-mes button {
+.ef-arvore-doc {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ef-arvore-doc-abrir {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  flex: 1 1 auto;
+  min-width: 0;
   /* Recuo negativo: o realce do hover avança sobre o respiro da árvore. */
-  width: calc(100% + 1.2rem);
-  margin-inline: -0.6rem;
+  margin-left: -0.6rem;
   padding: 0.55rem 0.6rem;
   text-align: left;
   color: inherit;
@@ -10598,23 +10605,45 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   cursor: pointer;
 }
 
-.ef-arvore-mes button:hover:not(:disabled),
-.ef-arvore-mes button:focus-visible {
+.ef-arvore-doc-abrir:hover:not(:disabled),
+.ef-arvore-doc-abrir:focus-visible {
   color: var(--cor-primaria);
   background: var(--cor-fundo);
 }
 
-.ef-arvore-mes button span:first-child {
+.ef-arvore-doc-abrir span:first-child {
   display: grid;
   gap: 0.1rem;
   min-width: 0;
   overflow-wrap: anywhere;
 }
 
-.ef-arvore-mes button span:last-child {
+.ef-arvore-doc-abrir span:last-child {
   flex: 0 0 auto;
   color: var(--cor-texto-suave);
   font-size: 0.75rem;
+}
+
+.ef-arvore-doc-excluir {
+  flex: 0 0 auto;
+}
+
+.ef-total-fatura th,
+.ef-total-fatura td {
+  border-top: 2px solid var(--cor-borda);
+  font-weight: 700;
+  color: var(--cor-primaria);
+}
+
+.ef-total-fatura th {
+  text-align: left;
+}
+
+.ef-detalhe-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .ef-vazio {

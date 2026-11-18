@@ -40,6 +40,10 @@ export async function listarImportacoesFinanceiras(query: PaginacaoFinanceiraQue
   return listaImportacoesFinanceirasSchema.parse(data);
 }
 
+export async function excluirImportacaoFinanceira(id: string) {
+  await api.delete(`/financeiro/importacoes/${id}`);
+}
+
 export async function detalharImportacaoFinanceira(
   id: string,
   query: ImportacaoFinanceiraDetalheQuery,

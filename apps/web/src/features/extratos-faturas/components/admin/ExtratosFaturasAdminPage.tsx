@@ -10,11 +10,13 @@ import { useMemo, useState } from 'react';
 import { z } from 'zod';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
 import { extrairConteudoPdf } from '../../extrairPdf';
 import { ehPlanilha, extrairConteudoPlanilha } from '../../extrairPlanilha';
 import {
   useContasFinanceiras,
+  useExcluirImportacaoFinanceira,
   useImportacaoFinanceiraDetalhe,
   useImportacoesFinanceiras,
   useImportarDocumentoFinanceiro,
@@ -73,6 +75,17 @@ function formatarMoeda(valor: number | null): string {
   return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
+function totalDaFatura(documento: {
+  tipoDocumento: TipoDocumentoFinanceiro;
+  totalDocumento: number | null;
+  totalCreditos: number;
+  totalDebitos: number;
+}): number | null {
+  if (documento.tipoDocumento !== 'FATURA') return null;
+  if (documento.totalDocumento !== null) return documento.totalDocumento;
+  return documento.totalDebitos - documento.totalCreditos;
+}
+
 function formatarData(valor: Date): string {
   return valor.toLocaleDateString('pt-BR', { timeZone: 'UTC' });
 }
@@ -129,10 +142,13 @@ export function ExtratosFaturasAdminPage() {
   const historicoQuery = useImportacoesFinanceiras({ pagina: 1, limite: 100 });
   const previewMutation = usePreviewFinanceiro();
   const importarMutation = useImportarDocumentoFinanceiro();
+  const excluirMutation = useExcluirImportacaoFinanceira();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const [fila, setFila] = useState<DocumentoFila[]>([]);
   const [selecionadoId, setSelecionadoId] = useState<string>();
   const [arrastando, setArrastando] = useState(false);
   const [erroUpload, setErroUpload] = useState<string>();
+  const [erroExclusao, setErroExclusao] = useState<string>();
   const [feedback, setFeedback] = useState<string>();
   const [busca, setBusca] = useState('');
   const [filtroBanco, setFiltroBanco] = useState('TODOS');
@@ -160,6 +176,32 @@ export function ExtratosFaturasAdminPage() {
   const processando = fila.some(
     (item) => item.status === 'PROCESSANDO' || item.status === 'CONFIRMANDO',
   );
+
+  function rotuloDocumento(tipo: TipoDocumentoFinanceiro): string {
+    return tipo === 'EXTRATO' ? 'extrato' : 'fatura';
+  }
+
+  function pedirExclusao(documento: ImportacaoComConta) {
+    setErroExclusao(undefined);
+    const competencia = `${MESES[documento.competenciaMes - 1]} de ${documento.competenciaAno}`;
+    pedirConfirmacao({
+      titulo: `Excluir ${rotuloDocumento(documento.tipoDocumento)} de ${competencia}?`,
+      descricao: `${documento.arquivoNome} e todos os lançamentos desta importação serão removidos. Esta ação não pode ser desfeita.`,
+      confirmarRotulo: 'Excluir',
+      tom: 'perigo',
+      onConfirmar: async () => {
+        try {
+          await excluirMutation.mutateAsync(documento.id);
+          if (detalheId === documento.id) setDetalheId(undefined);
+          setFeedback(
+            `${documento.tipoDocumento === 'EXTRATO' ? 'Extrato' : 'Fatura'} de ${competencia} excluído.`,
+          );
+        } catch {
+          setErroExclusao('Não foi possível excluir o documento. Tente novamente.');
+        }
+      },
+    });
+  }
 
   function atualizarFila(id: string, alteracao: Partial<DocumentoFila>) {
     setFila((atual) =>
@@ -407,6 +449,7 @@ export function ExtratosFaturasAdminPage() {
       </section>
 
       {erroUpload && <p className="erro ef-feedback">{erroUpload}</p>}
+      {erroExclusao && <p className="erro ef-feedback">{erroExclusao}</p>}
       {feedback && <p className="bal-feedback bal-feedback--ok">{feedback}</p>}
 
       {fila.length > 0 && (
@@ -679,21 +722,35 @@ export function ExtratosFaturasAdminPage() {
                             <div key={mes} className="ef-arvore-mes">
                               <h3>{MESES[mes - 1]}</h3>
                               {documentos.map((documento) => (
-                                <button
-                                  key={documento.id}
-                                  type="button"
-                                  onClick={() => {
-                                    setDetalheId(documento.id);
-                                    setPaginaDetalhe(1);
-                                    setBuscaLancamentos('');
-                                    setTipoLancamento('TODOS');
-                                    setDataInicio('');
-                                    setDataFim('');
-                                  }}
-                                >
-                                  <span><strong>{documento.tipoDocumento}</strong>{documento.arquivoNome}</span>
-                                  <span>{documento.totalLancamentos} lançamentos</span>
-                                </button>
+                                <div key={documento.id} className="ef-arvore-doc">
+                                  <button
+                                    type="button"
+                                    className="ef-arvore-doc-abrir"
+                                    onClick={() => {
+                                      setDetalheId(documento.id);
+                                      setPaginaDetalhe(1);
+                                      setBuscaLancamentos('');
+                                      setTipoLancamento('TODOS');
+                                      setDataInicio('');
+                                      setDataFim('');
+                                    }}
+                                  >
+                                    <span><strong>{documento.tipoDocumento}</strong>{documento.arquivoNome}</span>
+                                    <span>
+                                      {documento.tipoDocumento === 'FATURA'
+                                        ? `${formatarMoeda(totalDaFatura(documento))} · ${documento.totalLancamentos} lançamentos`
+                                        : `${documento.totalLancamentos} lançamentos`}
+                                    </span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="botao-tabela botao-tabela--perigo ef-arvore-doc-excluir"
+                                    disabled={excluirMutation.isPending}
+                                    onClick={() => pedirExclusao(documento)}
+                                  >
+                                    Excluir
+                                  </button>
+                                </div>
                               ))}
                             </div>
                           ))}
@@ -733,9 +790,21 @@ export function ExtratosFaturasAdminPage() {
                   </p>
                 )}
               </div>
-              <button type="button" className="botao-secundario" onClick={() => setDetalheId(undefined)}>
-                Fechar
-              </button>
+              <div className="ef-detalhe-acoes">
+                {detalheQuery.data && (
+                  <button
+                    type="button"
+                    className="botao-perigo"
+                    disabled={excluirMutation.isPending}
+                    onClick={() => pedirExclusao(detalheQuery.data)}
+                  >
+                    Excluir
+                  </button>
+                )}
+                <button type="button" className="botao-secundario" onClick={() => setDetalheId(undefined)}>
+                  Fechar
+                </button>
+              </div>
             </header>
             {detalheQuery.isLoading && <EstadoCarregando mensagem="Carregando lançamentos…" />}
             {detalheQuery.isError && <p className="erro">Não foi possível carregar este documento.</p>}
@@ -820,6 +889,15 @@ export function ExtratosFaturasAdminPage() {
                         </tr>
                       ))}
                     </tbody>
+                    {detalheQuery.data.tipoDocumento === 'FATURA' && (
+                      <tfoot>
+                        <tr className="ef-total-fatura">
+                          <th scope="row" colSpan={3}>Total da fatura</th>
+                          <td>{formatarMoeda(totalDaFatura(detalheQuery.data))}</td>
+                          <td colSpan={4} />
+                        </tr>
+                      </tfoot>
+                    )}
                   </table>
                 </div>
                 <footer className="tabela-rodape">
@@ -854,6 +932,7 @@ export function ExtratosFaturasAdminPage() {
           </section>
         </div>
       )}
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

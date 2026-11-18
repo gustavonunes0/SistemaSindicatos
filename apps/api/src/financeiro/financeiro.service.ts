@@ -242,6 +242,13 @@ export class FinanceiroService {
     };
   }
 
+  async excluir(id: string): Promise<void> {
+    const { count } = await this.prisma.importacaoFinanceira.deleteMany({
+      where: { id, tenantId: requireTenantId() },
+    });
+    if (count === 0) throw new NotFoundException('Importação financeira não encontrada');
+  }
+
   async detalhe(id: string, query: ImportacaoFinanceiraDetalheQuery) {
     const importacao = await this.prisma.importacaoFinanceira.findUnique({
       where: { id },

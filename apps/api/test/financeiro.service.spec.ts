@@ -147,4 +147,18 @@ describe('FinanceiroService', () => {
     });
     expect(tx.importacaoFinanceira.create).toHaveBeenCalledTimes(1);
   });
+
+  it('exclui a importação apenas dentro do tenant atual', async () => {
+    const deleteMany = jest.fn().mockResolvedValue({ count: 1 });
+    const prisma = {
+      importacaoFinanceira: { deleteMany },
+    } as unknown as PrismaService;
+    const service = new FinanceiroService(prisma);
+
+    await runWithTenantAsync(TENANT, () => service.excluir('importacao-1'));
+
+    expect(deleteMany).toHaveBeenCalledWith({
+      where: { id: 'importacao-1', tenantId: TENANT.tenantId },
+    });
+  });
 });

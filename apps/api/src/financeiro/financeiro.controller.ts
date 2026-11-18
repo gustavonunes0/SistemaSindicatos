@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query } from '@nestjs/common';
 import {
   cadastrarContaFinanceiraSchema,
   importacaoFinanceiraDetalheQuerySchema,
@@ -53,6 +53,12 @@ export class FinanceiroController {
     query: PaginacaoFinanceiraQuery,
   ) {
     return this.financeiroService.listar(query);
+  }
+
+  @Delete('importacoes/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  excluir(@Param('id') id: string) {
+    return this.financeiroService.excluir(id);
   }
 
   @Get('importacoes/:id')
