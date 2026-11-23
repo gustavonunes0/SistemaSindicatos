@@ -23,7 +23,8 @@ import { Roles } from '../common/decorators';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { EstatutosService } from './estatutos.service';
 
-const PDF_MAX_BYTES = 20 * 1024 * 1024;
+/** PDFs de estatuto costumam ser densos; alinhado ao limite de anexos de notícia. */
+const PDF_MAX_BYTES = 50 * 1024 * 1024;
 
 @Controller('estatutos')
 export class EstatutosController {

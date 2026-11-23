@@ -18,6 +18,7 @@ export class MulterExceptionFilter implements ExceptionFilter {
         statusCode: HttpStatus.PAYLOAD_TOO_LARGE,
         message: 'Arquivo muito grande. Reduza o tamanho e tente novamente.',
         error: 'Payload Too Large',
+        code: 'LIMIT_FILE_SIZE',
       });
       return;
     }

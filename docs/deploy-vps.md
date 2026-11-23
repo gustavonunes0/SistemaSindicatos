@@ -195,7 +195,8 @@ proxy_set_header X-Tenant-Host $http_x_tenant_host;
 proxy_connect_timeout 300s;
 proxy_send_timeout 300s;
 proxy_read_timeout 300s;
-client_max_body_size 32m;
+# Estatutos/anexos: até 50 MB. Abaixo disso o proxy devolve 413 antes da API.
+client_max_body_size 50m;
 ```
 
 ---

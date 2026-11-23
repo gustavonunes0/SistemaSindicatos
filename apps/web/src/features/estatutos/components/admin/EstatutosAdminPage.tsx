@@ -6,6 +6,7 @@ import {
   type CriarEstatutoInput,
   type Estatuto,
 } from '@sindprf/types';
+import { isAxiosError } from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import type { z } from 'zod';
@@ -25,10 +26,38 @@ import {
 type ValoresCriar = z.input<typeof criarEstatutoSchema>;
 type ValoresEditar = z.input<typeof atualizarEstatutoSchema>;
 
+/** Manter alinhado a `PDF_MAX_BYTES` em estatutos.controller.ts */
+const PDF_MAX_BYTES = 50 * 1024 * 1024;
+const PDF_LIMITE_ROTULO = '50 MB';
+
 function formatarTamanho(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function mensagemErroCriarEstatuto(erro: unknown): string {
+  if (isAxiosError(erro)) {
+    const status = erro.response?.status;
+    // 413 = Payload Too Large. Alguns proxies devolvem 419.
+    if (status === 413 || status === 419) {
+      return `Arquivo muito grande (HTTP ${status}). O limite é ${PDF_LIMITE_ROTULO}.`;
+    }
+    const msg = erro.response?.data?.message;
+    if (typeof msg === 'string' && msg.trim()) {
+      if (/grande|large|limit|tamanho|size/i.test(msg)) {
+        return `Arquivo muito grande. O limite é ${PDF_LIMITE_ROTULO}.`;
+      }
+      return msg;
+    }
+    if (!erro.response && erro.message) {
+      return 'Falha de rede ao enviar o arquivo. Tente novamente.';
+    }
+  }
+  if (erro instanceof Error && erro.message) {
+    return erro.message;
+  }
+  return 'Não foi possível salvar. Verifique o PDF e o título.';
 }
 
 export function EstatutosAdminPage() {
@@ -65,6 +94,9 @@ export function EstatutosAdminPage() {
       formCriar.setError('titulo', { message: 'Selecione o PDF do estatuto' });
       return;
     }
+    if (arquivo.size > PDF_MAX_BYTES) {
+      return;
+    }
     criar.mutate(
       { input: dados, arquivo },
       {
@@ -77,6 +109,8 @@ export function EstatutosAdminPage() {
       },
     );
   };
+
+  const arquivoAcimaDoLimite = Boolean(arquivo && arquivo.size > PDF_MAX_BYTES);
 
   return (
     <AreaLayout
@@ -163,7 +197,7 @@ export function EstatutosAdminPage() {
         aberto={modalCriar}
         onFechar={() => setModalCriar(false)}
         titulo="Novo estatuto"
-        descricao="Informe o título e envie o PDF do documento."
+        descricao={`Informe o título e envie o PDF do documento (até ${PDF_LIMITE_ROTULO}).`}
       >
         <form className="form-stack" onSubmit={formCriar.handleSubmit(onCriar)}>
           <label>
@@ -179,20 +213,40 @@ export function EstatutosAdminPage() {
               ref={inputArquivoRef}
               type="file"
               accept="application/pdf,.pdf"
-              onChange={(e) => setArquivo(e.target.files?.[0] ?? null)}
+              onChange={(e) => {
+                criar.reset();
+                setArquivo(e.target.files?.[0] ?? null);
+              }}
             />
-            {arquivo && <small className="texto-secundario">{arquivo.name}</small>}
+            {arquivo && (
+              <small className="texto-secundario">
+                {arquivo.name} · {formatarTamanho(arquivo.size)}
+              </small>
+            )}
           </label>
           <label className="campo-checkbox">
             <input type="checkbox" {...formCriar.register('ativo')} />
             Ativo (visível para filiados)
           </label>
-          {criar.isError && <p className="erro">Não foi possível salvar. Verifique o PDF e o título.</p>}
+          {arquivoAcimaDoLimite && arquivo && (
+            <p className="erro" role="alert">
+              Arquivo muito grande ({formatarTamanho(arquivo.size)}). O limite é {PDF_LIMITE_ROTULO}.
+            </p>
+          )}
+          {criar.isError && !arquivoAcimaDoLimite && (
+            <p className="erro" role="alert">
+              {mensagemErroCriarEstatuto(criar.error)}
+            </p>
+          )}
           <div className="form-acoes">
             <button type="button" className="botao-secundario" onClick={() => setModalCriar(false)}>
               Cancelar
             </button>
-            <button type="submit" className="botao-primario" disabled={criar.isPending}>
+            <button
+              type="submit"
+              className="botao-primario"
+              disabled={criar.isPending || arquivoAcimaDoLimite}
+            >
               {criar.isPending ? 'Enviando…' : 'Salvar'}
             </button>
           </div>
