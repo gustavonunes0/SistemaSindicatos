@@ -126,8 +126,9 @@ button.botao-primario {
   color: var(--cor-primaria);
 }
 
+button.botao-link-acao,
 .botao-link-acao {
-  background: none;
+  background: transparent;
   border: none;
   padding: 0;
   color: var(--cor-primaria);
@@ -136,10 +137,22 @@ button.botao-primario {
   text-decoration: underline;
   white-space: nowrap;
   cursor: pointer;
+  box-shadow: none;
 }
 
+button.botao-link-acao:hover:not(:disabled),
+button.botao-link-acao:focus-visible,
+button.botao-link-acao:active,
 .botao-link-acao:hover {
+  background: transparent;
   color: var(--azul-noite);
+  box-shadow: none;
+}
+
+button.botao-link-acao:disabled {
+  background: transparent;
+  color: var(--cor-primaria);
+  opacity: 0.55;
 }
 
 .botao-link-acao--perigo {
@@ -4294,9 +4307,27 @@ textarea {
   color: var(--cor-primaria);
 }
 
+.area-shell--admin button.botao-link-acao,
+.area-shell--admin .botao-link-acao {
+  background: transparent;
+  color: var(--cor-primaria);
+}
+
+.area-shell--admin button.botao-link-acao:hover:not(:disabled),
+.area-shell--admin button.botao-link-acao:focus-visible,
+.area-shell--admin button.botao-link-acao:active,
 .area-shell--admin .botao-link-acao:hover {
   background: transparent;
   color: var(--azul-noite);
+}
+
+.area-shell--admin .tabela-acoes--coluna {
+  align-items: flex-end;
+}
+
+.area-shell--admin .tabela-acoes--coluna .botao-link-acao {
+  width: auto;
+  text-align: right;
 }
 
 .area-shell--admin .tabela-rodape {

@@ -51,16 +51,18 @@ export function D8DetalheAdminPage() {
     );
   }
 
+  const importacao = detalhe;
+
   function confirmarExclusao() {
     setErroExclusao(undefined);
     pedirConfirmacao({
-      titulo: `Excluir D8 de ${rotuloTipo[detalhe.tipo].toLowerCase()}?`,
-      descricao: `Serão removidos os ${detalhe.totalLinhas.toLocaleString('pt-BR')} registros desta importação (${String(detalhe.competenciaMes).padStart(2, '0')}/${detalhe.competenciaAno}). Os cadastros de afiliados não são apagados. Esta ação não pode ser desfeita.`,
+      titulo: `Excluir D8 de ${rotuloTipo[importacao.tipo].toLowerCase()}?`,
+      descricao: `Serão removidos os ${importacao.totalLinhas.toLocaleString('pt-BR')} registros desta importação (${String(importacao.competenciaMes).padStart(2, '0')}/${importacao.competenciaAno}). Os cadastros de afiliados não são apagados. Esta ação não pode ser desfeita.`,
       confirmarRotulo: 'Excluir importação',
       tom: 'perigo',
       onConfirmar: async () => {
         try {
-          await excluir.mutateAsync(detalhe.id);
+          await excluir.mutateAsync(importacao.id);
           navigate('/admin/financeiro/d8', { replace: true });
         } catch {
           setErroExclusao('Não foi possível excluir a importação. Tente novamente.');
