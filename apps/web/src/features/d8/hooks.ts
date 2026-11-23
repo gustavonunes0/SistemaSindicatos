@@ -36,3 +36,13 @@ export function useImportarD8() {
     },
   });
 }
+
+export function useExcluirD8() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => d8Api.excluirImportacaoD8(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['d8'] });
+    },
+  });
+}

@@ -9984,8 +9984,19 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   }
 }
 
+.d8-competencia-item-wrap {
+  display: grid;
+  gap: 0.45rem;
+  height: 100%;
+}
+
 .d8-competencia-item {
   height: 100%;
+}
+
+.d8-competencia-item-acoes {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .d8-competencia-item h4 {

@@ -31,7 +31,8 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
   const originsFixos = originsEstaticosPermitidos();
   const tenants = app.get(TenantService);
 
-  app.useBodyParser('json', { limit: '10mb' });
+  // Texto extraído do D8 no browser pode passar de alguns MB.
+  app.useBodyParser('json', { limit: '25mb' });
   app.use(
     helmet({
       crossOriginResourcePolicy: { policy: 'cross-origin' },

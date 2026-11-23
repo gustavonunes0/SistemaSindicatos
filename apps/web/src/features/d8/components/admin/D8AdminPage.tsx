@@ -105,6 +105,12 @@ export function D8AdminPage() {
           </button>
         </div>
 
+        {importar.isPending && (
+          <p className="d8-admin-secao-texto" role="status">
+            Processando o D8 no servidor — arquivos grandes podem levar até alguns minutos.
+            Não feche esta página.
+          </p>
+        )}
         {importar.isError && <p className="erro">{mensagemErro(importar.error)}</p>}
         {resultadoMsg && <p className="d8-admin-sucesso">{resultadoMsg}</p>}
       </section>

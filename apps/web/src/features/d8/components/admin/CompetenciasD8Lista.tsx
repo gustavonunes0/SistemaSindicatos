@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { ImportacaoD8, TipoD8 } from '@sindprf/types';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarDataHora } from '../../../../lib/datas';
+import { useExcluirD8 } from '../../hooks';
 
 const rotuloTipo: Record<TipoD8, string> = {
   SERVIDOR: 'Servidor',
@@ -96,6 +98,9 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
   const [filtroTipo, setFiltroTipo] = useState<FiltroTipo>('todos');
   const [filtroCompletude, setFiltroCompletude] = useState<FiltroCompletude>('todos');
   const [busca, setBusca] = useState('');
+  const [erroExclusao, setErroExclusao] = useState<string>();
+  const excluir = useExcluirD8();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   const anosDisponiveis = [...new Set(importacoes.map((item) => item.competenciaAno))].sort(
     (a, b) => b - a,
@@ -140,13 +145,53 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
     setBusca('');
   }
 
+  function confirmarExclusao(item: ImportacaoD8) {
+    const competencia = nomeCompetencia(item.competenciaMes, item.competenciaAno);
+    setErroExclusao(undefined);
+    pedirConfirmacao({
+      titulo: `Excluir D8 de ${rotuloTipo[item.tipo].toLowerCase()}?`,
+      descricao: `Serão removidos os ${item.totalLinhas.toLocaleString('pt-BR')} registros de ${rotuloTipo[item.tipo].toLowerCase()} de ${competencia}. Os cadastros de afiliados não são apagados. Esta ação não pode ser desfeita.`,
+      confirmarRotulo: 'Excluir importação',
+      tom: 'perigo',
+      onConfirmar: async () => {
+        try {
+          await excluir.mutateAsync(item.id);
+        } catch {
+          setErroExclusao('Não foi possível excluir a importação. Tente novamente.');
+        }
+      },
+    });
+  }
+
+  function confirmarExclusaoMes(grupo: CompetenciaGrupo) {
+    setErroExclusao(undefined);
+    pedirConfirmacao({
+      titulo: `Excluir ${nomeCompetencia(grupo.mes, grupo.ano)}?`,
+      descricao: `Serão removidas todas as importações D8 deste mês (${grupo.importacoes
+        .map((item) => rotuloTipo[item.tipo].toLowerCase())
+        .join(' e ')}). Os cadastros de afiliados não são apagados. Esta ação não pode ser desfeita.`,
+      confirmarRotulo: 'Excluir mês',
+      tom: 'perigo',
+      onConfirmar: async () => {
+        try {
+          for (const item of grupo.importacoes) {
+            await excluir.mutateAsync(item.id);
+          }
+        } catch {
+          setErroExclusao('Não foi possível excluir o mês completo. Tente novamente.');
+        }
+      },
+    });
+  }
+
   return (
     <div className="d8-competencias">
       <div className="d8-competencias-topo">
         <div>
           <h2 className="d8-admin-secao-titulo">Competências importadas</h2>
           <p className="d8-admin-secao-texto">
-            Agrupadas por mês. Uma competência completa tem servidor e pensionista.
+            Agrupadas por mês. Uma competência completa tem servidor e pensionista. Use Excluir
+            para remover um tipo importado por engano.
           </p>
         </div>
         {filtrosAtivos && (
@@ -226,6 +271,8 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
         </div>
       </div>
 
+      {erroExclusao && <p className="erro">{erroExclusao}</p>}
+
       {grupos.length === 0 ? (
         <div className="estado-vazio">
           <p>Nenhuma competência corresponde aos filtros.</p>
@@ -259,13 +306,26 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
                   >
                     {grupo.completa ? 'Completa' : 'Incompleta'}
                   </span>
+                  {grupo.importacoes.length > 1 && (
+                    <button
+                      type="button"
+                      className="botao-tabela botao-tabela--perigo"
+                      disabled={excluir.isPending}
+                      onClick={() => confirmarExclusaoMes(grupo)}
+                    >
+                      Excluir mês
+                    </button>
+                  )}
                 </div>
               </header>
 
               <ul className="d8-competencia-grupo-itens">
                 {grupo.importacoes.map((item) => (
-                  <li key={item.id}>
-                    <Link className="d8-admin-item d8-competencia-item" to={`/admin/financeiro/d8/${item.id}`}>
+                  <li key={item.id} className="d8-competencia-item-wrap">
+                    <Link
+                      className="d8-admin-item d8-competencia-item"
+                      to={`/admin/financeiro/d8/${item.id}`}
+                    >
                       <div className="d8-admin-item-topo">
                         <h4>{rotuloTipo[item.tipo]}</h4>
                         <span className="badge">{item.totalLinhas} registros</span>
@@ -286,6 +346,16 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
                       </dl>
                       <span className="d8-admin-item-cta">Analisar →</span>
                     </Link>
+                    <div className="d8-competencia-item-acoes">
+                      <button
+                        type="button"
+                        className="botao-tabela botao-tabela--perigo"
+                        disabled={excluir.isPending}
+                        onClick={() => confirmarExclusao(item)}
+                      >
+                        Excluir {rotuloTipo[item.tipo].toLowerCase()}
+                      </button>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -293,6 +363,8 @@ export function CompetenciasD8Lista({ importacoes }: CompetenciasD8ListaProps) {
           ))}
         </ul>
       )}
+
+      {modalConfirmacao}
     </div>
   );
 }

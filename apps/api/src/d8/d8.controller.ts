@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
 import {
   importarD8CamposSchema,
   listarLinhasD8QuerySchema,
@@ -48,5 +48,11 @@ export class D8Controller {
     @Query(new ZodValidationPipe(listarLinhasD8QuerySchema)) query: ListarLinhasD8Query,
   ) {
     return this.d8Service.listarLinhas(id, query.filtro);
+  }
+
+  @Roles('ADMIN')
+  @Delete(':id')
+  excluir(@Param('id') id: string) {
+    return this.d8Service.excluir(id);
   }
 }

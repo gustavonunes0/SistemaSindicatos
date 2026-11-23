@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { FiltroLinhasD8, TipoD8 } from '@sindprf/types';
 import { AreaLayout } from '../../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
+import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarDataHora } from '../../../../lib/datas';
 import { FinanceiroSubnav } from '../../../financeiro/components/admin/FinanceiroSubnav';
-import { useImportacaoD8, useLinhasD8 } from '../../hooks';
+import { useExcluirD8, useImportacaoD8, useLinhasD8 } from '../../hooks';
 
 const rotuloTipo: Record<TipoD8, string> = {
   SERVIDOR: 'Servidor',
@@ -23,9 +24,13 @@ function formatarCpf(cpf: string): string {
 
 export function D8DetalheAdminPage() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [filtro, setFiltro] = useState<FiltroLinhasD8>('todos');
+  const [erroExclusao, setErroExclusao] = useState<string>();
   const { data: detalhe, isLoading, isError } = useImportacaoD8(id);
   const { data: linhas, isLoading: carregandoLinhas } = useLinhasD8(id, filtro);
+  const excluir = useExcluirD8();
+  const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   if (isLoading) {
     return (
@@ -46,18 +51,47 @@ export function D8DetalheAdminPage() {
     );
   }
 
+  function confirmarExclusao() {
+    setErroExclusao(undefined);
+    pedirConfirmacao({
+      titulo: `Excluir D8 de ${rotuloTipo[detalhe.tipo].toLowerCase()}?`,
+      descricao: `Serão removidos os ${detalhe.totalLinhas.toLocaleString('pt-BR')} registros desta importação (${String(detalhe.competenciaMes).padStart(2, '0')}/${detalhe.competenciaAno}). Os cadastros de afiliados não são apagados. Esta ação não pode ser desfeita.`,
+      confirmarRotulo: 'Excluir importação',
+      tom: 'perigo',
+      onConfirmar: async () => {
+        try {
+          await excluir.mutateAsync(detalhe.id);
+          navigate('/admin/financeiro/d8', { replace: true });
+        } catch {
+          setErroExclusao('Não foi possível excluir a importação. Tente novamente.');
+        }
+      },
+    });
+  }
+
   return (
     <AreaLayout
       tipo="admin"
       titulo={`D8 ${String(detalhe.competenciaMes).padStart(2, '0')}/${detalhe.competenciaAno}`}
       descricao={`${rotuloTipo[detalhe.tipo]} · ${detalhe.arquivoNome}`}
       acoes={
-        <Link to="/admin/financeiro/d8" className="botao-secundario">
-          Voltar
-        </Link>
+        <>
+          <button
+            type="button"
+            className="botao-perigo"
+            disabled={excluir.isPending}
+            onClick={confirmarExclusao}
+          >
+            Excluir importação
+          </button>
+          <Link to="/admin/financeiro/d8" className="botao-secundario">
+            Voltar
+          </Link>
+        </>
       }
     >
       <FinanceiroSubnav />
+      {erroExclusao && <p className="erro">{erroExclusao}</p>}
 
       <section className="d8-admin-metricas" aria-label="Resumo da competência">
         <div>
@@ -167,6 +201,7 @@ export function D8DetalheAdminPage() {
           </div>
         )}
       </section>
+      {modalConfirmacao}
     </AreaLayout>
   );
 }

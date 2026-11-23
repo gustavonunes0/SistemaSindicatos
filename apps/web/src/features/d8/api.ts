@@ -25,6 +25,10 @@ export async function listarLinhasD8(id: string, filtro: FiltroLinhasD8 = 'todos
   return z.array(linhaD8Schema).parse(data);
 }
 
+export async function excluirImportacaoD8(id: string): Promise<void> {
+  await api.delete(`/d8/${id}`);
+}
+
 export async function importarD8(input: {
   arquivo: File;
   tipo: TipoD8;
@@ -39,7 +43,7 @@ export async function importarD8(input: {
       texto,
       arquivoNome: input.arquivo.name,
     },
-    { timeout: 180_000 },
+    { timeout: 300_000 },
   );
   return importarD8ResultadoSchema.parse(data);
 }

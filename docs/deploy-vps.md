@@ -182,7 +182,7 @@ Mesmo padrão do Baturité (`http://187.127.42.128:PORTA`).
 
 > Se a porta do NPM ≠ `API_PORT`, o browser mostra “CORS” / `ERR_FAILED` (na verdade é 502 sem header CORS).
 
-**Advanced** (API), se o NPM não repassar headers:
+**Advanced** (API), se o NPM não repassar headers — e para importações D8 não tomarem 504:
 
 ```nginx
 proxy_set_header Host $host;
@@ -190,6 +190,12 @@ proxy_set_header X-Forwarded-Host $host;
 proxy_set_header X-Forwarded-Proto $scheme;
 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 proxy_set_header X-Tenant-Host $http_x_tenant_host;
+
+# D8 / uploads grandes: o default do NPM (~60s) corta a requisição.
+proxy_connect_timeout 300s;
+proxy_send_timeout 300s;
+proxy_read_timeout 300s;
+client_max_body_size 32m;
 ```
 
 ---
