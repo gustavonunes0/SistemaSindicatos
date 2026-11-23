@@ -14043,6 +14043,346 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
   font-size: 1rem;
 }
 
+/* ============ Eventos — galeria ============ */
+.eventos-admin-grade,
+.eventos-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .eventos-admin-grade,
+  .eventos-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1100px) {
+  .eventos-admin-grade,
+  .eventos-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.evento-admin-card,
+.evento-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--cor-superficie);
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  overflow: hidden;
+  color: inherit;
+  text-decoration: none;
+}
+
+.evento-admin-capa,
+.evento-card-capa {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  display: grid;
+  place-items: center;
+  background: var(--cor-fundo);
+  border-bottom: var(--borda-fina);
+}
+
+.evento-admin-capa img,
+.evento-card-capa img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.evento-admin-capa-vazia,
+.evento-card-capa-vazia {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.evento-card-qtd {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.6rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--raio);
+  background: rgb(7 31 56 / 72%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.evento-admin-corpo,
+.evento-card-corpo {
+  display: grid;
+  gap: 0.35rem;
+  flex: 1;
+  padding: 1rem 1.1rem;
+}
+
+.evento-admin-topo {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.evento-admin-corpo h2,
+.evento-card-corpo h2 {
+  margin: 0;
+  font-size: var(--texto-base);
+  color: var(--cor-primaria);
+}
+
+.evento-admin-corpo p,
+.evento-card-corpo p {
+  margin: 0;
+}
+
+.evento-admin-rodape {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 1.1rem 1.1rem;
+}
+
+.evento-busca {
+  max-width: 24rem;
+  margin-bottom: 1.25rem;
+}
+
+.evento-form-bloco {
+  margin: 0;
+  padding: 1.15rem 0 0;
+  border: none;
+  border-top: var(--borda-fina);
+}
+
+.evento-form .evento-form-bloco:first-of-type {
+  padding-top: 0;
+  border-top: none;
+}
+
+.evento-form-bloco > legend {
+  padding: 0;
+  margin: 0 0 0.75rem;
+  font-family: var(--fonte-display);
+  font-size: var(--texto-sm);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.evento-form-linha {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (min-width: 720px) {
+  .evento-form-linha {
+    grid-template-columns: minmax(9rem, 1fr) minmax(0, 2fr);
+  }
+}
+
+.evento-form-nota {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+}
+
+.evento-fotos-drop {
+  display: grid;
+  gap: 0.15rem;
+  justify-items: center;
+  padding: 1.25rem 1rem;
+  border: 1px dashed var(--cor-borda);
+  border-radius: var(--raio-lg);
+  background: var(--cor-fundo);
+  text-align: center;
+  cursor: pointer;
+}
+
+.evento-fotos-drop:hover,
+.evento-fotos-drop:focus-within,
+input:focus-visible + .evento-fotos-drop {
+  border-color: var(--cor-primaria);
+}
+
+.evento-fotos-drop strong {
+  color: var(--cor-primaria);
+}
+
+.evento-fotos-drop span {
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.evento-fotos-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: 0.65rem;
+  margin: 0.85rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evento-fotos-grade li {
+  position: relative;
+  border-radius: var(--raio);
+  overflow: hidden;
+  border: var(--borda-fina);
+  background: var(--cor-fundo);
+}
+
+.evento-fotos-grade img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.evento-foto-capa {
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0.35rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: var(--raio);
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.evento-foto-remover {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 65%);
+  color: #fff;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.evento-foto-remover:hover:not(:disabled) {
+  background: var(--cor-erro);
+  color: #fff;
+}
+
+.evento-detalhe {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.evento-detalhe-descricao {
+  margin: 0;
+  max-width: 62ch;
+  line-height: 1.55;
+  color: var(--cor-texto-suave);
+}
+
+.evento-galeria-palco {
+  position: relative;
+  border-radius: var(--raio-lg);
+  overflow: hidden;
+  border: var(--borda-fina);
+  background: var(--cor-fundo);
+}
+
+.evento-galeria-principal {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 520px;
+  object-fit: contain;
+  display: block;
+  background: #0b1f33;
+}
+
+.evento-galeria-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.4rem;
+  height: 2.4rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: none;
+  border-radius: 999px;
+  background: rgb(7 31 56 / 72%);
+  color: #fff;
+  cursor: pointer;
+}
+
+.evento-galeria-nav:hover:not(:disabled) {
+  background: rgb(7 31 56 / 88%);
+  color: #fff;
+}
+
+.evento-galeria-nav--ant {
+  left: 0.75rem;
+}
+
+.evento-galeria-nav--prox {
+  right: 0.75rem;
+}
+
+.evento-galeria-indice {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgb(7 31 56 / 72%);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.evento-galeria-miniaturas {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.evento-miniatura {
+  flex-shrink: 0;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: calc(var(--raio) - 2px);
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.evento-miniatura img {
+  display: block;
+  width: 4.5rem;
+  height: 3.2rem;
+  object-fit: cover;
+}
+
+.evento-miniatura--ativa,
+.evento-miniatura:hover:not(:disabled) {
+  border-color: var(--cor-primaria);
+  background: none;
+}
+
+.evento-galeria-acoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
 /* ============ Movimento: respeito a prefers-reduced-motion ============ */
 @media (prefers-reduced-motion: reduce) {
   *,

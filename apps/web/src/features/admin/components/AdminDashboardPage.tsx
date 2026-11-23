@@ -70,6 +70,12 @@ const modulos: ModuloAdmin[] = [
     acao: 'Gerenciar convênios',
   },
   {
+    to: '/admin/eventos',
+    titulo: 'Eventos',
+    descricao: 'Cadastre eventos e publique a galeria de fotos para os filiados.',
+    acao: 'Gerenciar eventos',
+  },
+  {
     to: '/admin/imoveis',
     titulo: 'Apartamentos',
     descricao: 'Cadastre imóveis e acompanhe as solicitações de locação.',

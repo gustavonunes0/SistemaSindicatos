@@ -25,6 +25,11 @@ const beneficios = [
     descricao: 'Descontos e parcerias exclusivas para afiliados.',
   },
   {
+    to: '/afiliado/eventos',
+    titulo: 'Eventos',
+    descricao: 'Veja as galerias dos eventos e baixe as fotos.',
+  },
+  {
     to: '/afiliado/imoveis',
     titulo: 'Apartamentos',
     descricao: 'Reserve imóveis de lazer pelo sistema oficial do sindicato.',

@@ -42,6 +42,8 @@ const MODELS_COM_TENANT = new Set([
   'ContaFinanceira',
   'ImportacaoFinanceira',
   'LancamentoFinanceiro',
+  'Evento',
+  'FotoEvento',
 ]);
 
 function tenantIdAtivo(): string | undefined {

@@ -19,6 +19,7 @@ import { ContatoModule } from './contato/contato.module';
 import { D8Module } from './d8/d8.module';
 import { DiretoriaModule } from './diretoria/diretoria.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
+import { EventosModule } from './eventos/eventos.module';
 import { EstatutosModule } from './estatutos/estatutos.module';
 import { FinanceiroModule } from './financeiro/financeiro.module';
 import { ImoveisModule } from './imoveis/imoveis.module';
@@ -65,6 +66,7 @@ import { PlataformaModule } from './plataforma/plataforma.module';
     BalancetesModule,
     FinanceiroModule,
     JuridicoModule,
+    EventosModule,
   ],
   controllers: [AppController],
   providers: [

@@ -74,6 +74,8 @@ export class PrismaService implements OnModuleInit, OnModuleDestroy {
   declare contaFinanceira: TenantPrismaClient['contaFinanceira'];
   declare importacaoFinanceira: TenantPrismaClient['importacaoFinanceira'];
   declare lancamentoFinanceiro: TenantPrismaClient['lancamentoFinanceiro'];
+  declare evento: TenantPrismaClient['evento'];
+  declare fotoEvento: TenantPrismaClient['fotoEvento'];
   declare tenant: TenantPrismaClient['tenant'];
   declare tenantDomain: TenantPrismaClient['tenantDomain'];
   declare $transaction: TenantPrismaClient['$transaction'];

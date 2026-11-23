@@ -12,6 +12,7 @@ export * from './d8';
 export * from './diretoria';
 export * from './eleicao';
 export * from './estatuto';
+export * from './evento';
 export * from './financeiro';
 export * from './formulario';
 export * from './health';

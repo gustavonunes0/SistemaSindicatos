@@ -75,6 +75,8 @@ model Tenant {
   lancamentosFinanceiros LancamentoFinanceiro[]
   importacoesAcaoJuridica ImportacaoAcaoJuridica[]
   acoesJuridicas         AcaoJuridica[]
+  eventos                Evento[]
+  fotosEvento            FotoEvento[]
 
   @@map("tenants")
 }
@@ -1193,4 +1195,43 @@ model LancamentoFinanceiro {
   @@index([tenantId, contaId, data])
   @@index([importacaoId])
   @@map("lancamentos_financeiros")
+}
+
+// =====================================================================
+// EVENTOS — GALERIA DE FOTOS
+// =====================================================================
+
+model Evento {
+  id         String    @id @default(cuid())
+  tenantId   String
+  titulo     String
+  descricao  String?
+  local      String?
+  dataEvento DateTime? @db.Date
+  ativo      Boolean   @default(true)
+  createdAt  DateTime  @default(now()) @db.Timestamptz
+  updatedAt  DateTime  @updatedAt @db.Timestamptz
+
+  tenant Tenant      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  fotos  FotoEvento[]
+
+  @@index([tenantId, ativo])
+  @@index([tenantId, dataEvento])
+  @@map("eventos")
+}
+
+model FotoEvento {
+  id           String @id @default(cuid())
+  tenantId     String
+  eventoId     String
+  url          String
+  nomeOriginal String?
+  ordem        Int    @default(0)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  evento Evento @relation(fields: [eventoId], references: [id], onDelete: Cascade)
+
+  @@index([eventoId])
+  @@index([tenantId])
+  @@map("fotos_evento")
 }
