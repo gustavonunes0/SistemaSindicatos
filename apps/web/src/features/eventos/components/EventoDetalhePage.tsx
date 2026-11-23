@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
@@ -12,7 +12,10 @@ export function EventoDetalhePage() {
   const { data: evento, isLoading, isError } = useEvento(id);
   const [fotoAtiva, setFotoAtiva] = useState(0);
   const [baixando, setBaixando] = useState(false);
+  const [progressoDownload, setProgressoDownload] = useState<string>();
   const [erroDownload, setErroDownload] = useState<string>();
+  const miniaturaAtivaRef = useRef<HTMLButtonElement | null>(null);
+  const palcoRef = useRef<HTMLDivElement | null>(null);
 
   const fotos = evento?.fotos ?? [];
   const totalFotos = fotos.length;
@@ -28,7 +31,16 @@ export function EventoDetalhePage() {
   useEffect(() => {
     setFotoAtiva(0);
     setErroDownload(undefined);
+    setProgressoDownload(undefined);
   }, [evento?.id]);
+
+  useEffect(() => {
+    miniaturaAtivaRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'nearest',
+      inline: 'center',
+    });
+  }, [fotoAtiva]);
 
   useEffect(() => {
     if (totalFotos <= 1) return;
@@ -66,10 +78,12 @@ export function EventoDetalhePage() {
   const indice = Math.min(fotoAtiva, Math.max(totalFotos - 1, 0));
   const fotoPrincipal = fotos[indice];
   const slugTitulo = evento.titulo.replace(/\s+/g, '-').toLowerCase();
+  const dataFormatada = evento.dataEvento ? formatarDataEvento(evento.dataEvento) : null;
 
   async function baixarAtual() {
     if (!fotoPrincipal) return;
     setErroDownload(undefined);
+    setProgressoDownload(undefined);
     setBaixando(true);
     try {
       const nome =
@@ -89,9 +103,11 @@ export function EventoDetalhePage() {
     try {
       for (let i = 0; i < fotos.length; i += 1) {
         const foto = fotos[i]!;
+        setProgressoDownload(`Baixando ${i + 1} de ${fotos.length}…`);
         const nome = foto.nomeOriginal ?? `evento-${slugTitulo}-${i + 1}.jpg`;
         await baixarImagem(foto.url, nome);
       }
+      setProgressoDownload(undefined);
     } catch {
       setErroDownload('Não foi possível baixar todas as imagens. Tente novamente.');
     } finally {
@@ -99,16 +115,15 @@ export function EventoDetalhePage() {
     }
   }
 
+  function selecionarFoto(indiceNovo: number) {
+    setFotoAtiva(indiceNovo);
+    palcoRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
   return (
     <AreaLayout
       tipo="afiliado"
       titulo={evento.titulo}
-      descricao={[
-        evento.dataEvento ? formatarDataEvento(evento.dataEvento) : null,
-        evento.local,
-      ]
-        .filter(Boolean)
-        .join(' · ')}
       acoes={
         <Link to="/afiliado/eventos" className="botao-secundario">
           ← Eventos
@@ -116,11 +131,39 @@ export function EventoDetalhePage() {
       }
     >
       <article className="evento-detalhe">
-        {evento.descricao && <p className="evento-detalhe-descricao">{evento.descricao}</p>}
+        <header className="evento-detalhe-meta">
+          {dataFormatada && (
+            <div className="evento-detalhe-dado">
+              <span className="evento-detalhe-dado-rotulo">Data</span>
+              <strong>{dataFormatada}</strong>
+            </div>
+          )}
+          {evento.local && (
+            <div className="evento-detalhe-dado">
+              <span className="evento-detalhe-dado-rotulo">Local</span>
+              <strong>{evento.local}</strong>
+            </div>
+          )}
+          <div className="evento-detalhe-dado">
+            <span className="evento-detalhe-dado-rotulo">Galeria</span>
+            <strong>
+              {totalFotos === 0
+                ? 'Sem fotos'
+                : `${totalFotos} ${totalFotos === 1 ? 'foto' : 'fotos'}`}
+            </strong>
+          </div>
+        </header>
+
+        {evento.descricao && (
+          <div className="evento-detalhe-texto">
+            <p className="eyebrow">Sobre o evento</p>
+            <p className="evento-detalhe-descricao">{evento.descricao}</p>
+          </div>
+        )}
 
         {fotoPrincipal ? (
-          <div className="evento-galeria">
-            <div className="evento-galeria-palco">
+          <section className="evento-galeria" aria-label="Galeria de fotos">
+            <div ref={palcoRef} className="evento-galeria-palco">
               <img
                 className="evento-galeria-principal"
                 src={urlDaApi(fotoPrincipal.url)}
@@ -144,30 +187,19 @@ export function EventoDetalhePage() {
                   >
                     →
                   </button>
-                  <span className="evento-galeria-indice">
-                    {indice + 1} / {totalFotos}
-                  </span>
                 </>
               )}
+              <div className="evento-galeria-palco-rodape">
+                <span className="evento-galeria-indice">
+                  {indice + 1} / {totalFotos}
+                </span>
+                {fotoPrincipal.nomeOriginal && (
+                  <span className="evento-galeria-nome" title={fotoPrincipal.nomeOriginal}>
+                    {fotoPrincipal.nomeOriginal}
+                  </span>
+                )}
+              </div>
             </div>
-
-            {totalFotos > 1 && (
-              <ul className="evento-galeria-miniaturas">
-                {fotos.map((foto, i) => (
-                  <li key={foto.id}>
-                    <button
-                      type="button"
-                      className={i === indice ? 'evento-miniatura evento-miniatura--ativa' : 'evento-miniatura'}
-                      onClick={() => setFotoAtiva(i)}
-                      aria-label={`Ver foto ${i + 1}`}
-                      aria-current={i === indice}
-                    >
-                      <img src={urlDaApi(foto.url)} alt="" />
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
 
             <div className="evento-galeria-acoes">
               <button
@@ -176,7 +208,7 @@ export function EventoDetalhePage() {
                 disabled={baixando}
                 onClick={() => void baixarAtual()}
               >
-                {baixando ? 'Baixando…' : 'Baixar esta foto'}
+                {baixando && !progressoDownload ? 'Baixando…' : 'Baixar esta foto'}
               </button>
               {totalFotos > 1 && (
                 <button
@@ -185,12 +217,58 @@ export function EventoDetalhePage() {
                   disabled={baixando}
                   onClick={() => void baixarTodas()}
                 >
-                  Baixar todas
+                  {progressoDownload ?? 'Baixar todas'}
                 </button>
+              )}
+              {totalFotos > 1 && (
+                <p className="evento-galeria-dica texto-secundario">
+                  Use as setas do teclado para navegar.
+                </p>
               )}
             </div>
             {erroDownload && <p className="erro">{erroDownload}</p>}
-          </div>
+
+            {totalFotos > 1 && (
+              <div className="evento-galeria-todas">
+                <div className="evento-galeria-todas-topo">
+                  <h2>Todas as fotos</h2>
+                  <p className="texto-secundario">
+                    Clique em qualquer imagem para ampliá-la acima.
+                  </p>
+                </div>
+                <ul className="evento-galeria-grade">
+                  {fotos.map((foto, i) => {
+                    const ativa = i === indice;
+                    return (
+                      <li key={foto.id}>
+                        <button
+                          ref={ativa ? miniaturaAtivaRef : undefined}
+                          type="button"
+                          className={
+                            ativa
+                              ? 'evento-galeria-thumb evento-galeria-thumb--ativa'
+                              : 'evento-galeria-thumb'
+                          }
+                          onClick={() => selecionarFoto(i)}
+                          aria-label={`Ver foto ${i + 1}`}
+                          aria-current={ativa}
+                        >
+                          <img
+                            src={urlDaApi(foto.url)}
+                            alt=""
+                            loading="lazy"
+                          />
+                          <span className="evento-galeria-thumb-num" aria-hidden="true">
+                            {i + 1}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </section>
         ) : (
           <div className="estado-vazio">
             <p>Este evento ainda não tem fotos na galeria.</p>
