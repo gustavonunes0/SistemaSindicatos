@@ -14,7 +14,6 @@ export function EventoDetalhePage() {
   const [baixando, setBaixando] = useState(false);
   const [progressoDownload, setProgressoDownload] = useState<string>();
   const [erroDownload, setErroDownload] = useState<string>();
-  const miniaturaAtivaRef = useRef<HTMLButtonElement | null>(null);
   const palcoRef = useRef<HTMLDivElement | null>(null);
 
   const fotos = evento?.fotos ?? [];
@@ -33,14 +32,6 @@ export function EventoDetalhePage() {
     setErroDownload(undefined);
     setProgressoDownload(undefined);
   }, [evento?.id]);
-
-  useEffect(() => {
-    miniaturaAtivaRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      block: 'nearest',
-      inline: 'center',
-    });
-  }, [fotoAtiva]);
 
   useEffect(() => {
     if (totalFotos <= 1) return;
@@ -124,6 +115,7 @@ export function EventoDetalhePage() {
     <AreaLayout
       tipo="afiliado"
       titulo={evento.titulo}
+      descricao="Informações e galeria do evento"
       acoes={
         <Link to="/afiliado/eventos" className="botao-secundario">
           ← Eventos
@@ -242,7 +234,6 @@ export function EventoDetalhePage() {
                     return (
                       <li key={foto.id}>
                         <button
-                          ref={ativa ? miniaturaAtivaRef : undefined}
                           type="button"
                           className={
                             ativa

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
 import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
@@ -310,16 +310,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
               {titulo && <h1>{titulo}</h1>}
               {descricao && <p className="area-topo-descricao">{descricao}</p>}
             </div>
-            {(acoes || tipo === 'afiliado') && (
-              <div className="area-topo-acoes">
-                {tipo === 'afiliado' && (
-                  <Link to="/" className="botao-secundario">
-                    Site institucional
-                  </Link>
-                )}
-                {acoes}
-              </div>
-            )}
+            {acoes && <div className="area-topo-acoes">{acoes}</div>}
           </header>
         )}
         {children}
