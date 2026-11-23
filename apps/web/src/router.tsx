@@ -262,7 +262,9 @@ function protegidaAdmin(element: React.ReactNode) {
 }
 
 function protegidaAfiliado(element: React.ReactNode) {
-  return comSuspense(<RequireRole role="AFILIADO">{element}</RequireRole>);
+  return comSuspense(
+    <RequireRole roles={['AFILIADO', 'ADMIN']}>{element}</RequireRole>,
+  );
 }
 
 function RedirecionarBalanceteDetalhe() {

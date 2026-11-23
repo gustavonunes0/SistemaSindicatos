@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
 import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
 import { BotaoInstalarPwa } from '../../features/pwa/components/BotaoInstalarPwa';
 import { useLogout, useMe } from '../../features/auth/hooks';
+import { useAuthStore } from '../../features/auth/store';
 import { usePrefetchAfiliadosAdmin } from '../../features/afiliado/hooks';
 import { usePrefetchConveniosAdmin } from '../../features/convenios/hooks';
 import { usePrefetchNoticiasAdmin } from '../../features/noticias/hooks';
@@ -101,12 +102,15 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   const [menuAberto, setMenuAberto] = useState(false);
   const { data } = useMe();
   const logout = useLogout();
+  const role = useAuthStore((state) => state.user?.role);
   const marca = useMarca();
   const { pathname } = useLocation();
   const [gruposAbertos, setGruposAbertos] = useState<Record<string, boolean>>({});
 
   const mostrarTransparencia = transparenciaFinanceiraAtiva(marca);
   const mostrarDiretoria = Boolean(data?.afiliado?.diretor);
+  const adminEmVisaoFiliado = role === 'ADMIN' && tipo === 'afiliado';
+  const podeTrocarVisao = role === 'ADMIN';
 
   const gruposAfiliado: GrupoNav[] = useMemo(
     () => [
@@ -286,10 +290,23 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
           {identificacao && (
             <div className="area-sidebar-usuario-bloco">
               <span className="area-sidebar-papel">
-                {tipo === 'admin' ? 'Administrador' : 'Filiado'}
+                {tipo === 'admin'
+                  ? 'Administrador'
+                  : adminEmVisaoFiliado
+                    ? 'Admin · visão filiado'
+                    : 'Filiado'}
               </span>
               <span className="area-sidebar-usuario">{identificacao}</span>
             </div>
+          )}
+          {podeTrocarVisao && (
+            <Link
+              to={tipo === 'admin' ? '/afiliado' : '/admin'}
+              className="area-sidebar-trocar-visao"
+              onClick={() => setMenuAberto(false)}
+            >
+              {tipo === 'admin' ? 'Ver como filiado' : 'Voltar ao painel admin'}
+            </Link>
           )}
           <button
             type="button"

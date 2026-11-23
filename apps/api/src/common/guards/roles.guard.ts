@@ -18,9 +18,16 @@ export class RolesGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest<{ user?: RequestUser }>();
-    if (!user || !rolesExigidas.includes(user.role)) {
+    if (!user) {
       throw new ForbiddenException('Acesso negado');
     }
-    return true;
+    if (rolesExigidas.includes(user.role)) {
+      return true;
+    }
+    // Admin pode pré-visualizar endpoints da área do filiado.
+    if (user.role === 'ADMIN' && rolesExigidas.includes('AFILIADO')) {
+      return true;
+    }
+    throw new ForbiddenException('Acesso negado');
   }
 }

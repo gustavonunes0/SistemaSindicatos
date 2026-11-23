@@ -13,6 +13,11 @@ export class AfiliadoAprovadoGuard implements CanActivate {
       throw new ForbiddenException('Acesso negado');
     }
 
+    // Admin pode navegar na área do filiado para pré-visualizar a UX.
+    if (user.role === 'ADMIN') {
+      return true;
+    }
+
     const afiliado = await this.prisma.afiliado.findUnique({
       where: { userId: user.id },
       select: { status: true },

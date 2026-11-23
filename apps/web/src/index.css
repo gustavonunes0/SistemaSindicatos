@@ -4711,6 +4711,29 @@ button.area-nav-grupo-titulo:hover {
   line-height: 1.35;
 }
 
+.area-sidebar-trocar-visao {
+  align-self: stretch;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 0.85rem;
+  font-size: var(--texto-sm);
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  color: var(--cor-primaria);
+  background: #fff;
+  border: 1px solid transparent;
+  border-radius: var(--raio);
+  transition: background 140ms ease-out, color 140ms ease-out, border-color 140ms ease-out;
+}
+
+.area-sidebar-trocar-visao:hover {
+  background: #eef5fb;
+  border-color: rgb(255 255 255 / 0.35);
+  color: var(--azul-noite);
+}
+
 .area-sidebar-sair {
   align-self: stretch;
   padding: 0.55rem 0.85rem;

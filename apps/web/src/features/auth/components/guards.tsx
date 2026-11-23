@@ -5,24 +5,28 @@ import { areaPorRole } from '../hooks';
 import { useAuthStore } from '../store';
 
 interface RequireRoleProps {
-  role: Role;
+  /** Uma role exata. Ignorado se `roles` for informado. */
+  role?: Role;
+  /** Qualquer uma destas roles libera o acesso. */
+  roles?: Role[];
   children: ReactNode;
 }
 
 // Não autenticado → login. Autenticado com role errada → 403.
-export function RequireRole({ role, children }: RequireRoleProps) {
+export function RequireRole({ role, roles, children }: RequireRoleProps) {
   const { accessToken, user } = useAuthStore();
+  const permitidas = roles ?? (role ? [role] : []);
 
   if (!accessToken || !user) {
     return <Navigate to="/login" replace />;
   }
-  if (user.role !== role) {
+  if (permitidas.length > 0 && !permitidas.includes(user.role)) {
     return (
       <main className="auth-page">
         <section className="auth-card">
           <h2>403 — Acesso negado</h2>
           <p>Você não tem permissão para acessar esta área.</p>
-          <Link to={areaPorRole(user.role)}>Ir para a área do filiado(a)</Link>
+          <Link to={areaPorRole(user.role)}>Ir para a minha área</Link>
         </section>
       </main>
     );
