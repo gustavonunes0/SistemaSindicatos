@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link, NavLink } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
 import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
 import { BotaoAtualizarPwa } from '../../features/pwa/components/BotaoAtualizarPwa';
@@ -21,7 +21,10 @@ type LinkNav = {
 };
 
 type GrupoNav = {
+  id: string;
   titulo?: string;
+  /** Grupos sem título ficam sempre abertos (ex.: atalho do site). */
+  fixo?: boolean;
   links: LinkNav[];
 };
 
@@ -35,20 +38,34 @@ type AreaLayoutProps = {
 
 const gruposAdmin: GrupoNav[] = [
   {
-    titulo: 'Operação',
+    id: 'inicio',
+    titulo: 'Início',
     links: [
       { to: '/admin', rotulo: 'Painel', end: true },
       { to: '/admin/tutoriais', rotulo: 'Tutoriais' },
+    ],
+  },
+  {
+    id: 'pessoas',
+    titulo: 'Pessoas',
+    links: [
       { to: '/admin/afiliados', rotulo: 'Filiados' },
       { to: '/admin/diretoria', rotulo: 'Diretoria' },
-      { to: '/admin/estatutos', rotulo: 'Estatutos' },
+    ],
+  },
+  {
+    id: 'gestao',
+    titulo: 'Gestão',
+    links: [
       { to: '/admin/financeiro', rotulo: 'Financeiro' },
       { to: '/admin/declaracoes', rotulo: 'Declarações' },
       { to: '/admin/juridico', rotulo: 'Jurídico' },
       { to: '/admin/eleicoes', rotulo: 'Eleições' },
+      { to: '/admin/estatutos', rotulo: 'Estatutos' },
     ],
   },
   {
+    id: 'conteudo',
     titulo: 'Conteúdo',
     links: [
       { to: '/admin/noticias', rotulo: 'Notícias' },
@@ -60,6 +77,8 @@ const gruposAdmin: GrupoNav[] = [
     ],
   },
   {
+    id: 'site',
+    fixo: true,
     links: [{ to: '/', rotulo: 'Site público' }],
   },
 ];
@@ -71,46 +90,96 @@ function PrefetchAdmin() {
   return null;
 }
 
+function rotaAtivaNoGrupo(pathname: string, links: LinkNav[]): boolean {
+  return links.some((link) => {
+    if (link.end) return pathname === link.to;
+    return pathname === link.to || pathname.startsWith(`${link.to}/`);
+  });
+}
+
 export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLayoutProps) {
   const [menuAberto, setMenuAberto] = useState(false);
   const { data } = useMe();
   const logout = useLogout();
   const marca = useMarca();
+  const { pathname } = useLocation();
+  const [gruposAbertos, setGruposAbertos] = useState<Record<string, boolean>>({});
 
-  const gruposAfiliado: GrupoNav[] = [
-    {
-      titulo: 'Minha conta',
-      links: [
-        { to: '/afiliado', rotulo: 'Visão geral', end: true },
-        { to: '/afiliado/convenios', rotulo: 'Convênios' },
-        { to: '/afiliado/declaracoes', rotulo: 'Minhas declarações' },
-        { to: '/afiliado/eventos', rotulo: 'Eventos' },
-        { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
-        { to: '/afiliado/formularios', rotulo: 'Formulários' },
-        { to: '/afiliado/estatutos', rotulo: 'Estatutos' },
-        {
-          to: '/afiliado/transparencia',
-          rotulo: 'Transparência',
-          visivel: transparenciaFinanceiraAtiva(marca),
-        },
-        { to: '/afiliado/juridico', rotulo: 'Jurídico' },
-        { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
-        {
-          to: '/afiliado/diretoria',
-          rotulo: 'Diretoria',
-          visivel: Boolean(data?.afiliado?.diretor),
-        },
-      ],
-    },
-    {
-      links: [{ to: '/', rotulo: 'Site institucional' }],
-    },
-  ];
+  const gruposAfiliado: GrupoNav[] = useMemo(
+    () => [
+      {
+        id: 'inicio',
+        titulo: 'Início',
+        links: [{ to: '/afiliado', rotulo: 'Visão geral', end: true }],
+      },
+      {
+        id: 'beneficios',
+        titulo: 'Benefícios',
+        links: [
+          { to: '/afiliado/convenios', rotulo: 'Convênios' },
+          { to: '/afiliado/declaracoes', rotulo: 'Declarações' },
+          { to: '/afiliado/eventos', rotulo: 'Eventos' },
+          { to: '/afiliado/imoveis', rotulo: 'Apartamentos' },
+        ],
+      },
+      {
+        id: 'sindicato',
+        titulo: 'Sindicato',
+        links: [
+          { to: '/afiliado/estatutos', rotulo: 'Estatutos' },
+          {
+            to: '/afiliado/transparencia',
+            rotulo: 'Transparência',
+            visivel: transparenciaFinanceiraAtiva(marca),
+          },
+          { to: '/afiliado/juridico', rotulo: 'Jurídico' },
+          {
+            to: '/afiliado/diretoria',
+            rotulo: 'Diretoria',
+            visivel: Boolean(data?.afiliado?.diretor),
+          },
+        ],
+      },
+      {
+        id: 'participacao',
+        titulo: 'Participação',
+        links: [
+          { to: '/afiliado/formularios', rotulo: 'Formulários' },
+          { to: '/afiliado/eleicoes', rotulo: 'Eleições' },
+        ],
+      },
+      {
+        id: 'site',
+        fixo: true,
+        links: [{ to: '/', rotulo: 'Site institucional' }],
+      },
+    ],
+    [data?.afiliado?.diretor, marca],
+  );
 
   const grupos = tipo === 'admin' ? gruposAdmin : gruposAfiliado;
+
+  // Ao mudar de rota, abre o grupo da página atual e fecha os demais.
+  useEffect(() => {
+    const proximos: Record<string, boolean> = {};
+    for (const grupo of grupos) {
+      if (grupo.fixo || !grupo.titulo) {
+        proximos[grupo.id] = true;
+        continue;
+      }
+      const links = grupo.links.filter((link) => link.visivel !== false);
+      proximos[grupo.id] = rotaAtivaNoGrupo(pathname, links);
+    }
+    setGruposAbertos(proximos);
+  }, [grupos, pathname]);
+
   const rotuloArea = tipo === 'admin' ? 'Administração' : 'Área do sindicalizado';
   const identificacao =
     tipo === 'admin' ? data?.user.email : (data?.afiliado?.nome ?? data?.user.email);
+
+  function alternarGrupo(id: string) {
+    setGruposAbertos((atual) => ({ ...atual, [id]: !atual[id] }));
+  }
 
   return (
     <div className={`area-shell area-shell--${tipo}`}>
@@ -149,26 +218,50 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         </div>
 
         <nav className="area-sidebar-nav" aria-label={rotuloArea}>
-          {grupos.map((grupo, indiceGrupo) => {
+          {grupos.map((grupo) => {
             const links = grupo.links.filter((link) => link.visivel !== false);
             if (links.length === 0) return null;
 
+            const colapsavel = Boolean(grupo.titulo) && !grupo.fixo;
+            const aberto = grupo.fixo || Boolean(gruposAbertos[grupo.id]);
+
             return (
-              <div key={grupo.titulo ?? `grupo-${indiceGrupo}`} className="area-nav-grupo">
-                {grupo.titulo && <p className="area-nav-grupo-titulo">{grupo.titulo}</p>}
-                {links.map((link) => (
-                  <NavLink
-                    key={link.to}
-                    to={link.to}
-                    end={link.end}
-                    className={({ isActive }) =>
-                      isActive ? 'area-nav-link ativo' : 'area-nav-link'
-                    }
-                    onClick={() => setMenuAberto(false)}
+              <div
+                key={grupo.id}
+                className={`area-nav-grupo ${colapsavel ? 'area-nav-grupo--colapsavel' : ''} ${
+                  aberto ? 'area-nav-grupo--aberto' : ''
+                }`}
+              >
+                {grupo.titulo && colapsavel ? (
+                  <button
+                    type="button"
+                    className="area-nav-grupo-titulo"
+                    aria-expanded={aberto}
+                    onClick={() => alternarGrupo(grupo.id)}
                   >
-                    {link.rotulo}
-                  </NavLink>
-                ))}
+                    <span>{grupo.titulo}</span>
+                    <span className="area-nav-grupo-chevron" aria-hidden="true">
+                      {aberto ? '−' : '+'}
+                    </span>
+                  </button>
+                ) : (
+                  grupo.titulo && <p className="area-nav-grupo-titulo">{grupo.titulo}</p>
+                )}
+
+                {aberto &&
+                  links.map((link) => (
+                    <NavLink
+                      key={link.to}
+                      to={link.to}
+                      end={link.end}
+                      className={({ isActive }) =>
+                        isActive ? 'area-nav-link ativo' : 'area-nav-link'
+                      }
+                      onClick={() => setMenuAberto(false)}
+                    >
+                      {link.rotulo}
+                    </NavLink>
+                  ))}
               </div>
             );
           })}

@@ -54,3 +54,11 @@ export async function uploadFotosEvento(id: string, arquivos: File[]): Promise<E
 export async function removerFotoEvento(eventoId: string, fotoId: string): Promise<void> {
   await api.delete(`/eventos/${eventoId}/fotos/${fotoId}`);
 }
+
+export async function reordenarFotosEvento(
+  eventoId: string,
+  fotoIds: string[],
+): Promise<Evento> {
+  const { data } = await api.patch(`/eventos/${eventoId}/fotos/ordem`, { fotoIds });
+  return eventoSchema.parse(data);
+}

@@ -17,9 +17,11 @@ import {
   atualizarEventoSchema,
   criarEventoSchema,
   filtroEventosSchema,
+  ordenarFotosEventoSchema,
   type AtualizarEventoInput,
   type CriarEventoInput,
   type FiltroEventosInput,
+  type OrdenarFotosEventoInput,
 } from '@sindprf/types';
 import { Roles } from '../common/decorators';
 import { AfiliadoAprovadoGuard } from '../common/guards/afiliado-aprovado.guard';
@@ -29,7 +31,7 @@ import { EventosService } from './eventos.service';
 
 const FOTO_MAX_BYTES = 8 * 1024 * 1024;
 const FOTO_MIMETYPES = ['image/jpeg', 'image/png', 'image/webp'];
-const FOTOS_MAX = 40;
+const FOTOS_MAX = 150;
 
 @Controller('eventos')
 export class EventosController {
@@ -95,6 +97,15 @@ export class EventosController {
       })),
     );
     return this.eventosService.adicionarFotos(id, arquivos);
+  }
+
+  @Roles('ADMIN')
+  @Patch(':id/fotos/ordem')
+  reordenarFotos(
+    @Param('id') id: string,
+    @Body(new ZodValidationPipe(ordenarFotosEventoSchema)) body: OrdenarFotosEventoInput,
+  ) {
+    return this.eventosService.reordenarFotos(id, body);
   }
 
   @Roles('ADMIN')

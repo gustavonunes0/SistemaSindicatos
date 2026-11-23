@@ -2,6 +2,15 @@ import type { Evento, FotoEvento } from '@prisma/client';
 
 export type EventoComFotos = Evento & { fotos: FotoEvento[] };
 
+/** Ordena nomes com números embutidos (Foto_01, Foto_02, Foto_10). */
+export function compararNomeArquivo(a: string, b: string): number {
+  return a.localeCompare(b, 'pt-BR', { numeric: true, sensitivity: 'base' });
+}
+
+export function ordenarPorNomeArquivo<T extends { nomeOriginal: string }>(itens: T[]): T[] {
+  return [...itens].sort((a, b) => compararNomeArquivo(a.nomeOriginal, b.nomeOriginal));
+}
+
 export function serializarEvento(evento: EventoComFotos) {
   return {
     id: evento.id,

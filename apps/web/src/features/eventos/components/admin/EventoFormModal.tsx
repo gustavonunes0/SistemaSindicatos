@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import type { CriarEventoInput } from '@sindprf/types';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CriarEventoInput, FotoEvento } from '@sindprf/types';
+import { useEffect, useMemo, useRef, useState, type DragEvent } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { EstadoCarregando } from '../../../../components/ui/EstadoCarregando';
@@ -13,8 +13,10 @@ import {
   useCriarEvento,
   useEventoAdmin,
   useRemoverFotoEvento,
+  useReordenarFotosEvento,
   useUploadFotosEvento,
 } from '../../hooks';
+import { moverItem, ordenarArquivosPorNome } from '../../ordenarArquivosPorNome';
 
 const formularioSchema = z.object({
   titulo: z.string().trim().min(3, 'Informe o título do evento'),
@@ -38,9 +40,17 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
   const atualizar = useAtualizarEvento();
   const uploadFotos = useUploadFotosEvento();
   const removerFoto = useRemoverFotoEvento();
+  const reordenarFotos = useReordenarFotosEvento();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const inputFotosRef = useRef<HTMLInputElement>(null);
   const [arquivosPendentes, setArquivosPendentes] = useState<File[]>([]);
+  const [fotosLocais, setFotosLocais] = useState<FotoEvento[]>([]);
+  const [arrastandoDe, setArrastandoDe] = useState<{ tipo: 'salva' | 'pendente'; indice: number } | null>(
+    null,
+  );
+  const [alvoSobre, setAlvoSobre] = useState<{ tipo: 'salva' | 'pendente'; indice: number } | null>(
+    null,
+  );
 
   const {
     register,
@@ -69,6 +79,7 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
         ativo: eventoExistente.ativo,
       });
       setArquivosPendentes([]);
+      setFotosLocais(eventoExistente.fotos ?? []);
       return;
     }
     if (!id) {
@@ -80,8 +91,15 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
         ativo: true,
       });
       setArquivosPendentes([]);
+      setFotosLocais([]);
     }
   }, [aberto, id, eventoExistente, reset]);
+
+  useEffect(() => {
+    if (!id || !eventoExistente?.fotos) return;
+    if (reordenarFotos.isPending) return;
+    setFotosLocais(eventoExistente.fotos);
+  }, [id, eventoExistente?.fotos, reordenarFotos.isPending]);
 
   const previas = useMemo(
     () => arquivosPendentes.map((arquivo) => ({ arquivo, url: URL.createObjectURL(arquivo) })),
@@ -91,7 +109,11 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
     return () => previas.forEach((previa) => URL.revokeObjectURL(previa.url));
   }, [previas]);
 
-  const salvando = criar.isPending || atualizar.isPending || uploadFotos.isPending;
+  const salvando =
+    criar.isPending ||
+    atualizar.isPending ||
+    uploadFotos.isPending ||
+    reordenarFotos.isPending;
 
   const montarPayload = (dados: FormularioEvento): CriarEventoInput => ({
     titulo: dados.titulo,
@@ -111,7 +133,7 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
       onSuccess: (evento) => {
         if (arquivosPendentes.length > 0) {
           uploadFotos.mutate(
-            { id: evento.id, arquivos: arquivosPendentes },
+            { id: evento.id, arquivos: ordenarArquivosPorNome(arquivosPendentes) },
             { onSuccess: onFechar },
           );
         } else {
@@ -123,16 +145,62 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
 
   const onSelecionarFotos = (lista: FileList | null) => {
     if (!lista?.length) return;
-    const arquivos = Array.from(lista);
+    const arquivos = ordenarArquivosPorNome(Array.from(lista));
     if (id) {
       uploadFotos.mutate({ id, arquivos });
     } else {
-      setArquivosPendentes((atual) => [...atual, ...arquivos]);
+      setArquivosPendentes((atual) => ordenarArquivosPorNome([...atual, ...arquivos]));
     }
     if (inputFotosRef.current) inputFotosRef.current.value = '';
   };
 
-  const fotos = eventoExistente?.fotos ?? [];
+  const persistirOrdem = (proxima: FotoEvento[]) => {
+    if (!id) return;
+    const anterior = fotosLocais;
+    setFotosLocais(proxima);
+    reordenarFotos.mutate(
+      { eventoId: id, fotoIds: proxima.map((foto) => foto.id) },
+      {
+        onError: () => setFotosLocais(anterior),
+      },
+    );
+  };
+
+  const onDragStart = (tipo: 'salva' | 'pendente', indice: number) => {
+    setArrastandoDe({ tipo, indice });
+  };
+
+  const onDragOver = (
+    evento: DragEvent,
+    tipo: 'salva' | 'pendente',
+    indice: number,
+  ) => {
+    evento.preventDefault();
+    if (!arrastandoDe || arrastandoDe.tipo !== tipo) return;
+    setAlvoSobre({ tipo, indice });
+  };
+
+  const onDrop = (tipo: 'salva' | 'pendente', indice: number) => {
+    if (!arrastandoDe || arrastandoDe.tipo !== tipo || arrastandoDe.indice === indice) {
+      setArrastandoDe(null);
+      setAlvoSobre(null);
+      return;
+    }
+
+    if (tipo === 'salva') {
+      persistirOrdem(moverItem(fotosLocais, arrastandoDe.indice, indice));
+    } else {
+      setArquivosPendentes((atual) => moverItem(atual, arrastandoDe.indice, indice));
+    }
+
+    setArrastandoDe(null);
+    setAlvoSobre(null);
+  };
+
+  const onDragEnd = () => {
+    setArrastandoDe(null);
+    setAlvoSobre(null);
+  };
 
   return (
     <>
@@ -201,7 +269,8 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
             <fieldset className="evento-form-bloco">
               <legend>Galeria de fotos</legend>
               <p className="texto-secundario evento-form-nota">
-                A primeira foto vira a capa na listagem. JPG, PNG ou WebP — até 40 fotos.
+                A primeira foto vira a capa. Arraste para reordenar. Nomes como Foto_01 e Foto_02
+                já sobem na ordem numérica. JPG, PNG ou WebP — até 150 fotos por envio.
               </p>
 
               <input
@@ -220,51 +289,106 @@ export function EventoFormModal({ aberto, id, onFechar }: EventoFormModalProps) 
 
               {uploadFotos.isPending && <p role="status">Enviando fotos…</p>}
               {uploadFotos.isError && <p className="erro">Erro ao enviar as fotos.</p>}
+              {reordenarFotos.isError && (
+                <p className="erro">Não foi possível salvar a nova ordem das fotos.</p>
+              )}
 
-              {(fotos.length > 0 || previas.length > 0) && (
+              {(fotosLocais.length > 0 || previas.length > 0) && (
                 <ul className="evento-fotos-grade">
-                  {fotos.map((foto, indice) => (
-                    <li key={foto.id}>
-                      <img src={urlDaApi(foto.url)} alt={`Foto ${indice + 1}`} />
-                      {indice === 0 && <span className="evento-foto-capa">Capa</span>}
-                      {id && (
+                  {fotosLocais.map((foto, indice) => {
+                    const arrastando =
+                      arrastandoDe?.tipo === 'salva' && arrastandoDe.indice === indice;
+                    const sobre =
+                      alvoSobre?.tipo === 'salva' &&
+                      alvoSobre.indice === indice &&
+                      arrastandoDe?.indice !== indice;
+                    return (
+                      <li
+                        key={foto.id}
+                        className={[
+                          'evento-foto-item',
+                          arrastando ? 'evento-foto-item--arrastando' : '',
+                          sobre ? 'evento-foto-item--alvo' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        draggable
+                        onDragStart={() => onDragStart('salva', indice)}
+                        onDragOver={(evento) => onDragOver(evento, 'salva', indice)}
+                        onDrop={() => onDrop('salva', indice)}
+                        onDragEnd={onDragEnd}
+                      >
+                        <img src={urlDaApi(foto.url)} alt={`Foto ${indice + 1}`} draggable={false} />
+                        {indice === 0 && <span className="evento-foto-capa">Capa</span>}
+                        <span className="evento-foto-arrastar" aria-hidden="true">
+                          ⋮⋮
+                        </span>
+                        {id && (
+                          <button
+                            type="button"
+                            className="evento-foto-remover"
+                            aria-label="Remover foto"
+                            onMouseDown={(evento) => evento.stopPropagation()}
+                            onClick={() =>
+                              pedirConfirmacao({
+                                titulo: 'Remover foto?',
+                                descricao: 'A imagem será excluída da galeria do evento.',
+                                confirmarRotulo: 'Remover',
+                                tom: 'perigo',
+                                onConfirmar: () =>
+                                  removerFoto.mutateAsync({ eventoId: id, fotoId: foto.id }),
+                              })
+                            }
+                          >
+                            ×
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                  {previas.map((previa, indice) => {
+                    const arrastando =
+                      arrastandoDe?.tipo === 'pendente' && arrastandoDe.indice === indice;
+                    const sobre =
+                      alvoSobre?.tipo === 'pendente' &&
+                      alvoSobre.indice === indice &&
+                      arrastandoDe?.indice !== indice;
+                    return (
+                      <li
+                        key={`${previa.arquivo.name}-${indice}`}
+                        className={[
+                          'evento-foto-item',
+                          arrastando ? 'evento-foto-item--arrastando' : '',
+                          sobre ? 'evento-foto-item--alvo' : '',
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
+                        draggable
+                        onDragStart={() => onDragStart('pendente', indice)}
+                        onDragOver={(evento) => onDragOver(evento, 'pendente', indice)}
+                        onDrop={() => onDrop('pendente', indice)}
+                        onDragEnd={onDragEnd}
+                      >
+                        <img src={previa.url} alt={previa.arquivo.name} draggable={false} />
+                        <span className="evento-foto-arrastar" aria-hidden="true">
+                          ⋮⋮
+                        </span>
                         <button
                           type="button"
                           className="evento-foto-remover"
-                          aria-label="Remover foto"
+                          aria-label="Remover da seleção"
+                          onMouseDown={(evento) => evento.stopPropagation()}
                           onClick={() =>
-                            pedirConfirmacao({
-                              titulo: 'Remover foto?',
-                              descricao: 'A imagem será excluída da galeria do evento.',
-                              confirmarRotulo: 'Remover',
-                              tom: 'perigo',
-                              onConfirmar: () =>
-                                removerFoto.mutateAsync({ eventoId: id, fotoId: foto.id }),
-                            })
+                            setArquivosPendentes((atual) =>
+                              atual.filter((_, i) => i !== indice),
+                            )
                           }
                         >
                           ×
                         </button>
-                      )}
-                    </li>
-                  ))}
-                  {previas.map((previa, indice) => (
-                    <li key={`${previa.arquivo.name}-${indice}`}>
-                      <img src={previa.url} alt={previa.arquivo.name} />
-                      <button
-                        type="button"
-                        className="evento-foto-remover"
-                        aria-label="Remover da seleção"
-                        onClick={() =>
-                          setArquivosPendentes((atual) =>
-                            atual.filter((_, i) => i !== indice),
-                          )
-                        }
-                      >
-                        ×
-                      </button>
-                    </li>
-                  ))}
+                      </li>
+                    );
+                  })}
                 </ul>
               )}
             </fieldset>

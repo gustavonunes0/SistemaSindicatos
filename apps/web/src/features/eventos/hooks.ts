@@ -80,3 +80,12 @@ export function useRemoverFotoEvento() {
     onSuccess: invalidar,
   });
 }
+
+export function useReordenarFotosEvento() {
+  const invalidar = useInvalidarEventos();
+  return useMutation({
+    mutationFn: ({ eventoId, fotoIds }: { eventoId: string; fotoIds: string[] }) =>
+      eventosApi.reordenarFotosEvento(eventoId, fotoIds),
+    onSuccess: invalidar,
+  });
+}

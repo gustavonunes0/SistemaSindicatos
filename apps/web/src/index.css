@@ -4180,29 +4180,60 @@ textarea {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1.1rem;
-  padding: 1rem 0.65rem;
+  gap: 0.55rem;
+  padding: 0.85rem 0.65rem;
   overflow-y: auto;
 }
 
 .area-nav-grupo {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 0.1rem;
 }
 
 .area-nav-grupo-titulo {
-  margin: 0 0 0.35rem 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem 0.7rem;
+  border: 0;
+  border-radius: var(--raio);
+  background: transparent;
+  font: inherit;
   font-size: 0.68rem;
   font-weight: 700;
+  text-align: left;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
   color: rgb(255 255 255 / 0.42);
 }
 
+button.area-nav-grupo-titulo {
+  cursor: pointer;
+}
+
+button.area-nav-grupo-titulo:hover {
+  color: rgb(255 255 255 / 0.72);
+  background: rgb(255 255 255 / 0.05);
+}
+
+.area-nav-grupo-chevron {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1;
+  color: rgb(255 255 255 / 0.35);
+}
+
+.area-nav-grupo--aberto > .area-nav-grupo-titulo {
+  color: rgb(255 255 255 / 0.58);
+}
+
 .area-nav-link {
   display: block;
-  padding: 0.7rem 0.8rem;
+  padding: 0.55rem 0.8rem;
   border-radius: var(--raio);
   color: rgb(255 255 255 / 0.84);
   text-decoration: none;
@@ -14225,12 +14256,25 @@ input:focus-visible + .evento-fotos-drop {
   list-style: none;
 }
 
-.evento-fotos-grade li {
+.evento-fotos-grade li,
+.evento-foto-item {
   position: relative;
   border-radius: var(--raio);
   overflow: hidden;
   border: var(--borda-fina);
   background: var(--cor-fundo);
+  cursor: grab;
+  touch-action: none;
+}
+
+.evento-foto-item--arrastando {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+
+.evento-foto-item--alvo {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
 }
 
 .evento-fotos-grade img {
@@ -14238,6 +14282,8 @@ input:focus-visible + .evento-fotos-drop {
   width: 100%;
   aspect-ratio: 4 / 3;
   object-fit: cover;
+  pointer-events: none;
+  user-select: none;
 }
 
 .evento-foto-capa {
@@ -14251,6 +14297,20 @@ input:focus-visible + .evento-fotos-drop {
   font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
+}
+
+.evento-foto-arrastar {
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--raio);
+  background: rgb(0 0 0 / 55%);
+  color: #fff;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  pointer-events: none;
 }
 
 .evento-foto-remover {

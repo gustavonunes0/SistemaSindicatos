@@ -53,3 +53,8 @@ export const filtroEventosSchema = z.object({
   busca: z.string().trim().max(120).optional(),
 });
 export type FiltroEventosInput = z.infer<typeof filtroEventosSchema>;
+
+export const ordenarFotosEventoSchema = z.object({
+  fotoIds: z.array(z.string().min(1)).min(1, 'Informe a ordem das fotos'),
+});
+export type OrdenarFotosEventoInput = z.infer<typeof ordenarFotosEventoSchema>;

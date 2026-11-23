@@ -1,13 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import type {
   AtualizarEventoInput,
   CriarEventoInput,
   FiltroEventosInput,
+  OrdenarFotosEventoInput,
 } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { requireTenantId } from '../tenant/tenant-context';
-import { serializarEvento } from './eventos.util';
+import { ordenarPorNomeArquivo, serializarEvento } from './eventos.util';
 
 const includeFotos = { fotos: { orderBy: { ordem: 'asc' as const } } };
 
@@ -113,8 +114,9 @@ export class EventosService {
       this.prisma.fotoEvento.count({ where: { eventoId: id } }),
     ]);
     const tenantId = requireTenantId();
+    const ordenados = ordenarPorNomeArquivo(arquivos);
     await this.prisma.fotoEvento.createMany({
-      data: arquivos.map((arquivo, indice) => ({
+      data: ordenados.map((arquivo, indice) => ({
         tenantId,
         eventoId: id,
         url: arquivo.url,
@@ -123,6 +125,35 @@ export class EventosService {
       })),
     });
     return this.buscarAdmin(id);
+  }
+
+  async reordenarFotos(eventoId: string, input: OrdenarFotosEventoInput) {
+    await this.buscarAdmin(eventoId);
+    const existentes = await this.prisma.fotoEvento.findMany({
+      where: { eventoId },
+      select: { id: true },
+    });
+    const idsExistentes = new Set(existentes.map((foto) => foto.id));
+    const idsInformados = input.fotoIds;
+
+    if (
+      idsInformados.length !== idsExistentes.size ||
+      idsInformados.some((id) => !idsExistentes.has(id)) ||
+      new Set(idsInformados).size !== idsInformados.length
+    ) {
+      throw new BadRequestException('Lista de fotos inválida para reordenação');
+    }
+
+    await this.prisma.$transaction(
+      idsInformados.map((id, ordem) =>
+        this.prisma.fotoEvento.update({
+          where: { id },
+          data: { ordem },
+        }),
+      ),
+    );
+
+    return this.buscarAdmin(eventoId);
   }
 
   async removerFoto(eventoId: string, fotoId: string): Promise<void> {
