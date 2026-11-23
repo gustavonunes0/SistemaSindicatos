@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import { LogoLink } from '../ui/Logo';
 import { AlertaPopup } from '../../features/alertas/components/AlertaPopup';
@@ -11,6 +11,8 @@ import { usePrefetchConveniosAdmin } from '../../features/convenios/hooks';
 import { usePrefetchNoticiasAdmin } from '../../features/noticias/hooks';
 import { transparenciaFinanceiraAtiva } from '../../features/transparencia/visibilidade';
 import { useMarca } from '../../lib/marca';
+
+const LARGURA_SIDEBAR_FIXA = 900;
 
 type AreaTipo = 'admin' | 'afiliado';
 
@@ -100,6 +102,7 @@ function rotaAtivaNoGrupo(pathname: string, links: LinkNav[]): boolean {
 
 export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLayoutProps) {
   const [menuAberto, setMenuAberto] = useState(false);
+  const sidebarId = useId();
   const { data } = useMe();
   const logout = useLogout();
   const role = useAuthStore((state) => state.user?.role);
@@ -111,6 +114,43 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   const mostrarDiretoria = Boolean(data?.afiliado?.diretor);
   const adminEmVisaoFiliado = role === 'ADMIN' && tipo === 'afiliado';
   const podeTrocarVisao = role === 'ADMIN';
+
+  const fecharMenu = () => setMenuAberto(false);
+  const alternarMenu = () => setMenuAberto((aberto) => !aberto);
+
+  // Fecha ao mudar de rota (ex.: botão voltar do browser).
+  useEffect(() => {
+    setMenuAberto(false);
+  }, [pathname]);
+
+  // Trava o scroll do fundo e fecha com Escape no mobile.
+  useEffect(() => {
+    if (!menuAberto) return;
+
+    const overflowAnterior = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    function onTecla(evento: KeyboardEvent) {
+      if (evento.key === 'Escape') setMenuAberto(false);
+    }
+
+    window.addEventListener('keydown', onTecla);
+    return () => {
+      document.body.style.overflow = overflowAnterior;
+      window.removeEventListener('keydown', onTecla);
+    };
+  }, [menuAberto]);
+
+  // Em desktop a sidebar é fixa — não deixa o estado "aberto" preso.
+  useEffect(() => {
+    function onResize() {
+      if (window.innerWidth >= LARGURA_SIDEBAR_FIXA) {
+        setMenuAberto(false);
+      }
+    }
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
 
   const gruposAfiliado: GrupoNav[] = useMemo(
     () => [
@@ -201,38 +241,73 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   }
 
   return (
-    <div className={`area-shell area-shell--${tipo}`}>
+    <div
+      className={`area-shell area-shell--${tipo}${menuAberto ? ' area-shell--menu-aberto' : ''}`}
+    >
       {tipo === 'admin' ? <PrefetchAdmin /> : null}
-      <button
-        type="button"
-        className="area-menu-toggle"
-        aria-label={menuAberto ? 'Fechar menu lateral' : 'Abrir menu lateral'}
-        aria-expanded={menuAberto}
-        onClick={() => setMenuAberto((aberto) => !aberto)}
-      >
-        <span className="area-menu-toggle-barras" aria-hidden="true">
-          <span />
-          <span />
-          <span />
-        </span>
-      </button>
 
-      {menuAberto && (
+      <div className="area-mobile-bar">
         <button
           type="button"
-          className="area-sidebar-overlay"
-          aria-label="Fechar menu"
-          onClick={() => setMenuAberto(false)}
-        />
-      )}
+          className={`area-menu-toggle${menuAberto ? ' area-menu-toggle--aberto' : ''}`}
+          aria-label={menuAberto ? 'Fechar menu' : 'Abrir menu'}
+          aria-expanded={menuAberto}
+          aria-controls={sidebarId}
+          onClick={alternarMenu}
+        >
+          <span className="area-menu-toggle-barras" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
+        </button>
+        <div className="area-mobile-bar-texto">
+          <span className="area-mobile-bar-marca">{marca.nome}</span>
+          <span className="area-mobile-bar-area">{rotuloArea}</span>
+        </div>
+        {podeTrocarVisao && (
+          <Link
+            to={tipo === 'admin' ? '/afiliado' : '/admin'}
+            className="area-mobile-bar-trocar"
+            onClick={fecharMenu}
+          >
+            {tipo === 'admin' ? 'Ver filiado' : 'Voltar admin'}
+          </Link>
+        )}
+      </div>
 
-      <aside className={`area-sidebar ${menuAberto ? 'aberto' : ''}`}>
+      <button
+        type="button"
+        className={`area-sidebar-overlay${menuAberto ? ' area-sidebar-overlay--visivel' : ''}`}
+        aria-label="Fechar menu"
+        tabIndex={menuAberto ? 0 : -1}
+        aria-hidden={!menuAberto}
+        onClick={fecharMenu}
+      />
+
+      <aside
+        id={sidebarId}
+        className={`area-sidebar${menuAberto ? ' aberto' : ''}`}
+        aria-modal={menuAberto || undefined}
+        role={menuAberto ? 'dialog' : undefined}
+        aria-label={rotuloArea}
+      >
         <div className="area-sidebar-topo">
-          <LogoLink
-            to={tipo === 'admin' ? '/admin' : '/afiliado'}
-            variante="sidebar"
-            onClick={() => setMenuAberto(false)}
-          />
+          <div className="area-sidebar-topo-linha">
+            <LogoLink
+              to={tipo === 'admin' ? '/admin' : '/afiliado'}
+              variante="sidebar"
+              onClick={fecharMenu}
+            />
+            <button
+              type="button"
+              className="area-sidebar-fechar"
+              aria-label="Fechar menu"
+              onClick={fecharMenu}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
           <span className="area-sidebar-tipo">{rotuloArea}</span>
         </div>
 
@@ -276,7 +351,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
                       className={({ isActive }) =>
                         isActive ? 'area-nav-link ativo' : 'area-nav-link'
                       }
-                      onClick={() => setMenuAberto(false)}
+                      onClick={fecharMenu}
                     >
                       {link.rotulo}
                     </NavLink>
@@ -303,7 +378,7 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
             <Link
               to={tipo === 'admin' ? '/afiliado' : '/admin'}
               className="area-sidebar-trocar-visao"
-              onClick={() => setMenuAberto(false)}
+              onClick={fecharMenu}
             >
               {tipo === 'admin' ? 'Ver como filiado' : 'Voltar ao painel admin'}
             </Link>
