@@ -105,6 +105,9 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
   const { pathname } = useLocation();
   const [gruposAbertos, setGruposAbertos] = useState<Record<string, boolean>>({});
 
+  const mostrarTransparencia = transparenciaFinanceiraAtiva(marca);
+  const mostrarDiretoria = Boolean(data?.afiliado?.diretor);
+
   const gruposAfiliado: GrupoNav[] = useMemo(
     () => [
       {
@@ -130,13 +133,13 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
           {
             to: '/afiliado/transparencia',
             rotulo: 'Transparência',
-            visivel: transparenciaFinanceiraAtiva(marca),
+            visivel: mostrarTransparencia,
           },
           { to: '/afiliado/juridico', rotulo: 'Jurídico' },
           {
             to: '/afiliado/diretoria',
             rotulo: 'Diretoria',
-            visivel: Boolean(data?.afiliado?.diretor),
+            visivel: mostrarDiretoria,
           },
         ],
       },
@@ -154,23 +157,35 @@ export function AreaLayout({ tipo, titulo, descricao, acoes, children }: AreaLay
         links: [{ to: '/', rotulo: 'Site institucional' }],
       },
     ],
-    [data?.afiliado?.diretor, marca],
+    [mostrarDiretoria, mostrarTransparencia],
   );
 
   const grupos = tipo === 'admin' ? gruposAdmin : gruposAfiliado;
 
-  // Ao mudar de rota, abre o grupo da página atual e fecha os demais.
+  // Garante o grupo da rota atual aberto, sem fechar os que o usuário expandiu.
   useEffect(() => {
-    const proximos: Record<string, boolean> = {};
-    for (const grupo of grupos) {
-      if (grupo.fixo || !grupo.titulo) {
-        proximos[grupo.id] = true;
-        continue;
+    setGruposAbertos((atual) => {
+      let mudou = false;
+      const proximos = { ...atual };
+
+      for (const grupo of grupos) {
+        if (grupo.fixo || !grupo.titulo) {
+          if (!proximos[grupo.id]) {
+            proximos[grupo.id] = true;
+            mudou = true;
+          }
+          continue;
+        }
+
+        const links = grupo.links.filter((link) => link.visivel !== false);
+        if (rotaAtivaNoGrupo(pathname, links) && !proximos[grupo.id]) {
+          proximos[grupo.id] = true;
+          mudou = true;
+        }
       }
-      const links = grupo.links.filter((link) => link.visivel !== false);
-      proximos[grupo.id] = rotaAtivaNoGrupo(pathname, links);
-    }
-    setGruposAbertos(proximos);
+
+      return mudou ? proximos : atual;
+    });
   }, [grupos, pathname]);
 
   const rotuloArea = tipo === 'admin' ? 'Administração' : 'Área do sindicalizado';
