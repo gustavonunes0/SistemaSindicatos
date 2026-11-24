@@ -42,16 +42,7 @@ export function ImovelCard({
         <p className="imovel-card-endereco">{imovel.endereco}</p>
 
         <p className="imovel-card-valor">
-          {reservaSistema ? (
-            <>
-              Até 7 dias <span>gratuitos</span>
-            </>
-          ) : (
-            <>
-              Consulte valores
-              <span> no regulamento</span>
-            </>
-          )}
+          Valor a consultar
         </p>
 
         {imovel.comodidades.length > 0 && (

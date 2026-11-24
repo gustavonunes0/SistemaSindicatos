@@ -4071,7 +4071,35 @@ textarea {
   background: #fff;
 }
 
-input:focus,
+input[type='radio'],
+input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  accent-color: var(--cor-primaria);
+  flex-shrink: 0;
+}
+
+input[type='radio']:focus,
+input[type='radio']:focus-visible,
+input[type='checkbox']:focus,
+input[type='checkbox']:focus-visible {
+  outline: 2px solid var(--cor-primaria);
+  outline-offset: 2px;
+  border-radius: 999px;
+  border-color: transparent;
+}
+
+input[type='checkbox']:focus,
+input[type='checkbox']:focus-visible {
+  border-radius: 3px;
+}
+
+input:not([type='radio']):not([type='checkbox']):focus,
 select:focus,
 textarea:focus {
   outline: 2px solid var(--cor-primaria);
@@ -7164,9 +7192,16 @@ button.area-nav-grupo-titulo:focus-visible {
 
 .form-opcao {
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   font-size: var(--texto-sm);
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.form-opcao input[type='radio'] {
+  margin-top: 0.05rem;
 }
 
 .solicitacao-perfil {

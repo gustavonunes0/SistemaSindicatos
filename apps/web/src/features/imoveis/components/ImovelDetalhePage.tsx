@@ -169,13 +169,10 @@ export function ImovelDetalhePage() {
 
         <aside className="imovel-detalhe-lateral">
           <div className="imovel-resumo">
-            <p className="eyebrow">Filiado SINDPRF-CE</p>
-            <p className="imovel-detalhe-valor">
-              Até 7 dias
-              <span> gratuitos</span>
-            </p>
+            <p className="eyebrow">Hospedagem</p>
+            <p className="imovel-detalhe-valor">Valor a consultar</p>
             <p className="imovel-detalhe-endereco">
-              Do 8º ao 14º dia: R$ 30/dia · máximo contínuo 14 dias · intervalo mínimo 14 dias
+              Valores e prazos conforme o regulamento do seu perfil.
             </p>
             {imovel.comodidades.length > 0 && (
               <p className="imovel-resumo-meta">
