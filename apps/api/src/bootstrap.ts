@@ -38,6 +38,17 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
       crossOriginResourcePolicy: { policy: 'cross-origin' },
     }),
   );
+  async function origemPermitida(origin: string | undefined): Promise<boolean> {
+    if (!origin) return true;
+    const normalizado = origin.replace(/\/+$/, '');
+    if (originsFixos.has(normalizado)) return true;
+    try {
+      return await tenants.isAllowedOrigin(origin);
+    } catch {
+      return false;
+    }
+  }
+
   app.enableCors({
     origin: async (origin, callback) => {
       // Requests sem Origin (curl, health, same-origin server-side).
@@ -46,13 +57,7 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
         return;
       }
       try {
-        const normalizado = origin.replace(/\/+$/, '');
-        if (originsFixos.has(normalizado)) {
-          callback(null, true);
-          return;
-        }
-        const ok = await tenants.isAllowedOrigin(origin);
-        callback(null, ok);
+        callback(null, await origemPermitida(origin));
       } catch {
         callback(null, false);
       }
@@ -66,6 +71,28 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
       'X-Requested-With',
     ],
   });
+
+  // express.static às vezes responde sem passar pelo enableCors do Nest —
+  // o download das fotos (fetch cross-origin) precisa desses headers.
+  app.use('/uploads', async (req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && (await origemPermitida(origin))) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
+      res.setHeader(
+        'Access-Control-Allow-Headers',
+        'Content-Type, Authorization, X-Tenant-Host, X-Requested-With',
+      );
+      res.setHeader('Vary', 'Origin');
+      if (req.method === 'OPTIONS') {
+        res.status(204).end();
+        return;
+      }
+    }
+    next();
+  });
+
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });
 }
 
