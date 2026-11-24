@@ -34,6 +34,7 @@ const CAMPOS_LISTAGEM = {
   categoria: true,
   descricao: true,
   logoUrl: true,
+  tabelaUrl: true,
   link: true,
   contato: true,
   vigenciaInicio: true,
@@ -173,6 +174,7 @@ export class ConveniosService {
       ...item,
       descricao: '',
       logoUrl: null,
+      tabelaUrl: null,
       link: null,
       contato: null,
       vigenciaInicio: null,
@@ -480,6 +482,7 @@ export class ConveniosService {
     if (input.categoria !== undefined) dados.categoria = input.categoria;
     if (input.descricao !== undefined) dados.descricao = input.descricao;
     if (input.logoUrl !== undefined) dados.logoUrl = input.logoUrl;
+    if (input.tabelaUrl !== undefined) dados.tabelaUrl = input.tabelaUrl;
     if (input.link !== undefined) dados.link = input.link;
     if (input.contato !== undefined) dados.contato = input.contato;
     if (input.vigenciaInicio !== undefined) dados.vigenciaInicio = input.vigenciaInicio;

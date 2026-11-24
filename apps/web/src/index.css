@@ -6957,6 +6957,50 @@ button.area-nav-grupo-titulo:focus-visible {
   line-height: 1.6;
 }
 
+.convenio-tabela {
+  margin: 0 0 1.35rem;
+  padding: 0;
+}
+
+.convenio-tabela figcaption {
+  margin: 0 0 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--cor-texto-suave);
+}
+
+.convenio-tabela a {
+  display: block;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  background: #fff;
+  overflow: hidden;
+}
+
+.convenio-tabela img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.convenio-tabela-preview {
+  display: block;
+  margin: 0.65rem 0;
+  max-width: 18rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio);
+  overflow: hidden;
+  background: #fff;
+}
+
+.convenio-tabela-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
 .convenio-dados {
   margin: 0 0 1.25rem;
 }

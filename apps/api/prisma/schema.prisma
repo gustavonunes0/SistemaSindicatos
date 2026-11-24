@@ -631,6 +631,8 @@ model Convenio {
   categoria         String
   descricao         String            @db.Text
   logoUrl           String?
+  /// Flyer/tabela de descontos (imagem) exibida no detalhe do convênio.
+  tabelaUrl         String?
   link              String?
   contato           String?
   vigenciaInicio    DateTime?         @db.Timestamptz

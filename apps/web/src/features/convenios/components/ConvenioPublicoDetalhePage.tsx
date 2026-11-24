@@ -80,6 +80,18 @@ export function ConvenioPublicoDetalhePage() {
           <h2>Sobre o benefício</h2>
           <p className="convenio-publico-descricao">{convenio.descricao}</p>
 
+          {convenio.tabelaUrl && (
+            <figure className="convenio-tabela">
+              <figcaption>Tabela de benefícios</figcaption>
+              <a href={urlDaApi(convenio.tabelaUrl)} target="_blank" rel="noreferrer">
+                <img
+                  src={urlDaApi(convenio.tabelaUrl)}
+                  alt={`Tabela de benefícios — ${convenio.nome}`}
+                />
+              </a>
+            </figure>
+          )}
+
           {(convenio.contato || convenio.link) && (
             <dl className="convenio-publico-dados">
               {convenio.contato ? (

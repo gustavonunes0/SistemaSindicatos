@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -10,7 +11,10 @@ import {
   Put,
   Query,
   StreamableFile,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import {
   atualizarConvenioSchema,
   criarConvenioSchema,
@@ -22,15 +26,24 @@ import {
   type DefinirLinkCategoriaInput,
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
+  type UploadTabelaConvenioResponse,
 } from '@sindprf/types';
 import { CurrentUser, Public, Roles } from '../common/decorators';
 import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
+import { StorageService } from '../storage/storage.service';
 import { ConveniosService } from './convenios.service';
+
+/** Tabelas/flyers em alta resolução; alinhado ao limite de anexos/estatutos. */
+const TABELA_MAX_BYTES = 50 * 1024 * 1024;
+const TABELA_MIMETYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 @Controller('convenios')
 export class ConveniosController {
-  constructor(private readonly conveniosService: ConveniosService) {}
+  constructor(
+    private readonly conveniosService: ConveniosService,
+    private readonly storageService: StorageService,
+  ) {}
 
   // ---- Gestão (ADMIN) ----
   @Roles('ADMIN')
@@ -53,6 +66,22 @@ export class ConveniosController {
     @Body(new ZodValidationPipe(definirLinkCategoriaSchema)) body: DefinirLinkCategoriaInput,
   ) {
     return this.conveniosService.definirLinkCategoria(body);
+  }
+
+  @Roles('ADMIN')
+  @Post('tabela')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: TABELA_MAX_BYTES } }))
+  async uploadTabela(
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<UploadTabelaConvenioResponse> {
+    if (!file) {
+      throw new BadRequestException('Arquivo não enviado');
+    }
+    if (!TABELA_MIMETYPES.includes(file.mimetype)) {
+      throw new BadRequestException('Formato inválido: envie JPEG, PNG ou WebP');
+    }
+    const url = await this.storageService.salvar(file.buffer, file.originalname);
+    return { url };
   }
 
   @Roles('ADMIN')

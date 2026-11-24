@@ -17,6 +17,7 @@ import {
   useAtualizarConvenio,
   useConvenioAdmin,
   useCriarConvenio,
+  useUploadTabelaConvenio,
 } from '../../hooks';
 
 const modelosDeclaracao = modeloDeclaracaoSchema.options;
@@ -34,7 +35,9 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
   const criar = useCriarConvenio();
   const atualizar = useAtualizarConvenio();
   const uploadLogo = useUploadCapa();
+  const uploadTabela = useUploadTabelaConvenio();
   const inputLogoRef = useRef<HTMLInputElement>(null);
+  const inputTabelaRef = useRef<HTMLInputElement>(null);
   const editando = Boolean(id);
 
   const {
@@ -51,6 +54,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
       categoria: '',
       descricao: '',
       logoUrl: null,
+      tabelaUrl: null,
       link: null,
       contato: null,
       vigenciaInicio: null,
@@ -72,6 +76,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         categoria: convenioExistente.categoria,
         descricao: convenioExistente.descricao,
         logoUrl: convenioExistente.logoUrl,
+        tabelaUrl: convenioExistente.tabelaUrl,
         link: convenioExistente.link ?? '',
         contato: convenioExistente.contato ?? '',
         vigenciaInicio: paraInputData(convenioExistente.vigenciaInicio),
@@ -91,6 +96,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         categoria: '',
         descricao: '',
         logoUrl: null,
+        tabelaUrl: null,
         link: null,
         contato: null,
         vigenciaInicio: null,
@@ -106,8 +112,10 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
   }, [aberto, id, convenioExistente, reset]);
 
   const logoUrl = watch('logoUrl');
+  const tabelaUrl = watch('tabelaUrl');
   const emiteDeclaracao = watch('emiteDeclaracao');
   const logoUrlValida = typeof logoUrl === 'string' ? logoUrl : null;
+  const tabelaUrlValida = typeof tabelaUrl === 'string' ? tabelaUrl : null;
   const salvando = criar.isPending || atualizar.isPending;
 
   const onSubmit = (dados: CriarConvenioInput) => {
@@ -123,6 +131,14 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
     if (arquivo) {
       uploadLogo.mutate(arquivo, {
         onSuccess: ({ url }) => setValue('logoUrl', url, { shouldDirty: true }),
+      });
+    }
+  };
+
+  const onSelecionarTabela = (arquivo: File | undefined) => {
+    if (arquivo) {
+      uploadTabela.mutate(arquivo, {
+        onSuccess: ({ url }) => setValue('tabelaUrl', url, { shouldDirty: true }),
       });
     }
   };
@@ -188,6 +204,46 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
                 }}
               >
                 Remover logo
+              </button>
+            )}
+          </div>
+
+          <div className="campo">
+            <span className="campo-rotulo">Tabela / flyer (opcional)</span>
+            <p className="texto-secundario">
+              Imagem da tabela de descontos ou material do benefício (JPEG, PNG ou WebP, até 50 MB).
+            </p>
+            {tabelaUrlValida && (
+              <a
+                className="convenio-tabela-preview"
+                href={urlDaApi(tabelaUrlValida)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img src={urlDaApi(tabelaUrlValida)} alt="Prévia da tabela do convênio" />
+              </a>
+            )}
+            <input
+              ref={inputTabelaRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              onChange={(evento) => onSelecionarTabela(evento.target.files?.[0])}
+            />
+            {uploadTabela.isPending && <span>Enviando tabela…</span>}
+            {uploadTabela.isError && (
+              <span className="erro">Erro ao enviar a imagem. Verifique o tamanho e o formato.</span>
+            )}
+            {errors.tabelaUrl && <span className="erro">{errors.tabelaUrl.message}</span>}
+            {tabelaUrlValida && (
+              <button
+                type="button"
+                className="botao-link"
+                onClick={() => {
+                  setValue('tabelaUrl', null, { shouldDirty: true });
+                  if (inputTabelaRef.current) inputTabelaRef.current.value = '';
+                }}
+              >
+                Remover tabela
               </button>
             )}
           </div>

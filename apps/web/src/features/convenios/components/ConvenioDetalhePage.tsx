@@ -60,6 +60,18 @@ export function ConvenioDetalhePage() {
 
         <p className="convenio-descricao">{convenio.descricao}</p>
 
+        {convenio.tabelaUrl && (
+          <figure className="convenio-tabela">
+            <figcaption>Tabela de benefícios</figcaption>
+            <a href={urlDaApi(convenio.tabelaUrl)} target="_blank" rel="noreferrer">
+              <img
+                src={urlDaApi(convenio.tabelaUrl)}
+                alt={`Tabela de benefícios — ${convenio.nome}`}
+              />
+            </a>
+          </figure>
+        )}
+
         <dl className="convenio-dados">
           {convenio.contato && (
             <div>

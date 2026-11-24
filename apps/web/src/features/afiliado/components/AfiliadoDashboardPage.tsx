@@ -32,12 +32,12 @@ const beneficios = [
   {
     to: '/afiliado/imoveis',
     titulo: 'Apartamentos',
-    descricao: 'Reserve imóveis de lazer pelo sistema oficial do sindicato.',
+    descricao: 'Reserve apartamentos do SINDPRF Ceará.',
   },
   {
     to: '/afiliado/eleicoes',
     titulo: 'Eleições',
-    descricao: 'Vote na diretoria e presidência do sindicato.',
+    descricao: 'Vote na diretoria e presidência do sindicato e demais votações sindicais.',
   },
 ] as const;
 

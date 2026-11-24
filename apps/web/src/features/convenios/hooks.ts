@@ -24,6 +24,7 @@ function listagemAdminDeConvenio(c: Convenio): ConvenioListagem {
     categoria: c.categoria,
     descricao: '',
     logoUrl: null,
+    tabelaUrl: null,
     link: null,
     contato: null,
     vigenciaInicio: null,
@@ -237,6 +238,10 @@ export function useEmitirDeclaracao() {
     mutationFn: ({ id, ...input }: EmitirDeclaracaoInput & { id: string }) =>
       conveniosApi.emitirDeclaracao(id, input),
   });
+}
+
+export function useUploadTabelaConvenio() {
+  return useMutation({ mutationFn: conveniosApi.uploadTabelaConvenio });
 }
 
 export function usePrefetchConveniosAdmin() {
