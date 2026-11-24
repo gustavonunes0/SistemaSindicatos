@@ -4194,10 +4194,14 @@ textarea {
   color: var(--cor-texto);
 }
 
-.area-shell--admin .tabela-acoes {
+.area-shell--admin .tabela-acoes:not(td) {
   justify-content: flex-end;
   align-items: center;
   gap: 0.55rem;
+  white-space: nowrap;
+}
+
+.area-shell--admin td.tabela-acoes {
   white-space: nowrap;
 }
 
@@ -4205,6 +4209,11 @@ textarea {
 .area-shell--admin .tabela-acoes .botao-tabela {
   display: inline-flex;
   align-items: center;
+}
+
+.area-shell--admin td.tabela-acoes.tabela-acoes--coluna .botao-link-acao,
+.area-shell--admin td.tabela-acoes.tabela-acoes--coluna .botao-tabela {
+  display: block;
 }
 
 .area-shell--admin .admin-bloco {
@@ -4357,8 +4366,12 @@ textarea {
   color: var(--azul-noite);
 }
 
-.area-shell--admin .tabela-acoes--coluna {
+.area-shell--admin .tabela-acoes--coluna:not(td) {
   align-items: flex-end;
+}
+
+.area-shell--admin td.tabela-acoes.tabela-acoes--coluna {
+  white-space: normal;
 }
 
 .area-shell--admin .tabela-acoes--coluna .botao-link-acao {
@@ -6012,12 +6025,34 @@ button.area-nav-grupo-titulo:focus-visible {
   white-space: nowrap;
 }
 
+/* Wrapper interno (div): flex ok. Em <td>, flex quebra border-collapse das linhas. */
 .tabela-acoes {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
   justify-content: flex-end;
+}
+
+td.tabela-acoes {
+  display: table-cell;
+  vertical-align: middle;
+  text-align: right;
+  white-space: nowrap;
+}
+
+td.tabela-acoes > .botao-link-acao,
+td.tabela-acoes > .botao-tabela,
+td.tabela-acoes > .botao-perigo,
+td.tabela-acoes > a {
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-left: 0.35rem;
+}
+
+td.tabela-acoes > :first-child {
+  margin-left: 0;
 }
 
 /* Rótulos longos (declarações): uma ação por linha, alinhadas à direita. */
@@ -6027,6 +6062,23 @@ button.area-nav-grupo-titulo:focus-visible {
   justify-content: center;
   gap: 0.35rem;
   text-align: right;
+}
+
+td.tabela-acoes.tabela-acoes--coluna {
+  white-space: normal;
+}
+
+td.tabela-acoes.tabela-acoes--coluna > .botao-link-acao,
+td.tabela-acoes.tabela-acoes--coluna > .botao-tabela,
+td.tabela-acoes.tabela-acoes--coluna > .botao-perigo,
+td.tabela-acoes.tabela-acoes--coluna > a {
+  display: block;
+  width: fit-content;
+  margin: 0 0 0.35rem auto;
+}
+
+td.tabela-acoes.tabela-acoes--coluna > :last-child {
+  margin-bottom: 0;
 }
 
 .botao-tabela {
