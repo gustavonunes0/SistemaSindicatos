@@ -86,7 +86,7 @@ export function SolicitarAluguelForm({ imovelId, imovelTitulo }: SolicitarAlugue
       </p>
 
       <form className="form-stack solicitar-aluguel-form" onSubmit={onSubmit}>
-        <div className="form-grid">
+        <div className="form-grid form-grid--datas">
           <label>
             Entrada
             <input

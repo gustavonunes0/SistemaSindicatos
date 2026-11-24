@@ -52,7 +52,7 @@ export function ImoveisPage() {
 
       {!carregandoMe && aprovado && vitrine && (
         <div className="imoveis-afiliado">
-          <RegrasHospedagem />
+          <RegrasHospedagem perfil="FILIADO_SINDPRF" />
 
           <ol className="imoveis-roteiro" aria-label="Como reservar">
             <li>

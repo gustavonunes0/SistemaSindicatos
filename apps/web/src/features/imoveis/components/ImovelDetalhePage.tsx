@@ -82,7 +82,7 @@ export function ImovelDetalhePage() {
       acoes={
         <div className="imovel-detalhe-acoes-topo">
           {sistema && (
-            <Link to="/afiliado/solicitacoes" className="botao-link">
+            <Link to="/afiliado/solicitacoes" className="botao-secundario">
               Minhas reservas
             </Link>
           )}
@@ -196,7 +196,7 @@ export function ImovelDetalhePage() {
             />
           )}
 
-          <RegrasHospedagem compacta />
+          <RegrasHospedagem compacta perfil="FILIADO_SINDPRF" />
         </aside>
       </article>
     </AreaLayout>

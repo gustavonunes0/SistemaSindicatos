@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
+import { areaPorRole } from '../../auth/hooks';
+import { useAuthStore } from '../../auth/store';
 import { useMarca } from '../../../lib/marca';
 import { useSeo } from '../../../lib/seo';
 import { useImoveisPublico } from '../hooks';
@@ -10,6 +12,7 @@ import { ReservaExterna } from './ReservaExterna';
 
 export function ApartamentosPublicPage() {
   const marca = useMarca();
+  const user = useAuthStore((state) => state.user);
   const modo = modoImoveis(marca);
   const vitrine = mostrarVitrine(marca);
   const sistema = reservaPeloSistema(marca);
@@ -29,11 +32,14 @@ export function ApartamentosPublicPage() {
           Espaços de convivência do {marca.nome}. Filiados do Ceará usam a área logada; filiados de
           outros estados e PRFs não filiados podem pedir reserva por aqui, conforme o regulamento.
         </p>
-        <p>
-          <Link to="/login" className="botao-link">
-            Sou filiado(a) SINDPRF-CE — entrar
+        <div className="apartamentos-public-acoes">
+          <Link
+            to={user ? areaPorRole(user.role) : '/login'}
+            className="apartamentos-cta-filiado"
+          >
+            {user ? 'Ir para a área do filiado' : 'Sou filiado(a) SINDPRF-CE — entrar'}
           </Link>
-        </p>
+        </div>
       </header>
 
       {modo === 'LINK' && (
@@ -46,7 +52,7 @@ export function ApartamentosPublicPage() {
 
       {vitrine && (
         <div className="imoveis-afiliado">
-          <RegrasHospedagem perfilDestaque="FILIADO_OUTRO" />
+          <RegrasHospedagem />
 
           {isLoading && <EstadoCarregando mensagem="Carregando apartamentos…" />}
           {isError && (

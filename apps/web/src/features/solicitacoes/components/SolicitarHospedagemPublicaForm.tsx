@@ -7,6 +7,7 @@ import {
 } from '@sindprf/types';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { RegrasHospedagem } from '../../imoveis/components/RegrasHospedagem';
 import { useCriarSolicitacaoPublica } from '../hooks';
 
 type PerfilExterno = Extract<PerfilHospedagem, 'FILIADO_OUTRO' | 'NAO_FILIADO'>;
@@ -148,6 +149,8 @@ export function SolicitarHospedagemPublicaForm({
           </div>
         </fieldset>
 
+        <RegrasHospedagem compacta perfil={perfil} />
+
         <div className="form-grid">
           <label>
             Nome completo
@@ -208,7 +211,7 @@ export function SolicitarHospedagemPublicaForm({
           </label>
         )}
 
-        <div className="form-grid">
+        <div className="form-grid form-grid--datas">
           <label>
             Entrada
             <input

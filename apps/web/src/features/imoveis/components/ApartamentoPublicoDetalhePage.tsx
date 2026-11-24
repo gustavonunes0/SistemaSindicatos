@@ -8,7 +8,6 @@ import { SolicitarHospedagemPublicaForm } from '../../solicitacoes/components/So
 import { useImovelPublico } from '../hooks';
 import { mostrarVitrine, reservaPeloSistema } from '../modo';
 import { CalendarioDisponibilidade } from './CalendarioDisponibilidade';
-import { RegrasHospedagem } from './RegrasHospedagem';
 import { ReservaExterna } from './ReservaExterna';
 
 export function ApartamentoPublicoDetalhePage() {
@@ -165,17 +164,6 @@ export function ApartamentoPublicoDetalhePage() {
         </div>
 
         <aside className="imovel-detalhe-lateral">
-          <div className="imovel-resumo">
-            <p className="eyebrow">Valores por perfil</p>
-            <p className="imovel-detalhe-valor">
-              Outros estados
-              <span> a partir de R$ 50/dia</span>
-            </p>
-            <p className="imovel-detalhe-endereco">
-              Não filiado: R$ 70/dia · máximo conforme regulamento
-            </p>
-          </div>
-
           {sistema ? (
             <SolicitarHospedagemPublicaForm imovelId={imovel.id} imovelTitulo={imovel.titulo} />
           ) : (
@@ -186,8 +174,6 @@ export function ApartamentoPublicoDetalhePage() {
               ctaRotulo="Reservar agora"
             />
           )}
-
-          <RegrasHospedagem compacta perfilDestaque="FILIADO_OUTRO" />
         </aside>
       </article>
     </main>
