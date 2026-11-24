@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
+import type { NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import { join } from 'node:path';
 import { AppModule } from './app.module';
@@ -74,7 +75,7 @@ export async function configurarApp(app: NestExpressApplication): Promise<void> 
 
   // express.static às vezes responde sem passar pelo enableCors do Nest —
   // o download das fotos (fetch cross-origin) precisa desses headers.
-  app.use('/uploads', async (req, res, next) => {
+  app.use('/uploads', async (req: Request, res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
     if (origin && (await origemPermitida(origin))) {
       res.setHeader('Access-Control-Allow-Origin', origin);
