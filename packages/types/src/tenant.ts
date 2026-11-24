@@ -66,7 +66,8 @@ export const tenantBrandingSchema = z.object({
    * - SISTEMA — lista fotos/calendário; reserva pelo próprio sistema
    * Ausente = SISTEMA.
    */
-  imoveisModo: z.enum(['LINK', 'VITRINE', 'SISTEMA']).optional(),
+  // `.catch` evita derrubar /tenants/current se o valor no banco for antigo/desconhecido.
+  imoveisModo: z.enum(['LINK', 'VITRINE', 'SISTEMA']).optional().catch(undefined),
   /**
    * Portal de transparência financeira na área do filiado.
    * Ausente = liberado (comportamento histórico).
