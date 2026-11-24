@@ -6890,6 +6890,20 @@ td.tabela-acoes.tabela-acoes--coluna > :last-child {
   white-space: pre-wrap;
 }
 
+.convenio-publico-tabela-aviso {
+  margin: 0.35rem 0 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--cor-texto-suave, #5b6570);
+}
+
+.convenio-publico-tabela-aviso a {
+  color: var(--cor-primaria);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .convenio-publico-dados {
   margin: 0.5rem 0 0;
   display: grid;
