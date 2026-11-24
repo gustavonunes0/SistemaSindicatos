@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   AtualizarStatusSolicitacaoInput,
   CriarSolicitacaoInput,
+  CriarSolicitacaoPublicaInput,
   EnviarMensagemInput,
   FiltroSolicitacoesAdminInput,
 } from '@sindprf/types';
@@ -51,6 +52,13 @@ export function useCriarSolicitacao() {
   return useMutation({
     mutationFn: (input: CriarSolicitacaoInput) => solicitacoesApi.criarSolicitacao(input),
     onSuccess: invalidar,
+  });
+}
+
+export function useCriarSolicitacaoPublica() {
+  return useMutation({
+    mutationFn: (input: CriarSolicitacaoPublicaInput) =>
+      solicitacoesApi.criarSolicitacaoPublica(input),
   });
 }
 

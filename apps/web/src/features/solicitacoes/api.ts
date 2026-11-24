@@ -4,6 +4,7 @@ import {
   solicitacaoResumoSchema,
   type AtualizarStatusSolicitacaoInput,
   type CriarSolicitacaoInput,
+  type CriarSolicitacaoPublicaInput,
   type EnviarMensagemInput,
   type FiltroSolicitacoesAdminInput,
   type Mensagem,
@@ -15,6 +16,17 @@ import { api } from '../../lib/http';
 
 export async function criarSolicitacao(input: CriarSolicitacaoInput): Promise<SolicitacaoAluguel> {
   const { data } = await api.post('/solicitacoes', {
+    ...input,
+    inicioDesejado: input.inicioDesejado.toISOString(),
+    fimDesejado: input.fimDesejado.toISOString(),
+  });
+  return solicitacaoAluguelSchema.parse(data);
+}
+
+export async function criarSolicitacaoPublica(
+  input: CriarSolicitacaoPublicaInput,
+): Promise<SolicitacaoAluguel> {
+  const { data } = await api.post('/solicitacoes/publica', {
     ...input,
     inicioDesejado: input.inicioDesejado.toISOString(),
     fimDesejado: input.fimDesejado.toISOString(),

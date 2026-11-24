@@ -1,17 +1,27 @@
 import type { Imovel } from '@sindprf/types';
 import { Link } from 'react-router-dom';
-import { formatarMoeda } from '../../../lib/moeda';
 import { urlDaApi } from '../../../lib/urls';
 
 const COMODIDADES_VISIVEIS = 3;
 
-export function ImovelCard({ imovel }: { imovel: Imovel }) {
+type ImovelCardProps = {
+  imovel: Imovel;
+  reservaSistema?: boolean;
+  /** Prefixo da rota de detalhe (área do filiado ou site público). */
+  basePath?: '/afiliado/imoveis' | '/apartamentos';
+};
+
+export function ImovelCard({
+  imovel,
+  reservaSistema = false,
+  basePath = '/afiliado/imoveis',
+}: ImovelCardProps) {
   const fotos = imovel.fotos ?? [];
   const capa = fotos[0];
   const extras = imovel.comodidades.length - COMODIDADES_VISIVEIS;
 
   return (
-    <Link to={`/afiliado/imoveis/${imovel.id}`} className="imovel-card">
+    <Link to={`${basePath}/${imovel.id}`} className="imovel-card">
       <div className="imovel-card-foto">
         {capa ? (
           <img src={urlDaApi(capa.url)} alt="" loading="lazy" />
@@ -32,8 +42,16 @@ export function ImovelCard({ imovel }: { imovel: Imovel }) {
         <p className="imovel-card-endereco">{imovel.endereco}</p>
 
         <p className="imovel-card-valor">
-          {formatarMoeda(imovel.valor)}
-          <span> / dia</span>
+          {reservaSistema ? (
+            <>
+              Até 7 dias <span>gratuitos</span>
+            </>
+          ) : (
+            <>
+              Consulte valores
+              <span> no regulamento</span>
+            </>
+          )}
         </p>
 
         {imovel.comodidades.length > 0 && (
@@ -46,7 +64,7 @@ export function ImovelCard({ imovel }: { imovel: Imovel }) {
         )}
 
         <span className="imovel-card-acao">
-          Ver datas e detalhes
+          {reservaSistema ? 'Ver datas e solicitar' : 'Ver datas e detalhes'}
           <span aria-hidden="true"> →</span>
         </span>
       </div>

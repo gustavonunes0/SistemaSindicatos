@@ -16,9 +16,14 @@ const DIAS_SEMANA = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
 type CalendarioDisponibilidadeProps = {
   imovelId: string;
+  /** Usa endpoints públicos (visitantes sem login). */
+  publico?: boolean;
 };
 
-export function CalendarioDisponibilidade({ imovelId }: CalendarioDisponibilidadeProps) {
+export function CalendarioDisponibilidade({
+  imovelId,
+  publico = false,
+}: CalendarioDisponibilidadeProps) {
   const [mesReferencia, setMesReferencia] = useState(() => new Date());
   const consulta = useMemo(
     () => ({
@@ -28,7 +33,11 @@ export function CalendarioDisponibilidade({ imovelId }: CalendarioDisponibilidad
     [mesReferencia],
   );
 
-  const { data, isLoading, isError, isFetching } = useDisponibilidadeImovel(imovelId, consulta);
+  const { data, isLoading, isError, isFetching } = useDisponibilidadeImovel(
+    imovelId,
+    consulta,
+    publico,
+  );
   const celulas = diasDoMes(mesReferencia);
   const resumo = data ? resumirMes(mesReferencia, data.periodos) : null;
 

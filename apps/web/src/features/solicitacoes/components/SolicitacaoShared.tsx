@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { formatarData } from '../../../lib/datas';
 import type { SolicitacaoResumo, StatusSolicitacao } from '@sindprf/types';
+import { PERFIL_HOSPEDAGEM_PEDIDO_ROTULO } from '@sindprf/types';
 import { classeStatusSolicitacao, rotuloStatusSolicitacao } from '../status';
 
 export function StatusSolicitacaoBadge({ status }: { status: StatusSolicitacao }) {
@@ -25,7 +26,15 @@ export function SolicitacaoResumoLinha({
       <div className="solicitacao-linha-principal">
         <strong>{solicitacao.imovel.titulo}</strong>
         {mostrarAfiliado && (
-          <span className="solicitacao-linha-afiliado">{solicitacao.afiliado.nome}</span>
+          <span className="solicitacao-linha-afiliado">
+            {solicitacao.solicitanteExibicao}
+            {solicitacao.afiliadoId == null && (
+              <span className="solicitacao-linha-perfil">
+                {' '}
+                · {PERFIL_HOSPEDAGEM_PEDIDO_ROTULO[solicitacao.perfilHospedagem]}
+              </span>
+            )}
+          </span>
         )}
         <span className="solicitacao-linha-datas">
           {formatarData(solicitacao.inicioDesejado)} — {formatarData(solicitacao.fimDesejado)}

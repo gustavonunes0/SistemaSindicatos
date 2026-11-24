@@ -28,7 +28,7 @@ import {
   type DefinirImoveisConfigInput,
   type FiltroImoveisInput,
 } from '@sindprf/types';
-import { Roles } from '../common/decorators';
+import { Public, Roles } from '../common/decorators';
 import { AfiliadoAprovadoGuard } from '../common/guards/afiliado-aprovado.guard';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
 import { StorageService } from '../storage/storage.service';
@@ -134,6 +134,28 @@ export class ImoveisController {
   @Delete(':id/periodos/:periodoId')
   removerPeriodo(@Param('id') id: string, @Param('periodoId') periodoId: string) {
     return this.imoveisService.removerPeriodo(id, periodoId);
+  }
+
+  // ---- Consulta pública (filiados de outros estados / não filiados) ----
+  @Public()
+  @Get('publico')
+  listarSite(@Query(new ZodValidationPipe(filtroImoveisSchema)) query: FiltroImoveisInput) {
+    return this.imoveisService.listarPublico(query);
+  }
+
+  @Public()
+  @Get('publico/:id/disponibilidade')
+  disponibilidadeSite(
+    @Param('id') id: string,
+    @Query(new ZodValidationPipe(consultaDisponibilidadeSchema)) query: ConsultaDisponibilidadeInput,
+  ) {
+    return this.imoveisService.consultarDisponibilidade(id, query);
+  }
+
+  @Public()
+  @Get('publico/:id')
+  buscarSite(@Param('id') id: string) {
+    return this.imoveisService.buscarPublico(id);
   }
 
   // ---- Consulta (AFILIADO aprovado) ----

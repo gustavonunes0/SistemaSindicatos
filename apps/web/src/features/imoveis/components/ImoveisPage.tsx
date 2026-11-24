@@ -1,36 +1,48 @@
+import { Link } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
 import { useMarca } from '../../../lib/marca';
 import { AguardandoAprovacao } from '../../afiliado/components/AguardandoAprovacao';
 import { useMe } from '../../auth/hooks';
 import { useImoveis } from '../hooks';
-import { modoImoveis } from '../modo';
+import { modoImoveis, mostrarVitrine, reservaPeloSistema } from '../modo';
 import { ImovelCard } from './ImovelCard';
+import { RegrasHospedagem } from './RegrasHospedagem';
 import { ReservaExterna } from './ReservaExterna';
 
 export function ImoveisPage() {
   const marca = useMarca();
   const modo = modoImoveis(marca);
+  const vitrine = mostrarVitrine(marca);
+  const sistema = reservaPeloSistema(marca);
   const { data: me, isLoading: carregandoMe } = useMe();
   const aprovado = me?.afiliado?.status === 'APROVADO';
-  const mostrarVitrine = modo === 'VITRINE';
-  const { data: imoveis, isLoading, isError } = useImoveis({}, aprovado && mostrarVitrine);
+  const { data: imoveis, isLoading, isError } = useImoveis({}, aprovado && vitrine);
 
   return (
     <AreaLayout
       tipo="afiliado"
       titulo="Apartamentos"
       descricao={
-        mostrarVitrine
-          ? 'Conheça os imóveis de lazer, confira as datas livres e conclua a reserva no canal oficial.'
-          : 'Reserve os apartamentos de lazer pelo sistema oficial do sindicato.'
+        sistema
+          ? 'Consulte a disponibilidade, confira o regulamento e solicite a hospedagem pelo sistema.'
+          : vitrine
+            ? 'Conheça os imóveis e conclua a reserva no canal oficial.'
+            : 'Reserve os apartamentos de lazer pelo sistema oficial do sindicato.'
+      }
+      acoes={
+        aprovado && sistema ? (
+          <Link to="/afiliado/solicitacoes" className="botao-secundario">
+            Minhas reservas
+          </Link>
+        ) : undefined
       }
     >
       {carregandoMe && <EstadoCarregando mensagem="Carregando…" />}
 
       {!carregandoMe && !aprovado && <AguardandoAprovacao recurso="Os apartamentos" />}
 
-      {!carregandoMe && aprovado && !mostrarVitrine && (
+      {!carregandoMe && aprovado && modo === 'LINK' && (
         <ReservaExterna
           titulo="Reservar apartamento"
           descricao="A reserva é feita no sistema oficial do sindicato. Use o botão abaixo para escolher datas e concluir o pedido."
@@ -38,8 +50,10 @@ export function ImoveisPage() {
         />
       )}
 
-      {!carregandoMe && aprovado && mostrarVitrine && (
+      {!carregandoMe && aprovado && vitrine && (
         <div className="imoveis-afiliado">
+          <RegrasHospedagem />
+
           <ol className="imoveis-roteiro" aria-label="Como reservar">
             <li>
               <strong>Escolha o imóvel</strong>
@@ -50,10 +64,22 @@ export function ImoveisPage() {
               <span>No calendário, veja o que está livre no mês.</span>
             </li>
             <li>
-              <strong>Finalize a reserva</strong>
-              <span>Conclua pelo sistema oficial do sindicato.</span>
+              <strong>{sistema ? 'Solicite no sistema' : 'Finalize a reserva'}</strong>
+              <span>
+                {sistema
+                  ? 'Envie o pedido com acompanhantes; a Presidência confirma.'
+                  : 'Conclua pelo sistema oficial do sindicato.'}
+              </span>
             </li>
           </ol>
+
+          {sistema && (
+            <p className="texto-secundario">
+              Filiado de outro estado ou PRF não filiado?{' '}
+              <Link to="/apartamentos">Peça a reserva no site público</Link>, com os valores do
+              regulamento.
+            </p>
+          )}
 
           {isLoading && <EstadoCarregando mensagem="Carregando apartamentos…" />}
           {isError && (
@@ -79,23 +105,12 @@ export function ImoveisPage() {
                       : `${imoveis.length} apartamentos`}
                   </h2>
                 </div>
-                {marca.regulamentoApartamentosUrl && (
-                  <a
-                    className="botao-link"
-                    href={marca.regulamentoApartamentosUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Regulamento
-                    <span aria-hidden="true"> ↗</span>
-                  </a>
-                )}
               </header>
 
               <ul className="imoveis-grid">
                 {imoveis.map((imovel) => (
                   <li key={imovel.id}>
-                    <ImovelCard imovel={imovel} />
+                    <ImovelCard imovel={imovel} reservaSistema={sistema} />
                   </li>
                 ))}
               </ul>

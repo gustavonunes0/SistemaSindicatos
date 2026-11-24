@@ -62,10 +62,11 @@ export const tenantBrandingSchema = z.object({
   /**
    * Como o filiado vê Apartamentos:
    * - LINK — só o botão para o sistema externo de reserva
-   * - VITRINE — lista fotos, valores e calendário (reserva continua no link)
-   * Ausente = VITRINE (comportamento histórico).
+   * - VITRINE — lista fotos/calendário; reserva no link externo
+   * - SISTEMA — lista fotos/calendário; reserva pelo próprio sistema
+   * Ausente = SISTEMA.
    */
-  imoveisModo: z.enum(['LINK', 'VITRINE']).optional(),
+  imoveisModo: z.enum(['LINK', 'VITRINE', 'SISTEMA']).optional(),
   /**
    * Portal de transparência financeira na área do filiado.
    * Ausente = liberado (comportamento histórico).

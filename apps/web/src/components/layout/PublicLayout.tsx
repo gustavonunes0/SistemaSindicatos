@@ -12,20 +12,21 @@ import { useAuthStore } from '../../features/auth/store';
 import { areaPorRole } from '../../features/auth/hooks';
 import { usePrefetchNoticias } from '../../features/noticias/hooks';
 import { useMarca } from '../../lib/marca';
-
-const links = [
-  { to: '/', rotulo: 'Início' },
-  { to: '/noticias', rotulo: 'Notícias' },
-  { to: '/convenios', rotulo: 'Convênios' },
-  { to: '/sobre', rotulo: 'Sobre' },
-  { to: '/diretoria', rotulo: 'Diretoria' },
-  { to: '/contato', rotulo: 'Contato' },
-];
+import { mostrarVitrine } from '../../features/imoveis/modo';
 
 export function PublicLayout() {
   const [menuAberto, setMenuAberto] = useState(false);
   const user = useAuthStore((state) => state.user);
   const marca = useMarca();
+  const links = [
+    { to: '/', rotulo: 'Início' },
+    { to: '/noticias', rotulo: 'Notícias' },
+    { to: '/convenios', rotulo: 'Convênios' },
+    ...(mostrarVitrine(marca) ? [{ to: '/apartamentos', rotulo: 'Apartamentos' }] : []),
+    { to: '/sobre', rotulo: 'Sobre' },
+    { to: '/diretoria', rotulo: 'Diretoria' },
+    { to: '/contato', rotulo: 'Contato' },
+  ];
   usePrefetchNoticias();
   usePushNoticiasPorPadrao();
 

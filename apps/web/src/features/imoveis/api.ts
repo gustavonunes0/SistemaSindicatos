@@ -21,8 +21,18 @@ export async function listarImoveis(filtro: FiltroImoveisInput): Promise<Imovel[
   return z.array(imovelSchema).parse(data);
 }
 
+export async function listarImoveisPublico(filtro: FiltroImoveisInput): Promise<Imovel[]> {
+  const { data } = await api.get('/imoveis/publico', { params: filtro });
+  return z.array(imovelSchema).parse(data);
+}
+
 export async function buscarImovel(id: string): Promise<Imovel> {
   const { data } = await api.get(`/imoveis/${id}`);
+  return imovelSchema.parse(data);
+}
+
+export async function buscarImovelPublico(id: string): Promise<Imovel> {
+  const { data } = await api.get(`/imoveis/publico/${id}`);
   return imovelSchema.parse(data);
 }
 
@@ -31,6 +41,19 @@ export async function consultarDisponibilidade(
   consulta: ConsultaDisponibilidadeInput,
 ) {
   const { data } = await api.get(`/imoveis/${id}/disponibilidade`, {
+    params: {
+      inicio: consulta.inicio.toISOString(),
+      fim: consulta.fim.toISOString(),
+    },
+  });
+  return disponibilidadeImovelSchema.parse(data);
+}
+
+export async function consultarDisponibilidadePublica(
+  id: string,
+  consulta: ConsultaDisponibilidadeInput,
+) {
+  const { data } = await api.get(`/imoveis/publico/${id}/disponibilidade`, {
     params: {
       inicio: consulta.inicio.toISOString(),
       fim: consulta.fim.toISOString(),

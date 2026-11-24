@@ -1003,11 +1003,23 @@ model Periodo {
   @@map("periodos")
 }
 
+/// Pedido de hospedagem — filiado logado (afiliadoId) ou externo sem conta.
 model SolicitacaoAluguel {
   id             String            @id @default(cuid())
   tenantId       String
   imovelId       String
-  afiliadoId     String
+  /// Nulo quando o pedido veio de filiado de outro estado / não filiado (formulário público).
+  afiliadoId     String?
+  /// FILIADO_SINDPRF | FILIADO_OUTRO | NAO_FILIADO
+  perfilHospedagem String          @default("FILIADO_SINDPRF")
+  solicitanteNome     String?
+  solicitanteCpf      String?
+  solicitanteEmail    String?
+  solicitanteTelefone String?
+  /// Ex.: sindicato de origem (perfil FILIADO_OUTRO).
+  sindicatoOrigem     String?
+  acompanhantes       String?      @db.Text
+  observacoes         String?      @db.Text
   inicioDesejado DateTime          @db.Timestamptz
   fimDesejado    DateTime          @db.Timestamptz
   status         StatusSolicitacao @default(ABERTA)
@@ -1016,12 +1028,13 @@ model SolicitacaoAluguel {
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   imovel    Imovel     @relation(fields: [imovelId], references: [id])
-  afiliado  Afiliado   @relation(fields: [afiliadoId], references: [id])
+  afiliado  Afiliado?  @relation(fields: [afiliadoId], references: [id], onDelete: SetNull)
   mensagens Mensagem[]
 
   @@index([imovelId])
   @@index([afiliadoId])
   @@index([tenantId])
+  @@index([tenantId, status])
   @@map("solicitacoes_aluguel")
 }
 

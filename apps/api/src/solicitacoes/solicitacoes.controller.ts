@@ -8,17 +8,20 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import {
   atualizarStatusSolicitacaoSchema,
+  criarSolicitacaoPublicaSchema,
   criarSolicitacaoSchema,
   enviarMensagemSchema,
   filtroSolicitacoesAdminSchema,
   type AtualizarStatusSolicitacaoInput,
   type CriarSolicitacaoInput,
+  type CriarSolicitacaoPublicaInput,
   type EnviarMensagemInput,
   type FiltroSolicitacoesAdminInput,
 } from '@sindprf/types';
-import { CurrentUser, Roles } from '../common/decorators';
+import { CurrentUser, Public, Roles } from '../common/decorators';
 import { AfiliadoAprovadoGuard } from '../common/guards/afiliado-aprovado.guard';
 import type { RequestUser } from '../common/request-user';
 import { ZodValidationPipe } from '../common/zod-validation.pipe';
@@ -27,6 +30,18 @@ import { SolicitacoesService } from './solicitacoes.service';
 @Controller('solicitacoes')
 export class SolicitacoesController {
   constructor(private readonly solicitacoesService: SolicitacoesService) {}
+
+  /** Pedido de hospedagem sem conta (filiado de outro estado / não filiado). */
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Throttle({ cadastro: { limit: 5, ttl: 60_000 } })
+  @SkipThrottle({ auth: true })
+  @Post('publica')
+  criarPublica(
+    @Body(new ZodValidationPipe(criarSolicitacaoPublicaSchema)) body: CriarSolicitacaoPublicaInput,
+  ) {
+    return this.solicitacoesService.criarPublica(body);
+  }
 
   @UseGuards(AfiliadoAprovadoGuard)
   @Post()

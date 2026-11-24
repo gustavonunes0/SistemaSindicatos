@@ -19,6 +19,15 @@ export function useImoveis(filtro: FiltroImoveisInput, enabled = true) {
   });
 }
 
+export function useImoveisPublico(filtro: FiltroImoveisInput, enabled = true) {
+  return useQuery({
+    queryKey: ['imoveis', 'publico', 'lista', filtro],
+    queryFn: () => imoveisApi.listarImoveisPublico(filtro),
+    placeholderData: keepPreviousData,
+    enabled,
+  });
+}
+
 export function useImovel(id: string) {
   return useQuery({
     queryKey: ['imoveis', 'detalhe', id],
@@ -27,16 +36,32 @@ export function useImovel(id: string) {
   });
 }
 
-export function useDisponibilidadeImovel(id: string, consulta: ConsultaDisponibilidadeInput) {
+export function useImovelPublico(id: string) {
+  return useQuery({
+    queryKey: ['imoveis', 'publico', 'detalhe', id],
+    queryFn: () => imoveisApi.buscarImovelPublico(id),
+    enabled: Boolean(id),
+  });
+}
+
+export function useDisponibilidadeImovel(
+  id: string,
+  consulta: ConsultaDisponibilidadeInput,
+  publico = false,
+) {
   return useQuery({
     queryKey: [
       'imoveis',
+      publico ? 'publico' : 'auth',
       'disponibilidade',
       id,
       consulta.inicio.toISOString(),
       consulta.fim.toISOString(),
     ],
-    queryFn: () => imoveisApi.consultarDisponibilidade(id, consulta),
+    queryFn: () =>
+      publico
+        ? imoveisApi.consultarDisponibilidadePublica(id, consulta)
+        : imoveisApi.consultarDisponibilidade(id, consulta),
     enabled: Boolean(id),
   });
 }

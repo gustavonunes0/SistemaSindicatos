@@ -16,21 +16,23 @@ function mensagemErro(erro: unknown): string {
 
 const OPCOES: { valor: ImoveisModo; titulo: string; texto: string }[] = [
   {
-    valor: 'LINK',
-    titulo: IMOVEIS_MODO_ROTULO.LINK,
-    texto: 'O filiado vê só o botão para o sistema externo de reserva e o regulamento.',
+    valor: 'SISTEMA',
+    titulo: IMOVEIS_MODO_ROTULO.SISTEMA,
+    texto:
+      'Mostra fotos, calendário e tabela do regulamento. O filiado solicita a reserva pelo próprio sistema.',
   },
   {
     valor: 'VITRINE',
     titulo: IMOVEIS_MODO_ROTULO.VITRINE,
-    texto: 'Mostra fotos, valores e calendário dos apartamentos cadastrados. A reserva continua no link externo.',
+    texto: 'Mostra fotos e calendário, mas a reserva continua no link externo.',
+  },
+  {
+    valor: 'LINK',
+    titulo: IMOVEIS_MODO_ROTULO.LINK,
+    texto: 'O filiado vê só o botão para o sistema externo de reserva e o regulamento.',
   },
 ];
 
-/**
- * Escolhe se a área do filiado mostra a vitrine de imóveis ou só o link
- * externo — fica aqui porque é quem monta o cadastro de apartamentos.
- */
 export function ModoImoveisCard() {
   const marca = useMarca();
   const salvar = useDefinirImoveisConfig();
@@ -41,6 +43,7 @@ export function ModoImoveisCard() {
 
   const pendente =
     modo !== modoAtual || url.trim() !== (marca.reservaApartamentosUrl ?? '').trim();
+  const precisaLink = modo === 'LINK' || modo === 'VITRINE';
 
   const onSalvar = () => {
     setOk(false);
@@ -59,13 +62,17 @@ export function ModoImoveisCard() {
         <div>
           <h2>
             O que o filiado vê{' '}
-            <span className={`badge ${modoAtual === 'VITRINE' ? 'badge-rubrica-ok' : 'badge-rubrica-falta'}`}>
+            <span
+              className={`badge ${
+                modoAtual === 'SISTEMA' ? 'badge-rubrica-ok' : 'badge-rubrica-falta'
+              }`}
+            >
               {IMOVEIS_MODO_ROTULO[modoAtual]}
             </span>
           </h2>
           <p className="texto-secundario">
-            Escolha se a área Apartamentos mostra a vitrine cadastrada aqui ou apenas o link do
-            sistema oficial de reservas.
+            Preferência: reserva pelo sistema, com confirmação da Presidência conforme o
+            regulamento.
           </p>
         </div>
       </header>
@@ -93,20 +100,22 @@ export function ModoImoveisCard() {
         })}
       </div>
 
-      <label className="campo imoveis-modo-campo">
-        <span className="campo-rotulo">Link do sistema de reserva</span>
-        <input
-          type="url"
-          inputMode="url"
-          placeholder="https://abre.ai/…"
-          value={url}
-          disabled={salvar.isPending}
-          onChange={(evento) => {
-            setOk(false);
-            setUrl(evento.target.value);
-          }}
-        />
-      </label>
+      {precisaLink && (
+        <label className="campo imoveis-modo-campo">
+          <span className="campo-rotulo">Link do sistema externo de reserva</span>
+          <input
+            type="url"
+            inputMode="url"
+            placeholder="https://abre.ai/…"
+            value={url}
+            disabled={salvar.isPending}
+            onChange={(evento) => {
+              setOk(false);
+              setUrl(evento.target.value);
+            }}
+          />
+        </label>
+      )}
 
       <div className="imoveis-modo-acoes">
         <button

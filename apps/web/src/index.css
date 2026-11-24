@@ -7054,11 +7054,219 @@ button.area-nav-grupo-titulo:focus-visible {
   margin: 0.2rem 0 0;
 }
 
+/* ============ Apartamentos (site público) ============ */
+.apartamentos-public-page {
+  flex: 1;
+  width: min(100% - 2rem, var(--largura-conteudo));
+  margin: 0 auto;
+  padding: 2rem 0 3.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.apartamentos-public-cabecalho h1 {
+  margin: 0.15rem 0 0.5rem;
+}
+
+.apartamentos-public-cabecalho p {
+  margin: 0;
+  max-width: 42rem;
+  color: var(--cor-texto-suave);
+  line-height: 1.55;
+}
+
+.apartamentos-public-cabecalho .botao-link {
+  display: inline-block;
+  margin-top: 0.75rem;
+}
+
+.form-fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form-fieldset legend {
+  font-weight: 600;
+  font-size: var(--texto-sm);
+  margin-bottom: 0.5rem;
+}
+
+.form-opcoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.form-opcao {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: var(--texto-sm);
+}
+
+.solicitacao-perfil {
+  margin: 0 0 0.35rem;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
+.solicitacao-dados-externos {
+  margin: 0 0 1.25rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+}
+
+.solicitacao-dados-externos dl {
+  margin: 0;
+  display: grid;
+  gap: 0.75rem 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+}
+
+.solicitacao-dados-externos dt {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--cor-texto-suave);
+}
+
+.solicitacao-dados-externos dd {
+  margin: 0.15rem 0 0;
+  font-size: var(--texto-sm);
+  white-space: pre-wrap;
+}
+
+.solicitacao-acompanhantes {
+  margin: 0 0 1rem;
+  font-size: var(--texto-sm);
+}
+
+.solicitacao-linha-perfil {
+  color: var(--cor-texto-suave);
+  font-weight: 400;
+}
+
+.chat-vazio {
+  margin: 0;
+  padding: 0.5rem 0;
+  font-size: var(--texto-sm);
+  color: var(--cor-texto-suave);
+}
+
 /* ============ Imóveis (área do afiliado) ============ */
 .imoveis-afiliado {
   display: flex;
   flex-direction: column;
   gap: 1.75rem;
+}
+
+.imovel-regras {
+  padding: 1.25rem 1.35rem 1.4rem;
+  border: var(--borda-fina);
+  border-radius: var(--raio-lg);
+  background: #fff;
+  box-shadow: 0 8px 22px rgb(7 31 56 / 0.05);
+}
+
+.imovel-regras--compacta {
+  padding: 1rem 1.05rem 1.1rem;
+  box-shadow: none;
+}
+
+.imovel-regras-cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.imovel-regras-cabecalho h2 {
+  margin: 0.15rem 0 0;
+  font-family: var(--fonte-display);
+  font-size: 1.25rem;
+  color: var(--cor-primaria);
+}
+
+.imovel-regras-tabelas {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 900px) {
+  .imovel-regras:not(.imovel-regras--compacta) .imovel-regras-tabelas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.imovel-regras-card {
+  padding: 0.85rem 0.95rem;
+  border: 1px solid #d7e0ea;
+  border-radius: var(--raio);
+  background: #f7f9fc;
+}
+
+.imovel-regras-card--destaque {
+  background: #eef5fb;
+  border-color: color-mix(in srgb, var(--cor-primaria) 35%, #d7e0ea);
+}
+
+.imovel-regras-card h3 {
+  margin: 0 0 0.55rem;
+  font-size: 0.86rem;
+  color: var(--cor-primaria);
+}
+
+.imovel-regras-faixas {
+  margin: 0 0 0.7rem;
+  padding-left: 1.05rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--cor-texto);
+}
+
+.imovel-regras-limites {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.imovel-regras-limites div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+}
+
+.imovel-regras-limites dt {
+  color: var(--cor-texto-suave);
+}
+
+.imovel-regras-limites dd {
+  margin: 0;
+  font-weight: 700;
+  color: var(--cor-primaria);
+  font-variant-numeric: tabular-nums;
+}
+
+.imovel-regras-resumo {
+  margin: 1rem 0 0;
+  padding-left: 1.1rem;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: var(--cor-texto-suave);
+}
+
+.imovel-detalhe-acoes-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
 }
 
 .imoveis-roteiro {
@@ -9937,15 +10145,45 @@ button.voto-chapa--selecionada:hover:not(:disabled) {
 }
 
 .solicitar-aluguel {
-  margin-top: 2rem;
-  padding: 1.25rem;
-  background: var(--cor-superficie);
+  margin-top: 0;
+  padding: 1.15rem 1.2rem 1.25rem;
+  background: #fff;
   border: var(--borda-fina);
   border-radius: var(--raio-lg);
+  box-shadow: 0 8px 22px rgb(7 31 56 / 0.05);
+}
+
+.solicitar-aluguel .eyebrow {
+  margin: 0 0 0.25rem;
+}
+
+.solicitar-aluguel-intro {
+  margin: 0.35rem 0 0;
+  font-size: var(--texto-sm);
+  line-height: 1.5;
+  color: var(--cor-texto-suave);
 }
 
 .solicitar-aluguel-form {
   margin-top: 1rem;
+}
+
+.solicitar-aluguel-estimativa {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--raio);
+  background: #eef5fb;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--cor-primaria);
+}
+
+.imovel-detalhe-lateral .solicitar-aluguel {
+  margin-top: 0;
+}
+
+.imovel-detalhe-lateral .imovel-regras {
+  margin-top: 0.85rem;
 }
 
 .solicitacao-cabecalho {

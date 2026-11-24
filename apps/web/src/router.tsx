@@ -216,6 +216,11 @@ const SolicitacaoDetalhePage = lazy(() =>
     default: m.SolicitacaoDetalhePage,
   })),
 );
+const MinhasSolicitacoesPage = lazy(() =>
+  import('./features/solicitacoes/components/MinhasSolicitacoesPage').then((m) => ({
+    default: m.MinhasSolicitacoesPage,
+  })),
+);
 const AfiliadoDashboardPage = lazy(() =>
   import('./features/afiliado/components/AfiliadoDashboardPage').then((m) => ({
     default: m.AfiliadoDashboardPage,
@@ -237,6 +242,16 @@ const ImoveisPage = lazy(() =>
 const ImovelDetalhePage = lazy(() =>
   import('./features/imoveis/components/ImovelDetalhePage').then((m) => ({
     default: m.ImovelDetalhePage,
+  })),
+);
+const ApartamentosPublicPage = lazy(() =>
+  import('./features/imoveis/components/ApartamentosPublicPage').then((m) => ({
+    default: m.ApartamentosPublicPage,
+  })),
+);
+const ApartamentoPublicoDetalhePage = lazy(() =>
+  import('./features/imoveis/components/ApartamentoPublicoDetalhePage').then((m) => ({
+    default: m.ApartamentoPublicoDetalhePage,
   })),
 );
 const EleicoesPage = lazy(() =>
@@ -291,6 +306,8 @@ export const router = createBrowserRouter([
       { path: '/noticias/:slug', element: comSuspense(<NoticiaDetalhePage />) },
       { path: '/convenios', element: comSuspense(<ConveniosPublicPage />) },
       { path: '/convenios/:id', element: comSuspense(<ConvenioPublicoDetalhePage />) },
+      { path: '/apartamentos', element: comSuspense(<ApartamentosPublicPage />) },
+      { path: '/apartamentos/:id', element: comSuspense(<ApartamentoPublicoDetalhePage />) },
       { path: '/formularios/:slug', element: comSuspense(<FormularioPublicoPage />) },
       { path: '/sobre', element: comSuspense(<SobrePage />) },
       { path: '/diretoria', element: comSuspense(<DiretoriaPage />) },
@@ -381,9 +398,12 @@ export const router = createBrowserRouter([
     path: '/afiliado/eleicoes/:id/resultado',
     element: protegidaAfiliado(<EleicaoResultadoPage />),
   },
-  { path: '/afiliado/solicitacoes', element: <Navigate to="/afiliado/imoveis" replace /> },
+  {
+    path: '/afiliado/solicitacoes',
+    element: protegidaAfiliado(<MinhasSolicitacoesPage />),
+  },
   {
     path: '/afiliado/solicitacoes/:id',
-    element: <Navigate to="/afiliado/imoveis" replace />,
+    element: protegidaAfiliado(<SolicitacaoDetalhePage visao="afiliado" />),
   },
 ]);

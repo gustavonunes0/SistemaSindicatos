@@ -7,9 +7,14 @@ import { useEnviarMensagem, useMensagensSolicitacao } from '../hooks';
 type ChatSolicitacaoProps = {
   solicitacaoId: string;
   encerrada: boolean;
+  rotuloVazio?: string;
 };
 
-export function ChatSolicitacao({ solicitacaoId, encerrada }: ChatSolicitacaoProps) {
+export function ChatSolicitacao({
+  solicitacaoId,
+  encerrada,
+  rotuloVazio = 'Nenhuma mensagem ainda.',
+}: ChatSolicitacaoProps) {
   const { data: mensagens, isLoading } = useMensagensSolicitacao(solicitacaoId, !encerrada);
   const { data: me } = useMe();
   const enviar = useEnviarMensagem(solicitacaoId);
@@ -40,6 +45,9 @@ export function ChatSolicitacao({ solicitacaoId, encerrada }: ChatSolicitacaoPro
     <div className="chat-solicitacao">
       <div className="chat-mensagens" aria-live="polite">
         {isLoading && <EstadoCarregando mensagem="Carregando mensagens…" />}
+        {!isLoading && mensagens && mensagens.length === 0 && (
+          <p className="chat-vazio">{rotuloVazio}</p>
+        )}
         {mensagens?.map((msg) => {
           const minha = msg.autorId === me?.user.id;
           return (

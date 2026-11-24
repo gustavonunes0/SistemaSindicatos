@@ -17,6 +17,7 @@ export * from './financeiro';
 export * from './formulario';
 export * from './health';
 export * from './imovel';
+export * from './imovel-regulamento';
 export * from './juridico';
 export * from './instagram';
 export * from './noticia';

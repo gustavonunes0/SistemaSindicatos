@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   ForbiddenException,
   Injectable,
@@ -8,9 +9,12 @@ import {
 import type {
   AtualizarStatusSolicitacaoInput,
   CriarSolicitacaoInput,
+  CriarSolicitacaoPublicaInput,
   EnviarMensagemInput,
   FiltroSolicitacoesAdminInput,
+  PerfilHospedagem,
 } from '@sindprf/types';
+import { diasHospedagem, REGRAS_HOSPEDAGEM } from '@sindprf/types';
 import { PrismaService } from '../prisma/prisma.service';
 import { whereSobreposicao } from '../imoveis/imoveis.util';
 import type { RequestUser } from '../common/request-user';
@@ -44,39 +48,34 @@ export class SolicitacoesService {
   constructor(private readonly prisma: PrismaService) {}
 
   async criar(user: RequestUser, input: CriarSolicitacaoInput) {
-    const [afiliado, imovel, conflitos] = await Promise.all([
+    const [afiliado, imovel] = await Promise.all([
       this.buscarAfiliadoAprovado(user.id),
-      this.prisma.imovel.findUnique({
-        where: { id: input.imovelId },
-        select: { id: true, titulo: true, ativo: true },
-      }),
-      this.prisma.periodo.findMany({
-        where: {
-          imovelId: input.imovelId,
-          ...whereSobreposicao(input.inicioDesejado, input.fimDesejado),
-        },
-        select: { id: true },
-      }),
+      this.validarImovelEPeriodo(input.imovelId, input.inicioDesejado, input.fimDesejado),
     ]);
 
-    if (!imovel?.ativo) {
-      throw new NotFoundException('Imóvel não encontrado');
-    }
-    if (conflitos.length > 0) {
-      throw new ConflictException('O período desejado não está disponível');
-    }
+    this.validarLimiteContinuo('FILIADO_SINDPRF', input.inicioDesejado, input.fimDesejado);
 
     const tenantId = requireTenantId();
-    const textoInicial =
-      input.mensagemInicial?.trim() ||
-      `Solicitação de locação de ${input.inicioDesejado.toLocaleDateString('pt-BR')} a ${input.fimDesejado.toLocaleDateString('pt-BR')}.`;
+    const acompanhantes = input.acompanhantes.trim();
+    const observacoes = input.mensagemInicial?.trim() || null;
+    const dias = diasHospedagem(input.inicioDesejado, input.fimDesejado);
+    const periodo = `${input.inicioDesejado.toLocaleDateString('pt-BR')} a ${input.fimDesejado.toLocaleDateString('pt-BR')}`;
+    const textoInicial = [
+      `Solicitação de hospedagem: ${periodo} (${dias} dia${dias === 1 ? '' : 's'}).`,
+      `Acompanhantes: ${acompanhantes}`,
+      observacoes ? `Observações: ${observacoes}` : null,
+    ]
+      .filter(Boolean)
+      .join('\n');
 
-    // Write aninhado: solicitação e mensagem inicial numa só viagem.
     const solicitacao = await this.prisma.solicitacaoAluguel.create({
       data: {
         tenantId,
         imovelId: input.imovelId,
         afiliadoId: afiliado.id,
+        perfilHospedagem: 'FILIADO_SINDPRF',
+        acompanhantes,
+        observacoes,
         inicioDesejado: input.inicioDesejado,
         fimDesejado: input.fimDesejado,
         mensagens: {
@@ -87,6 +86,46 @@ export class SolicitacoesService {
 
     this.logger.log(
       `Nova solicitação de aluguel ${solicitacao.id} — imóvel "${imovel.titulo}" por ${afiliado.nome}`,
+    );
+
+    return serializarSolicitacao(solicitacao);
+  }
+
+  /** Pedido sem login — filiado de outro estado ou PRF não filiado. */
+  async criarPublica(input: CriarSolicitacaoPublicaInput) {
+    const imovel = await this.validarImovelEPeriodo(
+      input.imovelId,
+      input.inicioDesejado,
+      input.fimDesejado,
+    );
+
+    this.validarLimiteContinuo(input.perfilHospedagem, input.inicioDesejado, input.fimDesejado);
+
+    const tenantId = requireTenantId();
+    const dias = diasHospedagem(input.inicioDesejado, input.fimDesejado);
+    const solicitacao = await this.prisma.solicitacaoAluguel.create({
+      data: {
+        tenantId,
+        imovelId: input.imovelId,
+        afiliadoId: null,
+        perfilHospedagem: input.perfilHospedagem,
+        solicitanteNome: input.nome.trim(),
+        solicitanteCpf: input.cpf,
+        solicitanteEmail: input.email.trim().toLowerCase(),
+        solicitanteTelefone: input.telefone.trim(),
+        sindicatoOrigem:
+          input.perfilHospedagem === 'FILIADO_OUTRO'
+            ? input.sindicatoOrigem?.trim() || null
+            : null,
+        acompanhantes: input.acompanhantes.trim(),
+        observacoes: input.observacoes?.trim() || null,
+        inicioDesejado: input.inicioDesejado,
+        fimDesejado: input.fimDesejado,
+      },
+    });
+
+    this.logger.log(
+      `Pedido público ${solicitacao.id} (${input.perfilHospedagem}, ${dias}d) — "${imovel.titulo}" por ${input.nome}`,
     );
 
     return serializarSolicitacao(solicitacao);
@@ -177,6 +216,11 @@ export class SolicitacoesService {
     }
     this.garantirAcesso(user, afiliado, solicitacao.afiliadoId);
 
+    // Pedido externo: só a administração registra anotações no histórico.
+    if (!solicitacao.afiliadoId && user.role !== 'ADMIN') {
+      throw new ForbiddenException('Acesso negado');
+    }
+
     if (solicitacao.status === 'FECHADA') {
       throw new ConflictException('Esta solicitação está encerrada');
     }
@@ -211,6 +255,43 @@ export class SolicitacoesService {
     return serializarMensagem(mensagem);
   }
 
+  private async validarImovelEPeriodo(imovelId: string, inicio: Date, fim: Date) {
+    const [imovel, conflitos] = await Promise.all([
+      this.prisma.imovel.findUnique({
+        where: { id: imovelId },
+        select: { id: true, titulo: true, ativo: true },
+      }),
+      this.prisma.periodo.findMany({
+        where: {
+          imovelId,
+          ...whereSobreposicao(inicio, fim),
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (!imovel?.ativo) {
+      throw new NotFoundException('Imóvel não encontrado');
+    }
+    if (conflitos.length > 0) {
+      throw new ConflictException('O período desejado não está disponível');
+    }
+    return imovel;
+  }
+
+  private validarLimiteContinuo(perfil: PerfilHospedagem, inicio: Date, fim: Date) {
+    const regras = REGRAS_HOSPEDAGEM[perfil];
+    const dias = diasHospedagem(inicio, fim);
+    if (dias < 1) {
+      throw new BadRequestException('A estadia deve ter ao menos 1 dia');
+    }
+    if (dias > regras.maxContinuoDias) {
+      throw new BadRequestException(
+        `Pelo regulamento, a hospedagem contínua máxima é de ${regras.maxContinuoDias} dias`,
+      );
+    }
+  }
+
   private async buscarAfiliadoAprovado(userId: string) {
     const afiliado = await this.prisma.afiliado.findUnique({
       where: { userId },
@@ -233,12 +314,12 @@ export class SolicitacoesService {
   private garantirAcesso(
     user: RequestUser,
     afiliado: { id: string } | null,
-    afiliadoId: string,
+    afiliadoId: string | null,
   ): void {
     if (user.role === 'ADMIN') {
       return;
     }
-    if (afiliado?.id !== afiliadoId) {
+    if (!afiliadoId || afiliado?.id !== afiliadoId) {
       throw new ForbiddenException('Acesso negado');
     }
   }

@@ -2,18 +2,20 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
-import { formatarMoeda } from '../../../lib/moeda';
 import { useMarca } from '../../../lib/marca';
 import { urlDaApi } from '../../../lib/urls';
+import { SolicitarAluguelForm } from '../../solicitacoes/components/SolicitarAluguelForm';
 import { useImovel } from '../hooks';
-import { modoImoveis } from '../modo';
+import { mostrarVitrine, reservaPeloSistema } from '../modo';
 import { CalendarioDisponibilidade } from './CalendarioDisponibilidade';
+import { RegrasHospedagem } from './RegrasHospedagem';
 import { ReservaExterna } from './ReservaExterna';
 
 export function ImovelDetalhePage() {
   const marca = useMarca();
   const { id = '' } = useParams();
-  const vitrineAtiva = modoImoveis(marca) === 'VITRINE';
+  const vitrineAtiva = mostrarVitrine(marca);
+  const sistema = reservaPeloSistema(marca);
   const { data: imovel, isLoading, isError } = useImovel(vitrineAtiva ? id : '');
   const [fotoAtiva, setFotoAtiva] = useState(0);
 
@@ -78,9 +80,16 @@ export function ImovelDetalhePage() {
       titulo={imovel.titulo}
       descricao={imovel.endereco}
       acoes={
-        <Link to="/afiliado/imoveis" className="botao-secundario">
-          ← Apartamentos
-        </Link>
+        <div className="imovel-detalhe-acoes-topo">
+          {sistema && (
+            <Link to="/afiliado/solicitacoes" className="botao-link">
+              Minhas reservas
+            </Link>
+          )}
+          <Link to="/afiliado/imoveis" className="botao-secundario">
+            ← Apartamentos
+          </Link>
+        </div>
       }
     >
       <article className="imovel-detalhe">
@@ -160,12 +169,14 @@ export function ImovelDetalhePage() {
 
         <aside className="imovel-detalhe-lateral">
           <div className="imovel-resumo">
-            <p className="eyebrow">Diária</p>
+            <p className="eyebrow">Filiado SINDPRF-CE</p>
             <p className="imovel-detalhe-valor">
-              {formatarMoeda(imovel.valor)}
-              <span> por dia</span>
+              Até 7 dias
+              <span> gratuitos</span>
             </p>
-            <p className="imovel-detalhe-endereco">{imovel.endereco}</p>
+            <p className="imovel-detalhe-endereco">
+              Do 8º ao 14º dia: R$ 30/dia · máximo contínuo 14 dias · intervalo mínimo 14 dias
+            </p>
             {imovel.comodidades.length > 0 && (
               <p className="imovel-resumo-meta">
                 {imovel.comodidades.length}{' '}
@@ -174,12 +185,18 @@ export function ImovelDetalhePage() {
             )}
           </div>
 
-          <ReservaExterna
-            compacta
-            titulo="Concluir reserva"
-            descricao="Confira as datas livres no calendário e finalize pelo sistema oficial."
-            ctaRotulo="Reservar agora"
-          />
+          {sistema ? (
+            <SolicitarAluguelForm imovelId={imovel.id} imovelTitulo={imovel.titulo} />
+          ) : (
+            <ReservaExterna
+              compacta
+              titulo="Concluir reserva"
+              descricao="Confira as datas livres no calendário e finalize pelo sistema oficial."
+              ctaRotulo="Reservar agora"
+            />
+          )}
+
+          <RegrasHospedagem compacta />
         </aside>
       </article>
     </AreaLayout>

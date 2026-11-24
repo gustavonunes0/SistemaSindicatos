@@ -1,6 +1,17 @@
 import type { ImoveisModo, TenantBranding } from '@sindprf/types';
 
-/** Ausente no branding = vitrine (comportamento histórico). */
+/** Ausente no branding = reserva pelo sistema (regulamento atual). */
 export function modoImoveis(branding: TenantBranding): ImoveisModo {
-  return branding.imoveisModo === 'LINK' ? 'LINK' : 'VITRINE';
+  if (branding.imoveisModo === 'LINK') return 'LINK';
+  if (branding.imoveisModo === 'VITRINE') return 'VITRINE';
+  return 'SISTEMA';
+}
+
+export function reservaPeloSistema(branding: TenantBranding): boolean {
+  return modoImoveis(branding) === 'SISTEMA';
+}
+
+export function mostrarVitrine(branding: TenantBranding): boolean {
+  const modo = modoImoveis(branding);
+  return modo === 'VITRINE' || modo === 'SISTEMA';
 }

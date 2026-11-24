@@ -1,4 +1,7 @@
-import type { StatusSolicitacao } from '@sindprf/types';
+import {
+  PERFIL_HOSPEDAGEM_PEDIDO_ROTULO,
+  type StatusSolicitacao,
+} from '@sindprf/types';
 import { Link, useParams } from 'react-router-dom';
 import { AreaLayout } from '../../../components/layout/AreaLayout';
 import { EstadoCarregando } from '../../../components/ui/EstadoCarregando';
@@ -56,6 +59,8 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
     );
   }
 
+  const pedidoExterno = solicitacao.afiliadoId == null;
+
   return (
     <AreaLayout
       tipo={visao}
@@ -65,7 +70,13 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
       <header className="solicitacao-cabecalho">
         <div className="solicitacao-cabecalho-info">
           {visao === 'admin' && (
-            <p className="solicitacao-afiliado-nome">{solicitacao.afiliado.nome}</p>
+            <>
+              <p className="solicitacao-afiliado-nome">{solicitacao.solicitanteExibicao}</p>
+              <p className="solicitacao-perfil">
+                {PERFIL_HOSPEDAGEM_PEDIDO_ROTULO[solicitacao.perfilHospedagem]}
+                {pedidoExterno ? ' · pedido sem conta' : ''}
+              </p>
+            </>
           )}
           <p className="solicitacao-periodo">
             Período desejado: {formatarData(solicitacao.inicioDesejado)} —{' '}
@@ -93,9 +104,67 @@ export function SolicitacaoDetalhePage({ visao }: SolicitacaoDetalhePageProps) {
         )}
       </header>
 
+      {visao === 'admin' && pedidoExterno && (
+        <section className="solicitacao-dados-externos" aria-label="Dados do solicitante">
+          <dl>
+            {solicitacao.solicitanteCpf && (
+              <div>
+                <dt>CPF</dt>
+                <dd>{solicitacao.solicitanteCpf}</dd>
+              </div>
+            )}
+            {solicitacao.solicitanteEmail && (
+              <div>
+                <dt>E-mail</dt>
+                <dd>
+                  <a href={`mailto:${solicitacao.solicitanteEmail}`}>
+                    {solicitacao.solicitanteEmail}
+                  </a>
+                </dd>
+              </div>
+            )}
+            {solicitacao.solicitanteTelefone && (
+              <div>
+                <dt>Telefone</dt>
+                <dd>{solicitacao.solicitanteTelefone}</dd>
+              </div>
+            )}
+            {solicitacao.sindicatoOrigem && (
+              <div>
+                <dt>Sindicato de origem</dt>
+                <dd>{solicitacao.sindicatoOrigem}</dd>
+              </div>
+            )}
+            {solicitacao.acompanhantes && (
+              <div>
+                <dt>Acompanhantes</dt>
+                <dd>{solicitacao.acompanhantes}</dd>
+              </div>
+            )}
+            {solicitacao.observacoes && (
+              <div>
+                <dt>Observações</dt>
+                <dd>{solicitacao.observacoes}</dd>
+              </div>
+            )}
+          </dl>
+        </section>
+      )}
+
+      {visao === 'admin' && !pedidoExterno && solicitacao.acompanhantes && (
+        <p className="solicitacao-acompanhantes">
+          <strong>Acompanhantes:</strong> {solicitacao.acompanhantes}
+        </p>
+      )}
+
       <ChatSolicitacao
         solicitacaoId={solicitacao.id}
         encerrada={solicitacao.status === 'FECHADA'}
+        rotuloVazio={
+          pedidoExterno
+            ? 'Sem anotações ainda. Use o campo abaixo para registrar o contato com o solicitante.'
+            : undefined
+        }
       />
       {modalConfirmacao}
     </AreaLayout>

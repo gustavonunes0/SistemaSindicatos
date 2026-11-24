@@ -74,10 +74,12 @@ export class ImoveisService {
 
   lerConfigDoBranding(branding: unknown): ImoveisConfig {
     if (!branding || typeof branding !== 'object' || Array.isArray(branding)) {
-      return { modo: 'VITRINE', reservaUrl: null };
+      return { modo: 'SISTEMA', reservaUrl: null };
     }
     const dados = branding as Record<string, unknown>;
-    const modo: ImoveisModo = dados.imoveisModo === 'LINK' ? 'LINK' : 'VITRINE';
+    const modoBruto = dados.imoveisModo;
+    const modo: ImoveisModo =
+      modoBruto === 'LINK' ? 'LINK' : modoBruto === 'VITRINE' ? 'VITRINE' : 'SISTEMA';
     const reservaUrl =
       typeof dados.reservaApartamentosUrl === 'string' ? dados.reservaApartamentosUrl : null;
     return { modo, reservaUrl };
