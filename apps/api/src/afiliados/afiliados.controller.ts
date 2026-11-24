@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Header,
   HttpCode,
@@ -183,5 +184,12 @@ export class AfiliadosController {
     body: AdminAtualizarSenhaAfiliadoInput,
   ) {
     return this.afiliadosService.atualizarSenha(id, body.novaSenha);
+  }
+
+  @Roles('ADMIN')
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  remover(@Param('id') id: string) {
+    return this.afiliadosService.remover(id);
   }
 }

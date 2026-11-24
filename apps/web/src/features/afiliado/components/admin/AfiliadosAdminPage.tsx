@@ -7,7 +7,7 @@ import { TabelaDados, type ColunaTabela } from '../../../../components/ui/Tabela
 import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import type { AfiliadoAdmin } from '../../api';
-import { useAfiliadosAdmin, useAtualizarStatusAfiliado } from '../../hooks';
+import { useAfiliadosAdmin, useAtualizarStatusAfiliado, useRemoverAfiliado } from '../../hooks';
 import { AfiliadoAnaliseModal } from './AfiliadoAnaliseModal';
 import { AfiliadoCadastroModal } from './AfiliadoCadastroModal';
 import { AfiliadoSenhaModal } from './AfiliadoSenhaModal';
@@ -68,6 +68,7 @@ export function AfiliadosAdminPage() {
     prefetchVizinhas: true,
   });
   const atualizarStatus = useAtualizarStatusAfiliado();
+  const remover = useRemoverAfiliado();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
 
   const afiliados = data?.items ?? [];
@@ -224,12 +225,28 @@ export function AfiliadosAdminPage() {
                   Reabrir
                 </button>
               )}
+              <button
+                type="button"
+                className="botao-tabela botao-tabela--perigo"
+                disabled={remover.isPending}
+                onClick={() =>
+                  pedirConfirmacao({
+                    titulo: 'Apagar filiado?',
+                    descricao: `${afiliado.nome} e a conta de acesso serão removidos permanentemente. Declarações emitidas permanecem no histórico sem vínculo. Esta ação não pode ser desfeita.`,
+                    confirmarRotulo: 'Apagar',
+                    tom: 'perigo',
+                    onConfirmar: () => remover.mutateAsync(afiliado.id),
+                  })
+                }
+              >
+                Apagar
+              </button>
             </div>
           );
         },
       },
     ],
-    [atualizarStatus.isPending, onMudarStatus],
+    [atualizarStatus.isPending, onMudarStatus, pedirConfirmacao, remover],
   );
 
   return (

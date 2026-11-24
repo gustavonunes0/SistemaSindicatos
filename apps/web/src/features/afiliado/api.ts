@@ -116,6 +116,10 @@ export async function atualizarSenhaAfiliadoAdmin(
   await api.patch(`/afiliados/${id}/senha`, input);
 }
 
+export async function removerAfiliado(id: string): Promise<void> {
+  await api.delete(`/afiliados/${id}`);
+}
+
 export async function buscarFichaAfiliado(id: string): Promise<AfiliadoFicha> {
   const { data } = await api.get(`/afiliados/${id}`);
   return afiliadoFichaSchema.parse(data);

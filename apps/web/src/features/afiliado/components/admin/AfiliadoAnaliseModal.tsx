@@ -9,7 +9,12 @@ import { useConfirmacao } from '../../../../hooks/useConfirmacao';
 import { formatarData } from '../../../../lib/datas';
 import type { AfiliadoAdmin } from '../../api';
 import { baixarPropostaFiliacao, obterArquivoDocumentoAfiliado } from '../../api';
-import { useAbrirDocumentoAfiliado, useAtualizarStatusAfiliado, useFichaAfiliadoAdmin } from '../../hooks';
+import {
+  useAbrirDocumentoAfiliado,
+  useAtualizarStatusAfiliado,
+  useFichaAfiliadoAdmin,
+  useRemoverAfiliado,
+} from '../../hooks';
 
 type Props = {
   afiliado: AfiliadoAdmin | null;
@@ -71,6 +76,7 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
   const ficha = useFichaAfiliadoAdmin(afiliado?.id ?? null);
   const abrir = useAbrirDocumentoAfiliado();
   const atualizarStatus = useAtualizarStatusAfiliado();
+  const remover = useRemoverAfiliado();
   const { pedirConfirmacao, modalConfirmacao } = useConfirmacao();
   const dados = ficha.data;
   const [documentoId, setDocumentoId] = useState<string | null>(null);
@@ -377,7 +383,7 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
                   <button
                     type="button"
                     className="botao-primario"
-                    disabled={atualizarStatus.isPending}
+                    disabled={atualizarStatus.isPending || remover.isPending}
                     onClick={() => decidir('APROVADO')}
                   >
                     Aprovar
@@ -387,7 +393,7 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
                   <button
                     type="button"
                     className="botao-perigo"
-                    disabled={atualizarStatus.isPending}
+                    disabled={atualizarStatus.isPending || remover.isPending}
                     onClick={() => decidir('INATIVO')}
                   >
                     Inativar
@@ -397,12 +403,31 @@ export function AfiliadoAnaliseModal({ afiliado, onFechar }: Props) {
                   <button
                     type="button"
                     className="botao-secundario"
-                    disabled={atualizarStatus.isPending}
+                    disabled={atualizarStatus.isPending || remover.isPending}
                     onClick={() => decidir('PENDENTE')}
                   >
                     Reabrir
                   </button>
                 )}
+                <button
+                  type="button"
+                  className="botao-perigo"
+                  disabled={remover.isPending || atualizarStatus.isPending}
+                  onClick={() =>
+                    pedirConfirmacao({
+                      titulo: 'Apagar filiado?',
+                      descricao: `${afiliado.nome} e a conta de acesso serão removidos permanentemente. Declarações emitidas permanecem no histórico sem vínculo. Esta ação não pode ser desfeita.`,
+                      confirmarRotulo: 'Apagar',
+                      tom: 'perigo',
+                      onConfirmar: async () => {
+                        await remover.mutateAsync(afiliado.id);
+                        onFechar();
+                      },
+                    })
+                  }
+                >
+                  Apagar
+                </button>
               </div>
             </div>
           </div>

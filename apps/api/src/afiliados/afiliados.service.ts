@@ -1,4 +1,8 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { tenantBrandingSchema } from '@sindprf/types';
 import { existsSync, readFileSync } from 'node:fs';
@@ -437,5 +441,59 @@ export class AfiliadosService {
         data: { revogado: true },
       }),
     ]);
+  }
+
+  /**
+   * Remove o filiado e a conta de acesso. Desvincula declarações (histórico
+   * permanece), apaga solicitações de imóvel e documentos privados.
+   */
+  async remover(id: string): Promise<void> {
+    const afiliado = await this.prisma.afiliado.findFirst({
+      where: { id },
+      select: {
+        id: true,
+        tenantId: true,
+        userId: true,
+        documentos: { select: { arquivoChave: true } },
+      },
+    });
+    if (!afiliado) {
+      throw new NotFoundException('Afiliado não encontrado');
+    }
+
+    try {
+      await this.prisma.$transaction(async (tx) => {
+        await tx.declaracaoEmitida.updateMany({
+          where: { afiliadoId: afiliado.id },
+          data: { afiliadoId: null },
+        });
+
+        await tx.solicitacaoAluguel.deleteMany({
+          where: { afiliadoId: afiliado.id },
+        });
+
+        // Mensagens em outras solicitações onde o usuário foi autor.
+        await tx.mensagem.deleteMany({
+          where: { autorId: afiliado.userId },
+        });
+
+        await tx.user.delete({
+          where: { id: afiliado.userId },
+        });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2003') {
+        throw new ConflictException(
+          'Não foi possível apagar: há registros vinculados que impedem a exclusão.',
+        );
+      }
+      throw error;
+    }
+
+    this.invalidarCacheLista(afiliado.tenantId);
+
+    await Promise.allSettled(
+      afiliado.documentos.map((documento) => this.storage.removerPrivado(documento.arquivoChave)),
+    );
   }
 }

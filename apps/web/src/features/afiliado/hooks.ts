@@ -206,6 +206,17 @@ export function useAtualizarSenhaAfiliadoAdmin() {
   });
 }
 
+export function useRemoverAfiliado() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => afiliadosApi.removerAfiliado(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['afiliados'] });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'metricas'] });
+    },
+  });
+}
+
 export function usePrefetchAfiliadosAdmin() {
   const queryClient = useQueryClient();
   useEffect(() => {
