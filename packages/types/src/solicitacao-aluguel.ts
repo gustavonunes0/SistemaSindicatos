@@ -2,7 +2,13 @@ import { z } from 'zod';
 import { cpfSchema } from './cpf';
 import { roleSchema } from './enums';
 
-export const statusSolicitacaoSchema = z.enum(['ABERTA', 'EM_ANDAMENTO', 'FECHADA']);
+export const statusSolicitacaoSchema = z.enum([
+  'ABERTA',
+  'EM_ANDAMENTO',
+  'APROVADA',
+  'RECUSADA',
+  'FECHADA',
+]);
 export type StatusSolicitacao = z.infer<typeof statusSolicitacaoSchema>;
 
 export const perfilHospedagemPedidoSchema = z.enum([
@@ -33,6 +39,8 @@ export const solicitacaoAluguelSchema = z.object({
   inicioDesejado: z.coerce.date(),
   fimDesejado: z.coerce.date(),
   status: statusSolicitacaoSchema,
+  /** Período RESERVADO no calendário — preenchido ao aprovar. */
+  periodoId: z.string().nullable().optional(),
   createdAt: z.coerce.date(),
   updatedAt: z.coerce.date(),
 });

@@ -950,6 +950,8 @@ enum TipoPeriodo {
 enum StatusSolicitacao {
   ABERTA
   EM_ANDAMENTO
+  APROVADA
+  RECUSADA
   FECHADA
 }
 
@@ -997,8 +999,9 @@ model Periodo {
   fim      DateTime    @db.Timestamptz
   tipo     TipoPeriodo
 
-  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  imovel Imovel @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  tenant      Tenant              @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  imovel      Imovel              @relation(fields: [imovelId], references: [id], onDelete: Cascade)
+  solicitacao SolicitacaoAluguel?
 
   @@index([imovelId, inicio, fim])
   @@index([tenantId])
@@ -1025,12 +1028,15 @@ model SolicitacaoAluguel {
   inicioDesejado DateTime          @db.Timestamptz
   fimDesejado    DateTime          @db.Timestamptz
   status         StatusSolicitacao @default(ABERTA)
+  /// Período criado no calendário ao aprovar a reserva.
+  periodoId      String?           @unique
   createdAt      DateTime          @default(now()) @db.Timestamptz
   updatedAt      DateTime          @updatedAt @db.Timestamptz
 
   tenant    Tenant     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   imovel    Imovel     @relation(fields: [imovelId], references: [id])
   afiliado  Afiliado?  @relation(fields: [afiliadoId], references: [id], onDelete: SetNull)
+  periodo   Periodo?   @relation(fields: [periodoId], references: [id], onDelete: SetNull)
   mensagens Mensagem[]
 
   @@index([imovelId])

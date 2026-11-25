@@ -54,6 +54,7 @@ export function serializarSolicitacao(solicitacao: SolicitacaoPrisma): Solicitac
     inicioDesejado: solicitacao.inicioDesejado,
     fimDesejado: solicitacao.fimDesejado,
     status: solicitacao.status,
+    periodoId: solicitacao.periodoId,
     createdAt: solicitacao.createdAt,
     updatedAt: solicitacao.updatedAt,
   };

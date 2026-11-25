@@ -62,11 +62,35 @@ export function useCriarSolicitacaoPublica() {
   });
 }
 
+function useInvalidarReservas() {
+  const queryClient = useQueryClient();
+  return () => {
+    queryClient.invalidateQueries({ queryKey: ['solicitacoes'] });
+    queryClient.invalidateQueries({ queryKey: ['imoveis'] });
+  };
+}
+
 export function useAtualizarStatusSolicitacao() {
-  const invalidar = useInvalidarSolicitacoes();
+  const invalidar = useInvalidarReservas();
   return useMutation({
     mutationFn: ({ id, ...input }: AtualizarStatusSolicitacaoInput & { id: string }) =>
       solicitacoesApi.atualizarStatusSolicitacao(id, input),
+    onSuccess: invalidar,
+  });
+}
+
+export function useAprovarSolicitacao() {
+  const invalidar = useInvalidarReservas();
+  return useMutation({
+    mutationFn: (id: string) => solicitacoesApi.aprovarSolicitacao(id),
+    onSuccess: invalidar,
+  });
+}
+
+export function useRecusarSolicitacao() {
+  const invalidar = useInvalidarReservas();
+  return useMutation({
+    mutationFn: (id: string) => solicitacoesApi.recusarSolicitacao(id),
     onSuccess: invalidar,
   });
 }

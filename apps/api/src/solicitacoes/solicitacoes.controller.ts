@@ -81,6 +81,18 @@ export class SolicitacoesController {
     return this.solicitacoesService.atualizarStatus(user, id, body);
   }
 
+  @Roles('ADMIN')
+  @Post(':id/aprovar')
+  aprovar(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.solicitacoesService.aprovar(user, id);
+  }
+
+  @Roles('ADMIN')
+  @Post(':id/recusar')
+  recusar(@CurrentUser() user: RequestUser, @Param('id') id: string) {
+    return this.solicitacoesService.recusar(user, id);
+  }
+
   @Get(':id/mensagens')
   listarMensagens(@CurrentUser() user: RequestUser, @Param('id') id: string) {
     return this.solicitacoesService.listarMensagens(user, id);

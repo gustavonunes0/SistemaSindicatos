@@ -170,16 +170,181 @@ export class SolicitacoesService {
       throw new ForbiddenException('Acesso negado');
     }
 
-    try {
-      const solicitacao = await this.prisma.solicitacaoAluguel.update({
+    if (input.status === 'APROVADA') {
+      return this.aprovar(user, id);
+    }
+    if (input.status === 'RECUSADA') {
+      return this.recusar(user, id);
+    }
+
+    const atual = await this.prisma.solicitacaoAluguel.findUnique({
+      where: { id },
+      select: { id: true, status: true, periodoId: true },
+    });
+    if (!atual) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
+
+    const solicitacao = await this.prisma.$transaction(async (tx) => {
+      if (atual.periodoId && atual.status === 'APROVADA') {
+        await tx.solicitacaoAluguel.update({
+          where: { id },
+          data: { periodoId: null },
+        });
+        await tx.periodo.delete({ where: { id: atual.periodoId } });
+      }
+      return tx.solicitacaoAluguel.update({
         where: { id },
         data: { status: input.status },
         include: includeResumo,
       });
-      return serializarSolicitacaoResumo(solicitacao);
-    } catch {
+    });
+
+    return serializarSolicitacaoResumo(solicitacao);
+  }
+
+  /** Aprova a reserva e bloqueia o período no calendário do imóvel. */
+  async aprovar(user: RequestUser, id: string) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Acesso negado');
+    }
+
+    const atual = await this.prisma.solicitacaoAluguel.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        periodoId: true,
+        imovelId: true,
+        inicioDesejado: true,
+        fimDesejado: true,
+        imovel: { select: { titulo: true } },
+      },
+    });
+    if (!atual) {
       throw new NotFoundException('Solicitação não encontrada');
     }
+    if (atual.status === 'APROVADA' && atual.periodoId) {
+      const ja = await this.prisma.solicitacaoAluguel.findUnique({
+        where: { id },
+        include: includeResumo,
+      });
+      return serializarSolicitacaoResumo(ja!);
+    }
+    if (atual.status === 'FECHADA' || atual.status === 'RECUSADA') {
+      throw new ConflictException('Esta solicitação já foi encerrada');
+    }
+
+    const conflitos = await this.prisma.periodo.findMany({
+      where: {
+        imovelId: atual.imovelId,
+        ...whereSobreposicao(atual.inicioDesejado, atual.fimDesejado),
+        ...(atual.periodoId ? { id: { not: atual.periodoId } } : {}),
+      },
+      select: { id: true },
+    });
+    if (conflitos.length > 0) {
+      throw new ConflictException(
+        'O período desejado conflita com outra reserva ou bloqueio no calendário',
+      );
+    }
+
+    const tenantId = requireTenantId();
+    const periodoTxt = `${atual.inicioDesejado.toLocaleDateString('pt-BR')} a ${atual.fimDesejado.toLocaleDateString('pt-BR')}`;
+
+    const solicitacao = await this.prisma.$transaction(async (tx) => {
+      let periodoId = atual.periodoId;
+      if (!periodoId) {
+        const periodo = await tx.periodo.create({
+          data: {
+            tenantId,
+            imovelId: atual.imovelId,
+            inicio: atual.inicioDesejado,
+            fim: atual.fimDesejado,
+            tipo: 'RESERVADO',
+          },
+        });
+        periodoId = periodo.id;
+      }
+
+      await tx.mensagem.create({
+        data: {
+          tenantId,
+          solicitacaoId: id,
+          autorId: user.id,
+          texto: `Reserva aprovada. Período ${periodoTxt} bloqueado no calendário.`,
+        },
+      });
+
+      return tx.solicitacaoAluguel.update({
+        where: { id },
+        data: { status: 'APROVADA', periodoId },
+        include: includeResumo,
+      });
+    });
+
+    this.logger.log(
+      `Reserva ${id} aprovada — imóvel "${atual.imovel.titulo}" (${periodoTxt})`,
+    );
+    return serializarSolicitacaoResumo(solicitacao);
+  }
+
+  /** Recusa a reserva e libera o período no calendário, se houver. */
+  async recusar(user: RequestUser, id: string) {
+    if (user.role !== 'ADMIN') {
+      throw new ForbiddenException('Acesso negado');
+    }
+
+    const atual = await this.prisma.solicitacaoAluguel.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        periodoId: true,
+        imovel: { select: { titulo: true } },
+      },
+    });
+    if (!atual) {
+      throw new NotFoundException('Solicitação não encontrada');
+    }
+    if (atual.status === 'RECUSADA') {
+      const ja = await this.prisma.solicitacaoAluguel.findUnique({
+        where: { id },
+        include: includeResumo,
+      });
+      return serializarSolicitacaoResumo(ja!);
+    }
+    if (atual.status === 'FECHADA') {
+      throw new ConflictException('Esta solicitação já foi encerrada');
+    }
+
+    const solicitacao = await this.prisma.$transaction(async (tx) => {
+      if (atual.periodoId) {
+        await tx.solicitacaoAluguel.update({
+          where: { id },
+          data: { periodoId: null },
+        });
+        await tx.periodo.delete({ where: { id: atual.periodoId } });
+      }
+
+      await tx.mensagem.create({
+        data: {
+          tenantId: requireTenantId(),
+          solicitacaoId: id,
+          autorId: user.id,
+          texto: 'Reserva recusada. O período permanece disponível no calendário.',
+        },
+      });
+
+      return tx.solicitacaoAluguel.update({
+        where: { id },
+        data: { status: 'RECUSADA' },
+        include: includeResumo,
+      });
+    });
+
+    this.logger.log(`Reserva ${id} recusada — imóvel "${atual.imovel.titulo}"`);
+    return serializarSolicitacaoResumo(solicitacao);
   }
 
   async listarMensagens(user: RequestUser, solicitacaoId: string) {
@@ -221,7 +386,7 @@ export class SolicitacoesService {
       throw new ForbiddenException('Acesso negado');
     }
 
-    if (solicitacao.status === 'FECHADA') {
+    if (solicitacao.status === 'FECHADA' || solicitacao.status === 'RECUSADA') {
       throw new ConflictException('Esta solicitação está encerrada');
     }
 

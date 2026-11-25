@@ -59,6 +59,16 @@ export async function atualizarStatusSolicitacao(
   return solicitacaoResumoSchema.parse(data);
 }
 
+export async function aprovarSolicitacao(id: string): Promise<SolicitacaoResumo> {
+  const { data } = await api.post(`/solicitacoes/${id}/aprovar`);
+  return solicitacaoResumoSchema.parse(data);
+}
+
+export async function recusarSolicitacao(id: string): Promise<SolicitacaoResumo> {
+  const { data } = await api.post(`/solicitacoes/${id}/recusar`);
+  return solicitacaoResumoSchema.parse(data);
+}
+
 export async function listarMensagens(solicitacaoId: string): Promise<Mensagem[]> {
   const { data } = await api.get(`/solicitacoes/${solicitacaoId}/mensagens`);
   return z.array(mensagemSchema).parse(data);
