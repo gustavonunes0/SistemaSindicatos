@@ -633,6 +633,8 @@ model Convenio {
   logoUrl           String?
   /// Flyer/tabela de descontos (imagem) exibida no detalhe do convênio.
   tabelaUrl         String?
+  /// PDF do contrato do convênio — disponível para download na área do filiado.
+  contratoUrl       String?
   link              String?
   contato           String?
   vigenciaInicio    DateTime?         @db.Timestamptz

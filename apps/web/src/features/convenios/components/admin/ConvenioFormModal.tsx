@@ -17,6 +17,7 @@ import {
   useAtualizarConvenio,
   useConvenioAdmin,
   useCriarConvenio,
+  useUploadContratoConvenio,
   useUploadTabelaConvenio,
 } from '../../hooks';
 
@@ -36,8 +37,10 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
   const atualizar = useAtualizarConvenio();
   const uploadLogo = useUploadCapa();
   const uploadTabela = useUploadTabelaConvenio();
+  const uploadContrato = useUploadContratoConvenio();
   const inputLogoRef = useRef<HTMLInputElement>(null);
   const inputTabelaRef = useRef<HTMLInputElement>(null);
+  const inputContratoRef = useRef<HTMLInputElement>(null);
   const editando = Boolean(id);
 
   const {
@@ -55,6 +58,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
       descricao: '',
       logoUrl: null,
       tabelaUrl: null,
+      contratoUrl: null,
       link: null,
       contato: null,
       vigenciaInicio: null,
@@ -77,6 +81,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         descricao: convenioExistente.descricao,
         logoUrl: convenioExistente.logoUrl,
         tabelaUrl: convenioExistente.tabelaUrl,
+        contratoUrl: convenioExistente.contratoUrl,
         link: convenioExistente.link ?? '',
         contato: convenioExistente.contato ?? '',
         vigenciaInicio: paraInputData(convenioExistente.vigenciaInicio),
@@ -97,6 +102,7 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
         descricao: '',
         logoUrl: null,
         tabelaUrl: null,
+        contratoUrl: null,
         link: null,
         contato: null,
         vigenciaInicio: null,
@@ -113,9 +119,11 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
 
   const logoUrl = watch('logoUrl');
   const tabelaUrl = watch('tabelaUrl');
+  const contratoUrl = watch('contratoUrl');
   const emiteDeclaracao = watch('emiteDeclaracao');
   const logoUrlValida = typeof logoUrl === 'string' ? logoUrl : null;
   const tabelaUrlValida = typeof tabelaUrl === 'string' ? tabelaUrl : null;
+  const contratoUrlValida = typeof contratoUrl === 'string' ? contratoUrl : null;
   const salvando = criar.isPending || atualizar.isPending;
 
   const onSubmit = (dados: CriarConvenioInput) => {
@@ -139,6 +147,14 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
     if (arquivo) {
       uploadTabela.mutate(arquivo, {
         onSuccess: ({ url }) => setValue('tabelaUrl', url, { shouldDirty: true }),
+      });
+    }
+  };
+
+  const onSelecionarContrato = (arquivo: File | undefined) => {
+    if (arquivo) {
+      uploadContrato.mutate(arquivo, {
+        onSuccess: ({ url }) => setValue('contratoUrl', url, { shouldDirty: true }),
       });
     }
   };
@@ -244,6 +260,47 @@ export function ConvenioFormModal({ aberto, id, onFechar }: ConvenioFormModalPro
                 }}
               >
                 Remover tabela
+              </button>
+            )}
+          </div>
+
+          <div className="campo">
+            <span className="campo-rotulo">Contrato PDF (opcional)</span>
+            <p className="texto-secundario">
+              Documento do convênio para o filiado baixar (PDF, até 50 MB). Não aparece no site
+              público.
+            </p>
+            {contratoUrlValida && (
+              <a
+                className="botao-secundario"
+                href={urlDaApi(contratoUrlValida)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ver contrato atual
+              </a>
+            )}
+            <input
+              ref={inputContratoRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              onChange={(evento) => onSelecionarContrato(evento.target.files?.[0])}
+            />
+            {uploadContrato.isPending && <span>Enviando contrato…</span>}
+            {uploadContrato.isError && (
+              <span className="erro">Erro ao enviar o PDF. Verifique o tamanho e o formato.</span>
+            )}
+            {errors.contratoUrl && <span className="erro">{errors.contratoUrl.message}</span>}
+            {contratoUrlValida && (
+              <button
+                type="button"
+                className="botao-link"
+                onClick={() => {
+                  setValue('contratoUrl', null, { shouldDirty: true });
+                  if (inputContratoRef.current) inputContratoRef.current.value = '';
+                }}
+              >
+                Remover contrato
               </button>
             )}
           </div>

@@ -72,6 +72,20 @@ export function ConvenioDetalhePage() {
           </figure>
         )}
 
+        {convenio.contratoUrl && (
+          <p className="convenio-contrato">
+            <a
+              className="botao-secundario"
+              href={urlDaApi(convenio.contratoUrl)}
+              target="_blank"
+              rel="noreferrer"
+              download
+            >
+              Baixar contrato (PDF)
+            </a>
+          </p>
+        )}
+
         <dl className="convenio-dados">
           {convenio.contato && (
             <div>

@@ -83,6 +83,7 @@ export const convenioSchema = z.object({
   descricao: z.string(),
   logoUrl: z.string().nullable(),
   tabelaUrl: z.string().nullable(),
+  contratoUrl: z.string().nullable(),
   link: z.string().nullable(),
   contato: z.string().nullable(),
   vigenciaInicio: z.coerce.date().nullable(),
@@ -104,6 +105,7 @@ export const convenioListagemSchema = convenioSchema
   .extend({
     descricao: z.string().default(''),
     tabelaUrl: z.string().nullable().default(null),
+    contratoUrl: z.string().nullable().default(null),
   });
 export type ConvenioListagem = z.infer<typeof convenioListagemSchema>;
 
@@ -113,6 +115,7 @@ const convenioCamposSchema = z.object({
   descricao: z.string().min(10, 'Descreva o benefício em ao menos 10 caracteres'),
   logoUrl: arquivoOpcional,
   tabelaUrl: arquivoOpcional,
+  contratoUrl: arquivoOpcional,
   link: urlOpcional,
   contato: textoOpcional,
   vigenciaInicio: dataOpcional,
@@ -133,6 +136,12 @@ export const uploadTabelaConvenioResponseSchema = z.object({
   url: z.string(),
 });
 export type UploadTabelaConvenioResponse = z.infer<typeof uploadTabelaConvenioResponseSchema>;
+
+/** Resposta do upload do contrato PDF do convênio. */
+export const uploadContratoConvenioResponseSchema = z.object({
+  url: z.string(),
+});
+export type UploadContratoConvenioResponse = z.infer<typeof uploadContratoConvenioResponseSchema>;
 
 function validarCamposDeclaracao(
   dados: {

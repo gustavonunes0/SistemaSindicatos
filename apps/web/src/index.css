@@ -7097,6 +7097,10 @@ td.tabela-acoes.tabela-acoes--coluna > :last-child {
   padding: 0;
 }
 
+.convenio-contrato {
+  margin: 0 0 1.25rem;
+}
+
 .convenio-tabela figcaption {
   margin: 0 0 0.55rem;
   font-size: 0.78rem;

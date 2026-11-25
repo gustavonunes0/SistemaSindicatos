@@ -2,6 +2,7 @@ import {
   convenioListagemSchema,
   convenioSchema,
   linksCategoriaConvenioSchema,
+  uploadContratoConvenioResponseSchema,
   uploadTabelaConvenioResponseSchema,
   type AtualizarConvenioInput,
   type Convenio,
@@ -11,6 +12,7 @@ import {
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
   type LinksCategoriaConvenio,
+  type UploadContratoConvenioResponse,
   type UploadTabelaConvenioResponse,
 } from '@sindprf/types';
 import { z } from 'zod';
@@ -70,6 +72,15 @@ export async function uploadTabelaConvenio(arquivo: File): Promise<UploadTabelaC
   form.append('file', arquivo);
   const { data } = await api.post('/convenios/tabela', form);
   return uploadTabelaConvenioResponseSchema.parse(data);
+}
+
+export async function uploadContratoConvenio(
+  arquivo: File,
+): Promise<UploadContratoConvenioResponse> {
+  const form = new FormData();
+  form.append('file', arquivo);
+  const { data } = await api.post('/convenios/contrato', form);
+  return uploadContratoConvenioResponseSchema.parse(data);
 }
 
 export async function emitirDeclaracao(

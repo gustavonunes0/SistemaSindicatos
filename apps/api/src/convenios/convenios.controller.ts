@@ -21,11 +21,14 @@ import {
   definirLinkCategoriaSchema,
   emitirDeclaracaoSchema,
   filtroConveniosSchema,
+  uploadContratoConvenioResponseSchema,
+  uploadTabelaConvenioResponseSchema,
   type AtualizarConvenioInput,
   type CriarConvenioInput,
   type DefinirLinkCategoriaInput,
   type EmitirDeclaracaoInput,
   type FiltroConveniosInput,
+  type UploadContratoConvenioResponse,
   type UploadTabelaConvenioResponse,
 } from '@sindprf/types';
 import { CurrentUser, Public, Roles } from '../common/decorators';
@@ -37,6 +40,8 @@ import { ConveniosService } from './convenios.service';
 /** Tabelas/flyers em alta resolução; alinhado ao limite de anexos/estatutos. */
 const TABELA_MAX_BYTES = 50 * 1024 * 1024;
 const TABELA_MIMETYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const CONTRATO_MAX_BYTES = 50 * 1024 * 1024;
+const CONTRATO_MIMETYPES = ['application/pdf'];
 
 @Controller('convenios')
 export class ConveniosController {
@@ -81,7 +86,23 @@ export class ConveniosController {
       throw new BadRequestException('Formato inválido: envie JPEG, PNG ou WebP');
     }
     const url = await this.storageService.salvar(file.buffer, file.originalname);
-    return { url };
+    return uploadTabelaConvenioResponseSchema.parse({ url });
+  }
+
+  @Roles('ADMIN')
+  @Post('contrato')
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: CONTRATO_MAX_BYTES } }))
+  async uploadContrato(
+    @UploadedFile() file?: Express.Multer.File,
+  ): Promise<UploadContratoConvenioResponse> {
+    if (!file) {
+      throw new BadRequestException('Arquivo não enviado');
+    }
+    if (!CONTRATO_MIMETYPES.includes(file.mimetype)) {
+      throw new BadRequestException('Formato inválido: envie um PDF');
+    }
+    const url = await this.storageService.salvar(file.buffer, file.originalname);
+    return uploadContratoConvenioResponseSchema.parse({ url });
   }
 
   @Roles('ADMIN')
@@ -142,7 +163,9 @@ export class ConveniosController {
 
   @Public()
   @Get(':id')
-  buscar(@Param('id') id: string) {
-    return this.conveniosService.buscarPublico(id);
+  buscar(@Param('id') id: string, @CurrentUser() user?: RequestUser) {
+    const revelarContrato =
+      user?.role === 'AFILIADO' || user?.role === 'ADMIN' || user?.role === 'SUPERADMIN';
+    return this.conveniosService.buscarPublico(id, revelarContrato);
   }
 }

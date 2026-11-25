@@ -35,6 +35,7 @@ const CAMPOS_LISTAGEM = {
   descricao: true,
   logoUrl: true,
   tabelaUrl: true,
+  contratoUrl: true,
   link: true,
   contato: true,
   vigenciaInicio: true,
@@ -175,6 +176,7 @@ export class ConveniosService {
       descricao: '',
       logoUrl: null,
       tabelaUrl: null,
+      contratoUrl: null,
       link: null,
       contato: null,
       vigenciaInicio: null,
@@ -215,33 +217,37 @@ export class ConveniosService {
       }
     }
 
-    const payload = await this.prisma.convenio.findMany({
+    const encontrados = await this.prisma.convenio.findMany({
       where,
       orderBy: { nome: 'asc' },
       select: CAMPOS_LISTAGEM,
     });
+    // Contrato é só para filiado autenticado no detalhe — nunca na listagem pública.
+    const payload = encontrados.map((item) => ({ ...item, contratoUrl: null }));
     if (!busca) {
       this.cachePublico.set(chave, { expires: Date.now() + this.cacheTtlMs, payload });
     }
     return payload;
   }
 
-  async buscarPublico(id: string): Promise<Convenio> {
+  async buscarPublico(id: string, revelarContrato = false): Promise<Convenio> {
     const tenantId = requireTenantId();
     const chave = `${tenantId}:detalhe:${id}`;
     const cached = this.cachePublico.get(chave);
+    let convenio: Convenio;
     if (cached && cached.expires > Date.now()) {
-      return cached.payload as Convenio;
+      convenio = cached.payload as Convenio;
+    } else {
+      const encontrado = await this.prisma.convenio.findFirst({
+        where: { id, tenantId, ativo: true },
+      });
+      if (!encontrado) {
+        throw new NotFoundException('Convênio não encontrado');
+      }
+      convenio = encontrado;
+      this.cachePublico.set(chave, { expires: Date.now() + this.cacheTtlMs, payload: convenio });
     }
-
-    const convenio = await this.prisma.convenio.findFirst({
-      where: { id, tenantId, ativo: true },
-    });
-    if (!convenio) {
-      throw new NotFoundException('Convênio não encontrado');
-    }
-    this.cachePublico.set(chave, { expires: Date.now() + this.cacheTtlMs, payload: convenio });
-    return convenio;
+    return revelarContrato ? convenio : { ...convenio, contratoUrl: null };
   }
 
   async listarCategorias(): Promise<string[]> {
@@ -483,6 +489,7 @@ export class ConveniosService {
     if (input.descricao !== undefined) dados.descricao = input.descricao;
     if (input.logoUrl !== undefined) dados.logoUrl = input.logoUrl;
     if (input.tabelaUrl !== undefined) dados.tabelaUrl = input.tabelaUrl;
+    if (input.contratoUrl !== undefined) dados.contratoUrl = input.contratoUrl;
     if (input.link !== undefined) dados.link = input.link;
     if (input.contato !== undefined) dados.contato = input.contato;
     if (input.vigenciaInicio !== undefined) dados.vigenciaInicio = input.vigenciaInicio;
